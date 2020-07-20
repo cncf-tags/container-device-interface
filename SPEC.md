@@ -69,6 +69,7 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
 {
     "cdiVersion": "0.1.0",
     "kind": "<name>",
+    "kindShort": ["<short-name>", ...],
     "container-runtime": ["<container-runtime-name>"], (optional)
 
     "cdiDevices": [
