@@ -139,8 +139,7 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
 #### Container Runtime
 
 * `containerRuntime` (array of string, OPTIONAL) indicates that this CDI specification targets only a specific container runtime.
-  If this field is not indicated then container runtimes should consider that the JSON file targets all runtimes.
-  If this field is indicated then container runtimes should only run it if one of the identifiers matches the container runtime's identifier.
+  If this field is indicated, the container runtime MUST use the one that matches its name if non exists it should use the one that does not indicate any `containerRuntime` value.
   Possible values (not an exhaustive list): docker, podman, gvisor, lxc
 
 #### CDI Devices
