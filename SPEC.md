@@ -51,15 +51,16 @@ B. Container Runtime
 - The device configuration includes mandatory fields such as "name" and "version".
 - Fields in CDI structures are required unless specifically marked optional.
 
-For the purposes of this proposal, we define two terms very specifically:
-- _container_ can be considered synonymous with a [Linux _network namespace_][namespaces].
-  What unit this corresponds to depends on a particular container runtime implementation. 
-- _device_ which will refer to an actual hardware device.
+For the purposes of this proposal, we define the following terms:
+- _container_ is an instance of code running in an isolated execution environment specified by the OCI image and runtime specifications.
+- _device_ which refers to an actual hardware device.
+- _runtime engine_ is a component that creates a container from an OCI Runtime Specification and a rootfs directory
+- _container runtime_ which refers to the higher level component users tend to interact with for managing containers. It may also include lower level components that implement management of containers and pods (sets of containers). e.g: docker, podman, ...
+- _container runtime interface integration_ which refers to a server that implements the Container Runtime Interface (CRI) services, e.g: containerd+cri, cri-o, ...
 
 The key words "must", "must not", "required", "shall", "shall not", "should", "should not", "recommended", "may" and "optonal" are used as specified in [RFC 2119][rfc-2119].
 
 [rfc-2119]: https://www.ietf.org/rfc/rfc2119.txt
-[namespaces]: http://man7.org/linux/man-pages/man7/namespaces.7.html
 
 ## CDI JSON Specification
 
