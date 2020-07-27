@@ -193,3 +193,12 @@ The `containerSpec` field has the following definition:
 ## Error Handling
   * Two or more files with identical `kind` values and identical `containerRuntime` field.
     Container runtimes should surface this error when any device with that `kind` is requested.
+  * Kind requested is not present in any CDI file.
+    Container runtimes should surface an error when a non existent kind is requested.
+  * Device (not device node) Requested does not exist.
+    Container runtimes should surface this error when a non existent device is requested.
+  * "Resource" does not exist (e.g: Mount, Hook, ...).
+    Container runtimes should surface this error when a non existent "resource" is requested (e.g: at "run" time).
+    This is because a resource does not need to exist when the spec is written but it needs to exist when the container is created.
+  * Hook fails to execute.
+    Container runtimes should surface an error when hooks fails to execute.
