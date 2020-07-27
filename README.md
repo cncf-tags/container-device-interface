@@ -27,24 +27,24 @@ $ cat > /etc/cdi/vendor.json <<EOF
 {
   "cdiVersion": "0.2.0",
   "kind": "vendor.com/device",
-  "cdiDevices": [
+  "devices": [
     {
       "name": "myDevice",
-      "containerSpec": {
-        "devices": [
-          {"hostPath": "/dev/card1", "containerPath": "/dev/card1"},
+      "ociEdits": {
+        "deviceNodes": [
+          {"hostPath": "/dev/card1", "containerPath": "/dev/card1"}
           {"hostPath": "/dev/card-render1", "containerPath": "/dev/card-render1"}
         ]
       }
     }
   ],
-  "containerSpec": {
-    "devices": [
+  "ociEdits": {
+    "deviceNodes": [
       {"hostPath": "/dev/vendorctl", "containerPath": "/dev/vendorctl"}
     ],
     "mounts": [
       {"hostPath": "/bin/vendorBin", "containerPath": "/bin/vendorBin"},
-      {"hostPath": "/usr/lib/libVendor.so.0", "containerPath": "/usr/lib/libVendor.so"}
+      {"hostPath": "/usr/lib/libVendor.so.0", "containerPath": "/usr/lib/libVendor.so.0"}
     ],
     "hooks": [
       {"create-container": {"path": "/bin/vendor-hook"} },

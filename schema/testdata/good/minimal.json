@@ -1,0 +1,12 @@
+{
+  "cdiVersion": "0.2.0",
+  "kind": "vendor.com/device",
+  "devices": [
+    {
+      "name": "myDevice",
+      "ociEdits": {
+        "deviceNodes": [{"hostPath": "/dev/card1", "containerPath": "/dev/card1"}]
+      }
+    }
+  ]
+}
