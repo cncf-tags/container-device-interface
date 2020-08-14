@@ -32,9 +32,9 @@ $ cat > /etc/cdi/vendor.json <<EOF
       "name": "myDevice",
       "containerSpec": {
         "devices": [
-          {"hostPath": "/dev/card1", "containerPath": "/dev/card1"}
+          {"hostPath": "/dev/card1", "containerPath": "/dev/card1"},
           {"hostPath": "/dev/card-render1", "containerPath": "/dev/card-render1"}
-        ],
+        ]
       }
     }
   ],
