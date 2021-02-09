@@ -1,0 +1,19 @@
+on: [push, pull_request]
+name: Sanity
+jobs:
+  build:
+    name: "Run go sanity tools"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: 1.14.x
+    - name: Install golint
+      run: go get -u golang.org/x/lint/golint
+    - name: Lint
+      run: golint -set_exit_status ./specs-go/*.go
+    - name: Fmt
+      run: test -z "$(gofmt -l ./specs-go/config.go)"
+    - name: Vet
+      run: go vet ./specs-go

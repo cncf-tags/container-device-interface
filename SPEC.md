@@ -71,9 +71,9 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
     "cdiVersion": "0.1.0",
     "kind": "<name>",
     "kindShort": ["<short-name>", ...],
-    "container-runtime": ["<container-runtime-name>"], (optional)
+    "containerRuntime": ["<container-runtime-name>"], (optional)
 
-    "cdiDevices": [
+    "devices": [
         {
             "name": "<name>",
             "nameShort": ["<short-name>", "<short-name>"], (optional)
@@ -81,15 +81,15 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
             // Same as the below containerSpec field.
             // This field should only be applied to the Container's OCI spec
             // if that specific device is requested.
-            "containerSpec": { ... }
+            "containerEdits": { ... }
         }
     ],
 
     // This field should be applied to the Container's OCI spec if any of the
     // devices defined above are requested on the CLI
-    "containerSpec": [
+    "containerEdits": [
         {
-            "devices": [ (optional)
+            "deviceNodes": [ (optional)
                 {
                     "hostPath": "<path>",
                     "containerPath": "<path>",
@@ -145,30 +145,30 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
 
 #### CDI Devices
 
-The `cdiDevices` field describes the set of hardware devices that can be requested by the container runtime user.
+The `devices` field describes the set of hardware devices that can be requested by the container runtime user.
 Note: For a CDI file to be valid, at least one entry must be specified in this array.
 
-  * `cdiDevices` (array of objects, REQUIRED) list of devices provided by the vendor.
+  * `devices` (array of objects, REQUIRED) list of devices provided by the vendor.
     * `name` (string, REQUIRED), name of the device, can be used to refer to it when requesting a device.
       * Beginning and ending with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (\_), dots (.), and alphanumerics between.
       * e.g: `docker/podman run --device foo ...`
     * `nameShort` (array of strings, OPTIONAL), alternative names for the device. Can be used to reduce the CLI verbosity
       * Entries in the array MUST use the same schema as the entry for the `name` field
-    * `containerSpec` (object, OPTIONAL) this field is described in the next section.
+    * `containerEdits` (object, OPTIONAL) this field is described in the next section.
       * This field should only be merged in the OCI spec if the device has been requested by the container runtime user.
 
 
-#### Container Spec
+#### OCI Edits
 
-The `containerSpec` field describes edits to be made to the OCI specification. Currently only three kinds of edits can be made to the OCI specification: `devices`, `mounts` and `hooks`.
+The `containerEdits` field describes edits to be made to the OCI specification. Currently only three kinds of edits can be made to the OCI specification: `devices`, `mounts` and `hooks`.
 
-The `containerSpec` field is referenced in two places in the specification:
+The `containerEdits` field is referenced in two places in the specification:
   * At the device level, where the edits MUST only be made if the matching device is requested by the container runtime user.
   * At the container level, where the edits MUST be made if any of the of the device defined in the `devices` field are requested.
 
 
-The `containerSpec` field has the following definition:
-  * `devices` (array of objects, OPTIONAL) describes the device nodes that should be mounted:
+The `containerEdits` field has the following definition:
+  * `deviceNodes` (array of objects, OPTIONAL) describes the device nodes that should be mounted:
     * `hostPath` (string, REQUIRED) path of the device on the host.
     * `containerPath` (string, REQUIRED) path of the device within the container.
     * `permissions` (string, OPTIONAL) Cgroups permissions of the device, candidates are one or more of:
