@@ -20,23 +20,23 @@ type Devices struct {
 
 // ContainerEdits are edits a container runtime must make to the OCI spec to expose the device.
 type ContainerEdits struct {
-	DeviceNodes []DeviceNode `json:"deviceNodes,omitempty"`
-	Hooks       []Hook       `json:"hooks,omitempty"`
-	Mounts      []Mount      `json:"mounts,omitempty"`
+	DeviceNodes []*DeviceNode `json:"deviceNodes,omitempty"`
+	Hooks       []*Hook       `json:"hooks,omitempty"`
+	Mounts      []*Mount      `json:"mounts,omitempty"`
 }
 
 // DeviceNode represents a device node that needs to be added to the OCI spec.
 type DeviceNode struct {
-	HostPath      string `json:"hostPath"`
-	ContainerPath string `json:"containerPath"`
-	Permissions   string `json:"permissions,omitempty"`
+	HostPath      string   `json:"hostPath"`
+	ContainerPath string   `json:"containerPath"`
+	Permissions   []string `json:"permissions,omitempty"`
 }
 
 // Mount represents a mount that needs to be added to the OCI spec.
 type Mount struct {
-	HostPath      string `json:"hostPath"`
-	ContainerPath string `json:"containerPath"`
-	Options       string `json:"options,omitempty"`
+	HostPath      string   `json:"hostPath"`
+	ContainerPath string   `json:"containerPath"`
+	Options       []string `json:"options,omitempty"`
 }
 
 // Hook represents a hook that needs to be added to the OCI spec.
@@ -45,5 +45,5 @@ type Hook struct {
 	Path     string   `json:"path"`
 	Args     []string `json:"args,omitempty"`
 	Env      []string `json:"env,omitempty"`
-	Timeout  string   `json:"timeout,omitempty"`
+	Timeout  *int     `json:"timeout,omitempty"`
 }
