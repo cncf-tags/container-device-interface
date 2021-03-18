@@ -39,6 +39,10 @@ $ cat > /etc/cdi/vendor.json <<EOF
     }
   ],
   "ociEdits": {
+    "env": [
+      "FOO=VALID_SPEC",
+      "BAR=BARVALUE1"
+    ],
     "deviceNodes": [
       {"hostPath": "/dev/vendorctl", "containerPath": "/dev/vendorctl"}
     ],
