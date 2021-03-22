@@ -81,6 +81,12 @@
         "ociEdits": {
             "type": "object",
             "properties": {
+                "env": {
+                    "type": "array",
+                    "items": {
+                        "ref": "#definitions/Env"
+                    }
+                },
                 "deviceNodes": {
                     "type": "array",
                     "items": {

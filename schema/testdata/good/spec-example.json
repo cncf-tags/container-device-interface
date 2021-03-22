@@ -13,6 +13,10 @@
     }
   ],
   "ociEdits": {
+    "env": [
+      "FOO=CDI_SPEC",
+      "BAR=BARVALUE1"
+    ],
     "deviceNodes": [
       {"hostPath": "/dev/vendorctl", "containerPath": "/dev/vendorctl"}
     ],

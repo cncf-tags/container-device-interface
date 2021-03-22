@@ -89,6 +89,9 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
     // devices defined above are requested on the CLI
     "containerEdits": [
         {
+            "env": [ (optional)
+                "<envName>=<envValue>"
+            ]
             "deviceNodes": [ (optional)
                 {
                     "hostPath": "<path>",
@@ -160,7 +163,7 @@ Note: For a CDI file to be valid, at least one entry must be specified in this a
 
 #### OCI Edits
 
-The `containerEdits` field describes edits to be made to the OCI specification. Currently only three kinds of edits can be made to the OCI specification: `devices`, `mounts` and `hooks`.
+The `containerEdits` field describes edits to be made to the OCI specification. Currently only four kinds of edits can be made to the OCI specification: `env`, `devices`, `mounts` and `hooks`.
 
 The `containerEdits` field is referenced in two places in the specification:
   * At the device level, where the edits MUST only be made if the matching device is requested by the container runtime user.
@@ -168,6 +171,7 @@ The `containerEdits` field is referenced in two places in the specification:
 
 
 The `containerEdits` field has the following definition:
+  * `env` (array of strings in the format of "VARNAME=VARVALUE", OPTIONAL) describes the environment variables that should be set. These values are appended to the container environment array.
   * `deviceNodes` (array of objects, OPTIONAL) describes the device nodes that should be mounted:
     * `hostPath` (string, REQUIRED) path of the device on the host.
     * `containerPath` (string, REQUIRED) path of the device within the container.
