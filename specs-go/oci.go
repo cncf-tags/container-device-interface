@@ -31,6 +31,15 @@ func ApplyEditsToOCISpec(config *spec.Spec, edits *ContainerEdits) error {
 		return nil
 	}
 
+	if len(edits.Env) > 0 {
+
+		if config.Process == nil {
+			config.Process = &spec.Process{}
+		}
+
+		config.Process.Env = append(config.Process.Env, edits.Env...)
+	}
+
 	for _, d := range edits.DeviceNodes {
 		config.Mounts = append(config.Mounts, toOCIDevice(d))
 	}
