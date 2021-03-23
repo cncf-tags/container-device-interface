@@ -1,7 +1,9 @@
 package specs
 
 import (
+	"errors"
 	"fmt"
+
 	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
@@ -27,6 +29,9 @@ func ApplyOCIEdits(config *spec.Spec, cdi *Spec) error {
 
 // ApplyEditsToOCISpec applies the specified edits to the OCI spec.
 func ApplyEditsToOCISpec(config *spec.Spec, edits *ContainerEdits) error {
+	if config == nil {
+		return errors.New("spec is nil")
+	}
 	if edits == nil {
 		return nil
 	}
@@ -49,6 +54,9 @@ func ApplyEditsToOCISpec(config *spec.Spec, edits *ContainerEdits) error {
 	}
 
 	for _, h := range edits.Hooks {
+		if config.Hooks == nil {
+			config.Hooks = &spec.Hooks{}
+		}
 		switch h.HookName {
 		case "prestart":
 			config.Hooks.Prestart = append(config.Hooks.Prestart, toOCIHook(h))
