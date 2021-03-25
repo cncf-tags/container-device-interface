@@ -92,6 +92,12 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
             "env": [ (optional)
                 "<envName>=<envValue>"
             ]
+            "user": { (optional)
+                "uid": <int>,
+                "gid": <int>,
+                "umask": <int>, (optional)
+                "additionalGids: [<int>] (optional)
+            }
             "deviceNodes": [ (optional)
                 {
                     "hostPath": "<path>",
@@ -163,7 +169,7 @@ Note: For a CDI file to be valid, at least one entry must be specified in this a
 
 #### OCI Edits
 
-The `containerEdits` field describes edits to be made to the OCI specification. Currently only four kinds of edits can be made to the OCI specification: `env`, `devices`, `mounts` and `hooks`.
+The `containerEdits` field describes edits to be made to the OCI specification. Currently the following kinds of edits can be made to the OCI specification: `env`, `user`, `devices`, `mounts` and `hooks`.
 
 The `containerEdits` field is referenced in two places in the specification:
   * At the device level, where the edits MUST only be made if the matching device is requested by the container runtime user.
@@ -172,6 +178,11 @@ The `containerEdits` field is referenced in two places in the specification:
 
 The `containerEdits` field has the following definition:
   * `env` (array of strings in the format of "VARNAME=VARVALUE", OPTIONAL) describes the environment variables that should be set. These values are appended to the container environment array.
+  * `user` (object, OPTIONAL) describes of which user the container process runs as:
+    * `uid` (int, REQUIRED) specifies the user ID in the container namespace.
+    * `gid` (int, REQUIRED) specifies the group ID in the container namespace.
+    * `umask` (int, OPTIONAL) specifies the [umask][umask_2] of the user.
+    * `additionalGids` (array of ints, OPTIONAL) specifies additional group IDs in the container namespace to be added to the container process.
   * `deviceNodes` (array of objects, OPTIONAL) describes the device nodes that should be mounted:
     * `hostPath` (string, REQUIRED) path of the device on the host.
     * `containerPath` (string, REQUIRED) path of the device within the container.

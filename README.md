@@ -43,6 +43,12 @@ $ cat > /etc/cdi/vendor.json <<EOF
       "FOO=VALID_SPEC",
       "BAR=BARVALUE1"
     ],
+    "user": {
+      "uid": 1000,
+      "gid": 1000,
+      "umask": 7,
+      "additionalGuids": [2, 8]
+    },
     "deviceNodes": [
       {"hostPath": "/dev/vendorctl", "containerPath": "/dev/vendorctl"}
     ],

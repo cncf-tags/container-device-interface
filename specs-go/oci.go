@@ -2,6 +2,7 @@ package specs
 
 import (
 	"fmt"
+
 	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
@@ -31,13 +32,15 @@ func ApplyEditsToOCISpec(config *spec.Spec, edits *ContainerEdits) error {
 		return nil
 	}
 
-	if len(edits.Env) > 0 {
-
-		if config.Process == nil {
-			config.Process = &spec.Process{}
+	if config.Process == nil {
+		fmt.Println("CDI: config: process is not defined")
+	} else {
+		if len(edits.Env) > 0 {
+			config.Process.Env = append(config.Process.Env, edits.Env...)
 		}
-
-		config.Process.Env = append(config.Process.Env, edits.Env...)
+		if edits.User != nil {
+			config.Process.User = spec.User{UID: edits.User.UID, GID: edits.User.GID, Umask: edits.User.Umask, AdditionalGids: edits.User.AdditionalGids}
+		}
 	}
 
 	for _, d := range edits.DeviceNodes {

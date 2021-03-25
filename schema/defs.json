@@ -12,11 +12,34 @@
                     "type": "string"
             }
         },
+        "ArrayOfUint32": {
+            "type": "array",
+            "items": {
+                "$ref": "#/devinitions/uint32"
+            }
+        },
         "FilePath": {
             "type": "string"
         },
         "Env": {
             "$ref": "#/definitions/ArrayOfStrings"
+        },
+        "User": {
+            "type": "object",
+            "properties": {
+                "uid": {
+                    "$ref": "#/devinitions/uint32"
+                },
+                "gid": {
+                    "$ref": "#/devinitions/uint32"
+                },
+                "umask": {
+                    "$ref": "#/devinitions/uint32"
+                },
+                "additionalGids": {
+                    "$ref": "#/definitions/ArrayOfUint32"
+                }
+            }
         },
         "DeviceNode": {
             "type": "object",

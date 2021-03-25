@@ -17,6 +17,7 @@
       "FOO=CDI_SPEC",
       "BAR=BARVALUE1"
     ],
+    "user": {"uid": 1000, "gid": 1000, "umask": 7, "additionalGids": [2, 8]},
     "deviceNodes": [
       {"hostPath": "/dev/vendorctl", "containerPath": "/dev/vendorctl"}
     ],

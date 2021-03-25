@@ -21,6 +21,7 @@ type Devices struct {
 // ContainerEdits are edits a container runtime must make to the OCI spec to expose the device.
 type ContainerEdits struct {
 	Env         []string      `json:"env,omitempty"`
+	User        *User         `json:"user,omitempty"`
 	DeviceNodes []*DeviceNode `json:"deviceNodes,omitempty"`
 	Hooks       []*Hook       `json:"hooks,omitempty"`
 	Mounts      []*Mount      `json:"mounts,omitempty"`
@@ -31,6 +32,14 @@ type DeviceNode struct {
 	HostPath      string   `json:"hostPath"`
 	ContainerPath string   `json:"containerPath"`
 	Permissions   []string `json:"permissions,omitempty"`
+}
+
+// User represents a user the container process runs as
+type User struct {
+	UID            uint32   `json:"uid"`
+	GID            uint32   `json:"gid"`
+	Umask          uint32   `json:"umask,omitempty"`
+	AdditionalGids []uint32 `json:"additionalgids,omitempty"`
 }
 
 // Mount represents a mount that needs to be added to the OCI spec.
