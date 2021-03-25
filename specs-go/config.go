@@ -28,9 +28,13 @@ type ContainerEdits struct {
 
 // DeviceNode represents a device node that needs to be added to the OCI spec.
 type DeviceNode struct {
-	HostPath      string   `json:"hostPath"`
-	ContainerPath string   `json:"containerPath"`
-	Permissions   []string `json:"permissions,omitempty"`
+	Path        string   `json:"path"`
+	Type        string   `json:"type,omitempty"`
+	Major       int64    `json:"major,omitempty"`
+	Minor       int64    `json:"minor,omitempty"`
+	Permissions []string `json:"permissions,omitempty"`
+	UID         *uint32  `json:"uid,omitempty"`
+	GID         *uint32  `json:"gid,omitempty"`
 }
 
 // Mount represents a mount that needs to be added to the OCI spec.

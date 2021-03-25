@@ -37,16 +37,17 @@ func ApplyEditsToOCISpec(config *spec.Spec, edits *ContainerEdits) error {
 	}
 
 	if len(edits.Env) > 0 {
-
 		if config.Process == nil {
 			config.Process = &spec.Process{}
 		}
-
 		config.Process.Env = append(config.Process.Env, edits.Env...)
 	}
 
 	for _, d := range edits.DeviceNodes {
-		config.Mounts = append(config.Mounts, toOCIDevice(d))
+		if config.Linux == nil {
+			config.Linux = &spec.Linux{}
+		}
+		config.Linux.Devices = append(config.Linux.Devices, toOCILinuxDevice(d))
 	}
 
 	for _, m := range edits.Mounts {
@@ -97,8 +98,19 @@ func toOCIMount(m *Mount) spec.Mount {
 
 func toOCIDevice(d *DeviceNode) spec.Mount {
 	return spec.Mount{
-		Source:      d.HostPath,
-		Destination: d.ContainerPath,
+		Source:      d.Path,
+		Destination: d.Path,
 		Options:     d.Permissions,
+	}
+}
+
+func toOCILinuxDevice(d *DeviceNode) spec.LinuxDevice {
+	return spec.LinuxDevice{
+		Path:  d.Path,
+		Type:  d.Type,
+		Major: d.Major,
+		Minor: d.Minor,
+		UID:   d.UID,
+		GID:   d.GID,
 	}
 }

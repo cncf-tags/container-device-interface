@@ -94,14 +94,17 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
             ]
             "deviceNodes": [ (optional)
                 {
-                    "hostPath": "<path>",
-                    "containerPath": "<path>",
-
+                    "path": "<path>",
+                    "type": "<type>" (optional),
+                    "major": <int32> (optional),
+                    "minor": <int32> (optional),
                     // Cgroups permissions of the device, candidates are one or more of
                     // * r - allows container to read from the specified device.
                     // * w - allows container to write to the specified device.
                     // * m - allows container to create device files that do not yet exist.
-                    "permissions": "<permissions>" (optional)
+                    "permissions": "<permissions>" (optional),
+                    "uid": <int> (optional),
+                    "gid": <int> (optional)
                 }
             ]
             "mounts": [ (optional)
@@ -163,7 +166,7 @@ Note: For a CDI file to be valid, at least one entry must be specified in this a
 
 #### OCI Edits
 
-The `containerEdits` field describes edits to be made to the OCI specification. Currently only four kinds of edits can be made to the OCI specification: `env`, `devices`, `mounts` and `hooks`.
+The `containerEdits` field describes edits to be made to the OCI specification. Currently the following kinds of edits can be made to the OCI specification: `env`, `devices`, `mounts` and `hooks`.
 
 The `containerEdits` field is referenced in two places in the specification:
   * At the device level, where the edits MUST only be made if the matching device is requested by the container runtime user.
@@ -173,12 +176,16 @@ The `containerEdits` field is referenced in two places in the specification:
 The `containerEdits` field has the following definition:
   * `env` (array of strings in the format of "VARNAME=VARVALUE", OPTIONAL) describes the environment variables that should be set. These values are appended to the container environment array.
   * `deviceNodes` (array of objects, OPTIONAL) describes the device nodes that should be mounted:
-    * `hostPath` (string, REQUIRED) path of the device on the host.
-    * `containerPath` (string, REQUIRED) path of the device within the container.
+    * `path` (string, REQUIRED) path of the device within the container.
+    * `type` (string, OPTIONAL) Device type: block, char, etc.
+    * `major` (int64, OPTIONAL) Device major number.
+    * `minor` (int64, OPTIONAL) Device minor number.
     * `permissions` (string, OPTIONAL) Cgroups permissions of the device, candidates are one or more of:
       * r - allows container to read from the specified device.
       * w - allows container to write to the specified device.
       * m - allows container to create device files that do not yet exist.
+    * `uid` (uint32, OPTIONAL) id of device owner in the container namespace.
+    * `gid` (uint32, OPTIONAL) id of device group in the container namespace.
   * `mounts` (array of objects, OPTIONAL) describes the mounts that should be mounted:
     * `hostPath` (string, REQUIRED) path of the device on the host.
     * `containerPath` (string, REQUIRED) path of the device within the container.

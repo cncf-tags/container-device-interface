@@ -32,8 +32,8 @@ $ cat > /etc/cdi/vendor.json <<EOF
       "name": "myDevice",
       "ociEdits": {
         "deviceNodes": [
-          {"hostPath": "/dev/card1", "containerPath": "/dev/card1"}
-          {"hostPath": "/dev/card-render1", "containerPath": "/dev/card-render1"}
+          {"path": "/dev/card1", type": "c", "major": 25, "minor": 25, "permissions": "rw", "uid": 1000, "gid": 1000}
+          {"path": "/dev/card-render1", "type": "c", "major": 25, "minor": 25, "permissions": "rwm", "uid": 1000, "gid": 1000}
         ]
       }
     }
@@ -44,7 +44,7 @@ $ cat > /etc/cdi/vendor.json <<EOF
       "BAR=BARVALUE1"
     ],
     "deviceNodes": [
-      {"hostPath": "/dev/vendorctl", "containerPath": "/dev/vendorctl"}
+      {"path": "/dev/vendorctl", "type": "b", "major": 25, "minor": 25, "permissions": "rw", "uid": 1000, "gid": 1000}
     ],
     "mounts": [
       {"hostPath": "/bin/vendorBin", "containerPath": "/bin/vendorBin"},

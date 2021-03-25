@@ -42,16 +42,14 @@ func TestApplyEditsToOCISpec(t *testing.T) {
 			edits: &ContainerEdits{
 				DeviceNodes: []*DeviceNode{
 					{
-						HostPath:      "/dev/vendorctl",
-						ContainerPath: "/dev/vendorctl",
+						Path: "/dev/vendorctl",
 					},
 				},
 			},
 			expectedResult: spec.Spec{
-				Mounts: []spec.Mount{
-					{
-						Source:      "/dev/vendorctl",
-						Destination: "/dev/vendorctl",
+				Linux: &spec.Linux{
+					Devices: []spec.LinuxDevice{
+						{Path: "/dev/vendorctl"},
 					},
 				},
 			},
@@ -211,8 +209,7 @@ func TestApplyEditsToOCISpec(t *testing.T) {
 				Env: []string{"BAR=BARVALUE1"},
 				DeviceNodes: []*DeviceNode{
 					{
-						HostPath:      "/host/path",
-						ContainerPath: "/container/path",
+						Path: "/dev/device1",
 					},
 				},
 				Hooks: []*Hook{
@@ -245,16 +242,17 @@ func TestApplyEditsToOCISpec(t *testing.T) {
 					Readonly: true,
 				},
 				Hostname: "some.host.com",
+				Linux: &spec.Linux{
+					Devices: []spec.LinuxDevice{
+						{Path: "/dev/device1"},
+					},
+				},
 				Mounts: []spec.Mount{
 					{
 						Source:      "/source",
 						Destination: "/destination",
 						Type:        "tmpfs",
 						Options:     []string{"nosuid", "strictatime", "mode=755", "size=65536k"},
-					},
-					{
-						Source:      "/host/path",
-						Destination: "/container/path",
 					},
 					{
 						Source:      "/mnt/mount1",
@@ -316,8 +314,7 @@ func TestApplyOCIEdits(t *testing.T) {
 					Env: []string{"FOO=VALID_SPEC", "BAR=BARVALUE1"},
 					DeviceNodes: []*DeviceNode{
 						{
-							HostPath:      "/dev/host-device",
-							ContainerPath: "/dev/container-device",
+							Path: "/dev/device1",
 						},
 					},
 				},
@@ -326,10 +323,9 @@ func TestApplyOCIEdits(t *testing.T) {
 				Process: &spec.Process{
 					Env: []string{"FOO=VALID_SPEC", "BAR=BARVALUE1"},
 				},
-				Mounts: []spec.Mount{
-					{
-						Source:      "/dev/host-device",
-						Destination: "/dev/container-device",
+				Linux: &spec.Linux{
+					Devices: []spec.LinuxDevice{
+						{Path: "/dev/device1"},
 					},
 				},
 			},
@@ -367,8 +363,7 @@ func TestApplyOCIEditsForDevice(t *testing.T) {
 							Env: []string{"FOO=VALID_SPEC", "BAR=BARVALUE1"},
 							DeviceNodes: []*DeviceNode{
 								{
-									HostPath:      "/dev/host-device",
-									ContainerPath: "/dev/container-device",
+									Path: "/dev/device1",
 								},
 							},
 						},
@@ -378,8 +373,7 @@ func TestApplyOCIEditsForDevice(t *testing.T) {
 						ContainerEdits: ContainerEdits{
 							DeviceNodes: []*DeviceNode{
 								{
-									HostPath:      "/dev/devABC",
-									ContainerPath: "/dev/devABC",
+									Path: "/dev/devABC",
 								},
 							},
 						},
@@ -390,10 +384,9 @@ func TestApplyOCIEditsForDevice(t *testing.T) {
 				Process: &spec.Process{
 					Env: []string{"FOO=VALID_SPEC", "BAR=BARVALUE1"},
 				},
-				Mounts: []spec.Mount{
-					{
-						Source:      "/dev/host-device",
-						Destination: "/dev/container-device",
+				Linux: &spec.Linux{
+					Devices: []spec.LinuxDevice{
+						{Path: "/dev/device1"},
 					},
 				},
 			},
@@ -410,8 +403,7 @@ func TestApplyOCIEditsForDevice(t *testing.T) {
 						ContainerEdits: ContainerEdits{
 							DeviceNodes: []*DeviceNode{
 								{
-									HostPath:      "/dev/devABC",
-									ContainerPath: "/dev/devABC",
+									Path: "/dev/devABC",
 								},
 							},
 						},
