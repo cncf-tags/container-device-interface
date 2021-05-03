@@ -6,6 +6,11 @@
             "minimum": 0,
             "maximum": 4294967295
         },
+        "int64": {
+            "type": "integer",
+            "minimum": -9223372036854775808,
+            "maximum": 9223372036854775807
+        },
         "ArrayOfStrings": {
             "type": "array",
             "items": {
@@ -21,19 +26,30 @@
         "DeviceNode": {
             "type": "object",
             "properties": {
-                "hostPath": {
-                    "$ref": "#/definitions/FilePath"
-                },
-                "containerPath": {
+                "path": {
                     "$ref": "#/definitions/FilePath"
                 },
                 "permissions": {
                     "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "major": {
+                    "$ref": "#/definitions/int64"
+                },
+                "minor": {
+                    "$ref": "#/definitions/int64"
+                },
+                "uid": {
+                    "$ref": "#/definitions/uint32"
+                },
+                "gid": {
+                    "$ref": "#/definitions/uint32"
                 }
             },
             "required": [
-                "hostPath",
-                "containerPath"
+                "path"
             ]
         },
         "Mount": {

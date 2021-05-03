@@ -6,8 +6,8 @@
       "name": "myDevice",
       "ociEdits": {
         "deviceNodes": [
-          {"hostPath": "/dev/card1", "containerPath": "/dev/card1"},
-          {"hostPath": "/dev/card2", "containerPath": "/dev/card2"}
+          {"path": "/dev/card1"},
+          {"path": "/dev/card2"}
         ]
       }
     }
@@ -18,7 +18,7 @@
       "BAR=BARVALUE1"
     ],
     "deviceNodes": [
-      {"hostPath": "/dev/vendorctl", "containerPath": "/dev/vendorctl"}
+      {"path": "/dev/vendorctl", "uid": 1000, "gid": 1000}
     ],
     "mounts": [
       {"hostPath": "/bin/vendorBin", "containerPath": "/bin/vendorBin"},
