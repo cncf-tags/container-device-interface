@@ -96,14 +96,6 @@ func toOCIMount(m *Mount) spec.Mount {
 	}
 }
 
-func toOCIDevice(d *DeviceNode) spec.Mount {
-	return spec.Mount{
-		Source:      d.Path,
-		Destination: d.Path,
-		Options:     d.Permissions,
-	}
-}
-
 func toOCILinuxDevice(d *DeviceNode) spec.LinuxDevice {
 	return spec.LinuxDevice{
 		Path:  d.Path,
