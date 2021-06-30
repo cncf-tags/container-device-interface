@@ -309,7 +309,7 @@ func TestApplyOCIEdits(t *testing.T) {
 			cdiSpec: &Spec{
 				Version: "0.2.0",
 				Kind:    "vendor.com/device",
-				Devices: []Devices{},
+				Devices: []Device{},
 				ContainerEdits: ContainerEdits{
 					Env: []string{"FOO=VALID_SPEC", "BAR=BARVALUE1"},
 					DeviceNodes: []*DeviceNode{
@@ -356,7 +356,7 @@ func TestApplyOCIEditsForDevice(t *testing.T) {
 			cdiSpec: &Spec{
 				Version: "0.2.0",
 				Kind:    "vendor.com/device",
-				Devices: []Devices{
+				Devices: []Device{
 					{
 						Name: "Vendor device XYZ",
 						ContainerEdits: ContainerEdits{
@@ -397,7 +397,7 @@ func TestApplyOCIEditsForDevice(t *testing.T) {
 			cdiSpec: &Spec{
 				Version: "0.2.0",
 				Kind:    "vendor.com/device",
-				Devices: []Devices{
+				Devices: []Device{
 					{
 						Name: "Vendor device ABC",
 						ContainerEdits: ContainerEdits{

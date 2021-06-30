@@ -1,12 +1,12 @@
 package pkg
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	cdispec "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 )
-
 
 func TestExtractVendor(t *testing.T) {
 	testcases := []struct {
@@ -54,7 +54,7 @@ func TestGetCDIForDevice(t *testing.T) {
 			specs: map[string]*cdispec.Spec{
 				"vendor.com/device": {
 					Kind: "vendor.com/device",
-					Devices: []cdispec.Devices{
+					Devices: []cdispec.Device{
 						{Name: "myDevice"},
 						{Name: "myDevice-2"},
 					},
@@ -70,7 +70,7 @@ func TestGetCDIForDevice(t *testing.T) {
 			specs: map[string]*cdispec.Spec{
 				"vendor.com/device": {
 					Kind: "vendor.com/device",
-					Devices: []cdispec.Devices{
+					Devices: []cdispec.Device{
 						{Name: "myDevice"},
 						{Name: "myDevice-2"},
 					},
@@ -86,7 +86,7 @@ func TestGetCDIForDevice(t *testing.T) {
 			specs: map[string]*cdispec.Spec{
 				"vendor.com/device": {
 					Kind: "vendor.com/device",
-					Devices: []cdispec.Devices{
+					Devices: []cdispec.Device{
 						{Name: "myDevice"},
 						{Name: "myDevice-2"},
 					},
@@ -102,7 +102,7 @@ func TestGetCDIForDevice(t *testing.T) {
 			specs: map[string]*cdispec.Spec{
 				"vendor.com/device": {
 					Kind: "vendor.com/device",
-					Devices: []cdispec.Devices{
+					Devices: []cdispec.Device{
 						{Name: "myDevice"},
 						{Name: "myDevice-2"},
 					},
@@ -118,7 +118,7 @@ func TestGetCDIForDevice(t *testing.T) {
 			specs: map[string]*cdispec.Spec{
 				"vendor.com/device": {
 					Kind: "vendor.com/device",
-					Devices: []cdispec.Devices{
+					Devices: []cdispec.Device{
 						{Name: "myDevice"},
 						{Name: "myDevice-2"},
 					},
@@ -134,14 +134,14 @@ func TestGetCDIForDevice(t *testing.T) {
 			specs: map[string]*cdispec.Spec{
 				"vendor.com/device": {
 					Kind: "vendor.com/device",
-					Devices: []cdispec.Devices{
+					Devices: []cdispec.Device{
 						{Name: "myDevice"},
 						{Name: "myDevice-2"},
 					},
 				},
 				"bar-vendor.com/device": {
 					Kind: "vendor.com/device",
-					Devices: []cdispec.Devices{
+					Devices: []cdispec.Device{
 						{Name: "myDevice"},
 						{Name: "myDevice-2"},
 					},
@@ -157,21 +157,21 @@ func TestGetCDIForDevice(t *testing.T) {
 			specs: map[string]*cdispec.Spec{
 				"foo-vendor.com/device": {
 					Kind: "foo-vendor.com/device",
-					Devices: []cdispec.Devices{
+					Devices: []cdispec.Device{
 						{Name: "myDevice-foo-1"},
 						{Name: "myDevice-foo-2"},
 					},
 				},
 				"bar-vendor.com/device": {
 					Kind: "bar-vendor.com/device",
-					Devices: []cdispec.Devices{
+					Devices: []cdispec.Device{
 						{Name: "mydevice-bar-1"},
 						{Name: "myDevice-bar-2"},
 					},
 				},
 				"baz-vendor.com/device": {
 					Kind: "baz-vendor.com/device",
-					Devices: []cdispec.Devices{
+					Devices: []cdispec.Device{
 						{Name: "mydevice-baz-1"},
 						{Name: "myDevice-baz-2"},
 					},

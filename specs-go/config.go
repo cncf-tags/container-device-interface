@@ -7,12 +7,12 @@ type Spec struct {
 	KindShort        []string `json:"kindShort,omitempty"`
 	ContainerRuntime []string `json:"containerRuntime,omitempty"`
 
-	Devices        []Devices      `json:"devices"`
+	Devices        []Device       `json:"devices"`
 	ContainerEdits ContainerEdits `json:"containerEdits,omitempty"`
 }
 
-// Devices is a "Device" a container runtime can add to a container
-type Devices struct {
+// Device is a "Device" a container runtime can add to a container
+type Device struct {
 	Name           string         `json:"name"`
 	NameShort      []string       `json:"nameShort"`
 	ContainerEdits ContainerEdits `json:"containerEdits"`
