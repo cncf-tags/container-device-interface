@@ -98,6 +98,8 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
                     "type": "<type>" (optional),
                     "major": <int32> (optional),
                     "minor": <int32> (optional),
+                    // file mode for the device
+                    "fileMode": <int> (optional), 
                     // Cgroups permissions of the device, candidates are one or more of
                     // * r - allows container to read from the specified device.
                     // * w - allows container to write to the specified device.
@@ -180,6 +182,7 @@ The `containerEdits` field has the following definition:
     * `type` (string, OPTIONAL) Device type: block, char, etc.
     * `major` (int64, OPTIONAL) Device major number.
     * `minor` (int64, OPTIONAL) Device minor number.
+    * `fileMode` (int64, OPTIONAL) file mode for the device.
     * `permissions` (string, OPTIONAL) Cgroups permissions of the device, candidates are one or more of:
       * r - allows container to read from the specified device.
       * w - allows container to write to the specified device.

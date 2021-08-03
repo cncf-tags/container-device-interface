@@ -1,5 +1,7 @@
 package specs
 
+import "os"
+
 // Spec is the base configuration for CDI
 type Spec struct {
 	Version          string   `json:"cdiVersion"`
@@ -28,13 +30,14 @@ type ContainerEdits struct {
 
 // DeviceNode represents a device node that needs to be added to the OCI spec.
 type DeviceNode struct {
-	Path        string   `json:"path"`
-	Type        string   `json:"type,omitempty"`
-	Major       int64    `json:"major,omitempty"`
-	Minor       int64    `json:"minor,omitempty"`
-	Permissions []string `json:"permissions,omitempty"`
-	UID         *uint32  `json:"uid,omitempty"`
-	GID         *uint32  `json:"gid,omitempty"`
+	Path        string       `json:"path"`
+	Type        string       `json:"type,omitempty"`
+	Major       int64        `json:"major,omitempty"`
+	Minor       int64        `json:"minor,omitempty"`
+	FileMode    *os.FileMode `json:"fileMode,omitempty"`
+	Permissions []string     `json:"permissions,omitempty"`
+	UID         *uint32      `json:"uid,omitempty"`
+	GID         *uint32      `json:"gid,omitempty"`
 }
 
 // Mount represents a mount that needs to be added to the OCI spec.

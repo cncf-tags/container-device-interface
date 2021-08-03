@@ -98,11 +98,12 @@ func toOCIMount(m *Mount) spec.Mount {
 
 func toOCILinuxDevice(d *DeviceNode) spec.LinuxDevice {
 	return spec.LinuxDevice{
-		Path:  d.Path,
-		Type:  d.Type,
-		Major: d.Major,
-		Minor: d.Minor,
-		UID:   d.UID,
-		GID:   d.GID,
+		Path:     d.Path,
+		Type:     d.Type,
+		Major:    d.Major,
+		Minor:    d.Minor,
+		FileMode: d.FileMode,
+		UID:      d.UID,
+		GID:      d.GID,
 	}
 }
