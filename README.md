@@ -51,8 +51,8 @@ $ cat > /etc/cdi/vendor.json <<EOF
       {"hostPath": "/usr/lib/libVendor.so.0", "containerPath": "/usr/lib/libVendor.so.0"}
     ],
     "hooks": [
-      {"create-container": {"path": "/bin/vendor-hook"} },
-      {"start-container": {"path": "/usr/bin/ldconfig"} }
+      {"createContainer": {"path": "/bin/vendor-hook"} },
+      {"startContainer": {"path": "/usr/bin/ldconfig"} }
     ]
   }
 }
