@@ -4,7 +4,7 @@
   "devices": [
     {
       "name": "myDevice",
-      "ociEdits": {
+      "containerEdits": {
         "deviceNodes": [{"path": "/dev/card1"}]
       }
     }
