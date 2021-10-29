@@ -30,15 +30,15 @@ $ cat > /etc/cdi/vendor.json <<EOF
   "devices": [
     {
       "name": "myDevice",
-      "ociEdits": {
+      "containerEdits": {
         "deviceNodes": [
-          {"path": "/dev/card1", type": "c", "major": 25, "minor": 25, "fileMode": 384, "permissions": "rw", "uid": 1000, "gid": 1000}
+          {"path": "/dev/card1", "type": "c", "major": 25, "minor": 25, "fileMode": 384, "permissions": "rw", "uid": 1000, "gid": 1000},
           {"path": "/dev/card-render1", "type": "c", "major": 25, "minor": 25, "fileMode": 384, "permissions": "rwm", "uid": 1000, "gid": 1000}
         ]
       }
     }
   ],
-  "ociEdits": {
+  "containerEdits": {
     "env": [
       "FOO=VALID_SPEC",
       "BAR=BARVALUE1"
