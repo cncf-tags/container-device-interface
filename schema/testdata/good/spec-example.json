@@ -4,7 +4,7 @@
   "devices": [
     {
       "name": "myDevice",
-      "ociEdits": {
+      "containerEdits": {
         "deviceNodes": [
           {"path": "/dev/card1"},
           {"path": "/dev/card2"}
@@ -12,7 +12,7 @@
       }
     }
   ],
-  "ociEdits": {
+  "containerEdits": {
     "env": [
       "FOO=CDI_SPEC",
       "BAR=BARVALUE1"

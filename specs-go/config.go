@@ -35,7 +35,7 @@ type DeviceNode struct {
 	Major       int64        `json:"major,omitempty"`
 	Minor       int64        `json:"minor,omitempty"`
 	FileMode    *os.FileMode `json:"fileMode,omitempty"`
-	Permissions []string     `json:"permissions,omitempty"`
+	Permissions string       `json:"permissions,omitempty"`
 	UID         *uint32      `json:"uid,omitempty"`
 	GID         *uint32      `json:"gid,omitempty"`
 }

@@ -32,13 +32,13 @@
                       "description": "A list of aliases which refers to the device",
                       "$ref": "defs.json#/definitions/ArrayOfStrings"
                     },
-                    "ociEdits": {
-                        "$ref": "defs.json#/definitions/ociEdits"
+                    "containerEdits": {
+                        "$ref": "defs.json#/definitions/containerEdits"
                     }
                 },
                 "required": [
                     "name",
-                    "ociEdits"
+                    "containerEdits"
                 ]
             }
         }

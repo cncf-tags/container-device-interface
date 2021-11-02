@@ -94,7 +94,7 @@
                 "path"
             ]
         },
-        "ociEdits": {
+        "containerEdits": {
             "type": "object",
             "properties": {
                 "env": {
