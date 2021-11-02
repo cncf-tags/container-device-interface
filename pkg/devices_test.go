@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	cdispec "github.com/container-orchestrated-devices/container-device-interface/specs-go"
+	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
 func TestExtractVendor(t *testing.T) {
@@ -191,5 +192,208 @@ func TestGetCDIForDevice(t *testing.T) {
 
 		require.NotNil(t, s)
 		require.Equal(t, test.expectedKind, s.Kind)
+	}
+}
+
+func TestUpdateOCISpecForDevicesWithSpecs(t *testing.T) {
+	testCases := []struct {
+		name           string
+		config         *spec.Spec
+		devices        []string
+		specs          map[string]*cdispec.Spec
+		expectedResult spec.Spec
+		expectedError  bool
+	}{
+		{
+			name:    "add fully qualified device",
+			config:  &spec.Spec{},
+			devices: []string{"vendor.com/device=ABC", "vstartand.org/prodsnow=XYZ"},
+			specs: map[string]*cdispec.Spec{
+				"vendor.com/device": {
+					Version: "0.2.0",
+					Kind:    "vendor.com/device",
+					Devices: []cdispec.Device{
+						{
+							Name: "XYZ",
+							ContainerEdits: cdispec.ContainerEdits{
+								DeviceNodes: []*cdispec.DeviceNode{
+									{
+										Path: "/dev/iceXYZ",
+									},
+								},
+							},
+						},
+						{
+							Name: "ABC",
+							ContainerEdits: cdispec.ContainerEdits{
+								Env: []string{"OR=ICE"},
+								DeviceNodes: []*cdispec.DeviceNode{
+									{
+										Path: "/dev/iceABC",
+									},
+								},
+							},
+						},
+					},
+				},
+				"vstartand.org/prodsnow": {
+					Version: "0.2.0",
+					Kind:    "vstartand.org/prodsnow",
+					Devices: []cdispec.Device{
+						{
+							Name: "XYZ",
+							ContainerEdits: cdispec.ContainerEdits{
+								DeviceNodes: []*cdispec.DeviceNode{
+									{
+										Path: "/dev/snowXYZ",
+									},
+								},
+							},
+						},
+						{
+							Name: "ABC",
+							ContainerEdits: cdispec.ContainerEdits{
+								Env: []string{"AND=SNOW"},
+								DeviceNodes: []*cdispec.DeviceNode{
+									{
+										Path: "/dev/snowABC",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedResult: spec.Spec{
+				Process: &spec.Process{
+					Env: []string{"OR=ICE"},
+				},
+				Linux: &spec.Linux{
+					Devices: []spec.LinuxDevice{
+						{Path: "/dev/iceABC"},
+						{Path: "/dev/snowXYZ"},
+					},
+				},
+			},
+		},
+		{
+			name:    "add unqualified device",
+			config:  &spec.Spec{},
+			devices: []string{"BAR", "ABC"},
+			specs: map[string]*cdispec.Spec{
+				"vendor.com/device": {
+					Version: "0.2.0",
+					Kind:    "vendor.com/device",
+					Devices: []cdispec.Device{
+						{
+							Name: "XYZ",
+							ContainerEdits: cdispec.ContainerEdits{
+								DeviceNodes: []*cdispec.DeviceNode{
+									{
+										Path: "/dev/iceXYZ",
+									},
+								},
+							},
+						},
+						{
+							Name: "ABC",
+							ContainerEdits: cdispec.ContainerEdits{
+								Env: []string{"OR=ICE"},
+								DeviceNodes: []*cdispec.DeviceNode{
+									{
+										Path: "/dev/iceABC",
+									},
+								},
+							},
+						},
+					},
+				},
+				"vstartand.org/prodsnow": {
+					Version: "0.2.0",
+					Kind:    "vstartand.org/prodsnow",
+					Devices: []cdispec.Device{
+						{
+							Name: "FOO",
+							ContainerEdits: cdispec.ContainerEdits{
+								DeviceNodes: []*cdispec.DeviceNode{
+									{
+										Path: "/dev/snowFOO",
+									},
+								},
+							},
+						},
+						{
+							Name: "BAR",
+							ContainerEdits: cdispec.ContainerEdits{
+								Env: []string{"AND=SNOW"},
+								DeviceNodes: []*cdispec.DeviceNode{
+									{
+										Path: "/dev/snowBAR",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedResult: spec.Spec{
+				Process: &spec.Process{
+					Env: []string{"AND=SNOW", "OR=ICE"},
+				},
+				Linux: &spec.Linux{
+					Devices: []spec.LinuxDevice{
+						{Path: "/dev/snowBAR"},
+						{Path: "/dev/iceABC"},
+					},
+				},
+			},
+		},
+		{
+			name:    "nonexistent device",
+			config:  &spec.Spec{},
+			devices: []string{"BAR"},
+			specs: map[string]*cdispec.Spec{
+				"vendor.com/device": {
+					Version: "0.2.0",
+					Kind:    "vendor.com/device",
+					Devices: []cdispec.Device{
+						{
+							Name: "XYZ",
+							ContainerEdits: cdispec.ContainerEdits{
+								DeviceNodes: []*cdispec.DeviceNode{
+									{
+										Path: "/dev/iceXYZ",
+									},
+								},
+							},
+						},
+						{
+							Name: "ABC",
+							ContainerEdits: cdispec.ContainerEdits{
+								Env: []string{"END=ICE"},
+								DeviceNodes: []*cdispec.DeviceNode{
+									{
+										Path: "/dev/iceABC",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := UpdateOCISpecForDevicesWithSpec(tc.config, tc.devices, tc.specs)
+			if tc.expectedError {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.expectedResult, *tc.config)
+		})
 	}
 }
