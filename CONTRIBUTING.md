@@ -1,7 +1,16 @@
 # Contribute to CDI
 
 Want to contribute to the Container Device Interface Project? Awesome!
-We only require you to sign your work, the below section describes this!
+We welcome contributions. In addition to signing your work as described in
+the section below we ask that the following guidelines be considered when
+opening, reviewing, and merging pull requests.
+
+* No one should merge their own code or code from their own organzation
+* Reviewers should included people from an organization that is not your own
+* If no changes have been requested by other reviewers the (last) reviewer
+merges the pull request on approval
+* The CNCF [#tag-runtime](https://cloud-native.slack.com/archives/CPBE97SMU)
+Slack channel should be used for discussion
 
 ## Sign your work
 
