@@ -6,7 +6,6 @@ import "os"
 type Spec struct {
 	Version          string   `json:"cdiVersion"`
 	Kind             string   `json:"kind"`
-	KindShort        []string `json:"kindShort,omitempty"`
 	ContainerRuntime []string `json:"containerRuntime,omitempty"`
 
 	Devices        []Device       `json:"devices"`
@@ -16,7 +15,6 @@ type Spec struct {
 // Device is a "Device" a container runtime can add to a container
 type Device struct {
 	Name           string         `json:"name"`
-	NameShort      []string       `json:"nameShort"`
 	ContainerEdits ContainerEdits `json:"containerEdits"`
 }
 
