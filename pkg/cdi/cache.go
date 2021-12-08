@@ -18,9 +18,12 @@ package cdi
 
 import (
 	"path/filepath"
+	"sort"
+	"strings"
 	"sync"
 
 	"github.com/hashicorp/go-multierror"
+	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 )
 
@@ -144,4 +147,129 @@ func (c *Cache) Refresh() error {
 	}
 
 	return nil
+}
+
+// InjectDevices injects the given qualified devices to an OCI Spec. It
+// returns any unresolvable devices and an error if injection fails for
+// any of the devices.
+func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, error) {
+	var (
+		unresolved []string
+		specs      = map[*Spec]struct{}{}
+	)
+
+	if ociSpec == nil {
+		return devices, errors.Errorf("can't inject devices, nil OCI Spec")
+	}
+
+	c.Lock()
+	defer c.Unlock()
+
+	for _, device := range devices {
+		d := c.devices[device]
+		if d == nil {
+			unresolved = append(unresolved, device)
+			continue
+		}
+		if _, ok := specs[d.GetSpec()]; !ok {
+			specs[d.GetSpec()] = struct{}{}
+			d.GetSpec().ApplyEdits(ociSpec)
+		}
+		d.ApplyEdits(ociSpec)
+	}
+
+	if unresolved != nil {
+		return unresolved, errors.Errorf("unresolvable CDI devices %s",
+			strings.Join(devices, ", "))
+	}
+
+	return nil, nil
+}
+
+// GetDevice returns the cached device for the given qualified name.
+func (c *Cache) GetDevice(device string) *Device {
+	c.Lock()
+	defer c.Unlock()
+
+	return c.devices[device]
+}
+
+// ListDevices lists all cached devices by qualified name.
+func (c *Cache) ListDevices() []string {
+	var devices []string
+
+	c.Lock()
+	defer c.Unlock()
+
+	for name := range c.devices {
+		devices = append(devices, name)
+	}
+	sort.Strings(devices)
+
+	return devices
+}
+
+// ListVendors lists all vendors known to the cache.
+func (c *Cache) ListVendors() []string {
+	var vendors []string
+
+	c.Lock()
+	defer c.Unlock()
+
+	for vendor := range c.specs {
+		vendors = append(vendors, vendor)
+	}
+	sort.Strings(vendors)
+
+	return vendors
+}
+
+// ListClasses lists all device classes known to the cache.
+func (c *Cache) ListClasses() []string {
+	var (
+		cmap    = map[string]struct{}{}
+		classes []string
+	)
+
+	c.Lock()
+	defer c.Unlock()
+
+	for _, specs := range c.specs {
+		for _, spec := range specs {
+			cmap[spec.GetClass()] = struct{}{}
+		}
+	}
+	for class := range cmap {
+		classes = append(classes, class)
+	}
+	sort.Strings(classes)
+
+	return classes
+}
+
+// GetVendorSpecs returns all specs for the given vendor.
+func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
+	c.Lock()
+	defer c.Unlock()
+
+	return c.specs[vendor]
+}
+
+// GetSpecErrors returns all errors encountered for the spec during the
+// last cache refresh.
+func (c *Cache) GetSpecErrors(spec *Spec) []error {
+	return c.errors[spec.GetPath()]
+}
+
+// GetErrors returns all errors encountered during the last
+// cache refresh.
+func (c *Cache) GetErrors() map[string][]error {
+	return c.errors
+}
+
+// GetSpecDirectories returns the CDI Spec directories currently in use.
+func (c *Cache) GetSpecDirectories() []string {
+	dirs := make([]string, len(c.specDirs))
+	copy(dirs, c.specDirs)
+	return dirs
 }

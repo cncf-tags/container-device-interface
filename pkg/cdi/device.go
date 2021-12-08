@@ -18,6 +18,7 @@ package cdi
 
 import (
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
+	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 )
 
@@ -49,6 +50,12 @@ func (d *Device) GetSpec() *Spec {
 // GetQualifiedName returns the qualified name for this device.
 func (d *Device) GetQualifiedName() string {
 	return QualifiedName(d.spec.GetVendor(), d.spec.GetClass(), d.Name)
+}
+
+// ApplyEdits applies the device-speific container edits to an OCI Spec.
+func (d *Device) ApplyEdits(ociSpec *oci.Spec) error {
+	e := ContainerEdits{&d.ContainerEdits}
+	return e.Apply(ociSpec)
 }
 
 // Validate the device.

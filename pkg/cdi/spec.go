@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
+	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/yaml"
 
@@ -115,6 +116,12 @@ func (s *Spec) GetPath() string {
 // GetPriority returns the priority of this Spec.
 func (s *Spec) GetPriority() int {
 	return s.priority
+}
+
+// ApplyEdits applies the Spec's global-scope container edits to an OCI Spec.
+func (s *Spec) ApplyEdits(ociSpec *oci.Spec) error {
+	e := ContainerEdits{&s.ContainerEdits}
+	return e.Apply(ociSpec)
 }
 
 // Validate the Spec.
