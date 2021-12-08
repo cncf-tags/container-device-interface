@@ -32,9 +32,11 @@ const (
 
 var (
 	// DefaultSpecDirs is the default Spec directory configuration.
-	// Altering this variable changes the defaults for the package.
-	// The new defaults only affect Cache instances created after
-	// the change.
+	// While altering this variable changes the package defaults,
+	// the preferred way of overriding the default directories is
+	// to use a WithSpecDirs options. Otherwise the change is only
+	// effective if it takes place before creating the Registry or
+	// other Cache instances.
 	DefaultSpecDirs = []string{DefaultStaticDir, DefaultDynamicDir}
 	// ErrStopScan can be returned from a ScanSpecFunc to stop the scan.
 	ErrStopScan = errors.New("stop Spec scan")
