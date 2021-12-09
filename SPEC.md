@@ -70,13 +70,11 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
 {
     "cdiVersion": "0.1.0",
     "kind": "<name>",
-    "kindShort": ["<short-name>", ...],
     "containerRuntime": ["<container-runtime-name>"], (optional)
 
     "devices": [
         {
             "name": "<name>",
-            "nameShort": ["<short-name>", "<short-name>"], (optional)
 
             // Same as the below containerSpec field.
             // This field should only be applied to the Container's OCI spec
@@ -138,7 +136,7 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
 
 * `kind` (string, REQUIRED) field specifies a label which uniquely identifies the device vendor.
   It can be used to disambiguate the vendor that matches a device, e.g: `docker/podman run --device vendor.com/device=foo ...`.
-    * The `kind` and `kindShort` labels have two segments: a prefix and a name, separated by a slash (/).
+    * The `kind` label has two segments: a prefix and a name, separated by a slash (/).
     * The name segment is required and must be 63 characters or less, beginning and ending with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (\_), dots (.), and alphanumerics between.
     * The prefix must be a DNS subdomain: a series of DNS labels separated by dots (.), not longer than 253 characters in total, followed by a slash (/).
     * Examples (not an exhaustive list):
@@ -160,7 +158,6 @@ Note: For a CDI file to be valid, at least one entry must be specified in this a
     * `name` (string, REQUIRED), name of the device, can be used to refer to it when requesting a device.
       * Beginning and ending with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (\_), dots (.), and alphanumerics between.
       * e.g: `docker/podman run --device foo ...`
-    * `nameShort` (array of strings, OPTIONAL), alternative names for the device. Can be used to reduce the CLI verbosity
       * Entries in the array MUST use the same schema as the entry for the `name` field
     * `containerEdits` (object, OPTIONAL) this field is described in the next section.
       * This field should only be merged in the OCI spec if the device has been requested by the container runtime user.

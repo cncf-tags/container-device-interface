@@ -11,10 +11,6 @@
             "description": "The kind of the device usually of the form 'vendor.com/device'",
             "type": "string"
         },
-        "kindShort": {
-            "description": "List of shorthand terms which refers to kind. That can be used on the cli, e.g: 'device' instead of 'vendor.com/device'.",
-            "$ref": "defs.json#/definitions/ArrayOfStrings"
-        },
         "containerRuntime": {
             "description": "A list of container runtimes this spec applies to",
             "$ref": "defs.json#/definitions/ArrayOfStrings"
@@ -27,10 +23,6 @@
                     "name": {
                       "description": "The name of the device",
                       "type": "string"
-                    },
-                    "nameShort": {
-                      "description": "A list of aliases which refers to the device",
-                      "$ref": "defs.json#/definitions/ArrayOfStrings"
                     },
                     "containerEdits": {
                         "$ref": "defs.json#/definitions/containerEdits"
