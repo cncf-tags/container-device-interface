@@ -12,8 +12,8 @@ jobs:
     - name: Install golint
       run: go get -u golang.org/x/lint/golint
     - name: Lint
-      run: golint -set_exit_status ./specs-go/*.go ./pkg/*
+      run: make lint
     - name: Fmt
-      run: test -z "$(gofmt -l ./specs-go/config.go)"
+      run: make fmt
     - name: Vet
-      run: go vet ./specs-go
+      run: make vet

@@ -47,11 +47,11 @@ func ApplyEditsToOCISpec(config *spec.Spec, edits *ContainerEdits) error {
 		if config.Linux == nil {
 			config.Linux = &spec.Linux{}
 		}
-		config.Linux.Devices = append(config.Linux.Devices, toOCILinuxDevice(d))
+		config.Linux.Devices = append(config.Linux.Devices, d.ToOCI())
 	}
 
 	for _, m := range edits.Mounts {
-		config.Mounts = append(config.Mounts, toOCIMount(m))
+		config.Mounts = append(config.Mounts, m.ToOCI())
 	}
 
 	for _, h := range edits.Hooks {
@@ -60,17 +60,17 @@ func ApplyEditsToOCISpec(config *spec.Spec, edits *ContainerEdits) error {
 		}
 		switch h.HookName {
 		case "prestart":
-			config.Hooks.Prestart = append(config.Hooks.Prestart, toOCIHook(h))
+			config.Hooks.Prestart = append(config.Hooks.Prestart, h.ToOCI())
 		case "createRuntime":
-			config.Hooks.CreateRuntime = append(config.Hooks.CreateRuntime, toOCIHook(h))
+			config.Hooks.CreateRuntime = append(config.Hooks.CreateRuntime, h.ToOCI())
 		case "createContainer":
-			config.Hooks.CreateContainer = append(config.Hooks.CreateContainer, toOCIHook(h))
+			config.Hooks.CreateContainer = append(config.Hooks.CreateContainer, h.ToOCI())
 		case "startContainer":
-			config.Hooks.StartContainer = append(config.Hooks.StartContainer, toOCIHook(h))
+			config.Hooks.StartContainer = append(config.Hooks.StartContainer, h.ToOCI())
 		case "poststart":
-			config.Hooks.Poststart = append(config.Hooks.Poststart, toOCIHook(h))
+			config.Hooks.Poststart = append(config.Hooks.Poststart, h.ToOCI())
 		case "poststop":
-			config.Hooks.Poststop = append(config.Hooks.Poststop, toOCIHook(h))
+			config.Hooks.Poststop = append(config.Hooks.Poststop, h.ToOCI())
 		default:
 			fmt.Printf("CDI: Unknown hook %q\n", h.HookName)
 		}
@@ -79,7 +79,8 @@ func ApplyEditsToOCISpec(config *spec.Spec, edits *ContainerEdits) error {
 	return nil
 }
 
-func toOCIHook(h *Hook) spec.Hook {
+// ToOCI returns the opencontainers runtime Spec Hook for this Hook.
+func (h *Hook) ToOCI() spec.Hook {
 	return spec.Hook{
 		Path:    h.Path,
 		Args:    h.Args,
@@ -88,7 +89,8 @@ func toOCIHook(h *Hook) spec.Hook {
 	}
 }
 
-func toOCIMount(m *Mount) spec.Mount {
+// ToOCI returns the opencontainers runtime Spec Mount for this Mount.
+func (m *Mount) ToOCI() spec.Mount {
 	return spec.Mount{
 		Source:      m.HostPath,
 		Destination: m.ContainerPath,
@@ -96,7 +98,8 @@ func toOCIMount(m *Mount) spec.Mount {
 	}
 }
 
-func toOCILinuxDevice(d *DeviceNode) spec.LinuxDevice {
+// ToOCI returns the opencontainers runtime Spec LinuxDevice for this DeviceNode.
+func (d *DeviceNode) ToOCI() spec.LinuxDevice {
 	return spec.LinuxDevice{
 		Path:     d.Path,
 		Type:     d.Type,
