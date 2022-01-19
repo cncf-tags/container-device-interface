@@ -120,8 +120,12 @@ func (s *Spec) GetPriority() int {
 
 // ApplyEdits applies the Spec's global-scope container edits to an OCI Spec.
 func (s *Spec) ApplyEdits(ociSpec *oci.Spec) error {
-	e := ContainerEdits{&s.ContainerEdits}
-	return e.Apply(ociSpec)
+	return s.edits().Apply(ociSpec)
+}
+
+// edits returns the applicable global container edits for this spec.
+func (s *Spec) edits() *ContainerEdits {
+	return &ContainerEdits{&s.ContainerEdits}
 }
 
 // Validate the Spec.
@@ -135,8 +139,7 @@ func (s *Spec) validate() (map[string]*Device, error) {
 	if err := ValidateClassName(s.class); err != nil {
 		return nil, err
 	}
-	edits := &ContainerEdits{&s.ContainerEdits}
-	if err := edits.Validate(); err != nil {
+	if err := s.edits().Validate(); err != nil {
 		return nil, err
 	}
 
