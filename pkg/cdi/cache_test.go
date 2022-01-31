@@ -53,6 +53,9 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 			},
 			sources: map[string]string{
@@ -70,10 +73,16 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
   - name: "dev2"
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev2"
+        type: b
+        major: 10
+        minor: 2
 `,
 			},
 			run: map[string]string{
@@ -85,6 +94,9 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 			},
 			sources: map[string]string{
@@ -103,10 +115,16 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
   - name: "dev2"
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev2"
+        type: b
+        major: 10
+        minor: 2
 `,
 				"vendor1-other.yaml": `
 cdiVersion: "0.2.0"
@@ -116,6 +134,9 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 			},
 			sources: map[string]string{
@@ -203,6 +224,9 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 					},
 				},
@@ -237,6 +261,9 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 					},
 				},
@@ -250,6 +277,9 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev2"
+        type: b
+        major: 10
+        minor: 2
 `,
 					},
 				},
@@ -290,6 +320,9 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 						"vendor1-other.yaml": `
 cdiVersion: "0.2.0"
@@ -299,6 +332,9 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev2"
+        type: b
+        major: 10
+        minor: 2
 `,
 					},
 				},
@@ -344,6 +380,9 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 					},
 				},
@@ -357,6 +396,9 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 					},
 				},
@@ -395,10 +437,16 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
   - name: "dev2"
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev2"
+        type: b
+        major: 10
+        minor: 1
 `,
 					},
 				},
@@ -412,10 +460,16 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
   - name: "dev3"
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev3"
+        type: b
+        major: 10
+        minor: 3
 `,
 					},
 				},
@@ -541,6 +595,9 @@ devices:
       - "VENDOR1_VAR1=VAL1"
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 				},
 			},
@@ -558,7 +615,21 @@ devices:
 				Linux: &oci.Linux{
 					Devices: []oci.LinuxDevice{
 						{
-							Path: "/dev/vendor1-dev1",
+							Path:  "/dev/vendor1-dev1",
+							Type:  "b",
+							Major: 10,
+							Minor: 1,
+						},
+					},
+					Resources: &oci.LinuxResources{
+						Devices: []oci.LinuxDeviceCgroup{
+							{
+								Allow:  true,
+								Type:   "b",
+								Major:  int64ptr(10),
+								Minor:  int64ptr(1),
+								Access: "rwm",
+							},
 						},
 					},
 				},
@@ -581,6 +652,9 @@ devices:
       - "VENDOR1_VAR1=VAL1"
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 				},
 			},
@@ -623,7 +697,21 @@ devices:
 							Path: "/dev/zero",
 						},
 						{
-							Path: "/dev/vendor1-dev1",
+							Path:  "/dev/vendor1-dev1",
+							Type:  "b",
+							Major: 10,
+							Minor: 1,
+						},
+					},
+					Resources: &oci.LinuxResources{
+						Devices: []oci.LinuxDeviceCgroup{
+							{
+								Allow:  true,
+								Type:   "b",
+								Major:  int64ptr(10),
+								Minor:  int64ptr(1),
+								Access: "rwm",
+							},
 						},
 					},
 				},
@@ -646,12 +734,18 @@ devices:
       - "VENDOR1_DEV1=VAL1"
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
   - name: "dev2"
     containerEdits:
       env:
       - "VENDOR1_DEV2=VAL2"
       deviceNodes:
       - path: "/dev/vendor1-dev2"
+        type: b
+        major: 10
+        minor: 2
       hooks:
       - hookName: prestart
         path: "/usr/local/bin/prestart-vendor-hook"
@@ -671,6 +765,9 @@ devices:
       - "VENDOR1_DEV3=VAL3"
       deviceNodes:
       - path: "/dev/vendor1-dev3"
+        type: b
+        major: 10
+        minor: 3
 `,
 				},
 			},
@@ -733,13 +830,47 @@ devices:
 							Path: "/dev/zero",
 						},
 						{
-							Path: "/dev/vendor1-dev1",
+							Path:  "/dev/vendor1-dev1",
+							Type:  "b",
+							Major: 10,
+							Minor: 1,
 						},
 						{
-							Path: "/dev/vendor1-dev2",
+							Path:  "/dev/vendor1-dev2",
+							Type:  "b",
+							Major: 10,
+							Minor: 2,
 						},
 						{
-							Path: "/dev/vendor1-dev3",
+							Path:  "/dev/vendor1-dev3",
+							Type:  "b",
+							Major: 10,
+							Minor: 3,
+						},
+					},
+					Resources: &oci.LinuxResources{
+						Devices: []oci.LinuxDeviceCgroup{
+							{
+								Allow:  true,
+								Type:   "b",
+								Major:  int64ptr(10),
+								Minor:  int64ptr(1),
+								Access: "rwm",
+							},
+							{
+								Allow:  true,
+								Type:   "b",
+								Major:  int64ptr(10),
+								Minor:  int64ptr(2),
+								Access: "rwm",
+							},
+							{
+								Allow:  true,
+								Type:   "b",
+								Major:  int64ptr(10),
+								Minor:  int64ptr(3),
+								Access: "rwm",
+							},
 						},
 					},
 				},
@@ -762,6 +893,9 @@ devices:
       - "VENDOR1_VAR1=VAL1"
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 				},
 			},
@@ -840,6 +974,9 @@ devices:
       - "VENDOR1_VAR1=VAL1"
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
 `,
 				},
 			},
@@ -863,12 +1000,18 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
   - name: "dev2"
     containerEdits:
       env:
       - "VENDOR1_DEV2=VAL2"
       deviceNodes:
       - path: "/dev/vendor1-dev2"
+        type: b
+        major: 10
+        minor: 2
 `,
 					"vendor1-other.yaml": `
 cdiVersion: "0.2.0"
@@ -879,12 +1022,18 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-other-dev1"
+        type: b
+        major: 11
+        minor: 1
   - name: "dev2"
     containerEdits:
       env:
       - "VENDOR1_DEV2=VAL2"
       deviceNodes:
       - path: "/dev/vendor1-other-dev2"
+        type: b
+        major: 11
+        minor: 2
 `,
 				},
 			},
@@ -909,12 +1058,18 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
   - name: "dev2"
     containerEdits:
       env:
       - "VENDOR1_DEV2=VAL2"
       deviceNodes:
       - path: "/dev/vendor1-dev2"
+        type: b
+        major: 10
+        minor: 2
 `,
 					"vendor2.yaml": `
 cdiVersion: "0.2.0"
@@ -925,10 +1080,16 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor2-dev1"
+        type: b
+        major: 12
+        minor: 1
   - name: "dev2"
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor2-dev2"
+        type: b
+        major: 12
+        minor: 2
 `,
 					"vendor2-other.yaml": `
 cdiVersion: "0.2.0"
@@ -939,10 +1100,16 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor2-another-dev1"
+        type: b
+        major: 13
+        minor: 1
   - name: "dev2"
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor2-another-dev2"
+        type: b
+        major: 13
+        minor: 2
 `,
 					"vendor3.yaml": `
 cdiVersion: "0.2.0"
@@ -953,10 +1120,17 @@ devices:
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor3-dev1"
+        type: b
+        major: 11
+        minor: 1
+
   - name: "dev2"
     containerEdits:
       deviceNodes:
       - path: "/dev/vendor3-dev2"
+        type: b
+        major: 14
+        minor: 2
 `,
 				},
 			},
@@ -1029,4 +1203,8 @@ func updateSpecDirs(t *testing.T, dir string, etc, run map[string]string) error 
 		}
 	}
 	return updateTestDir(t, dir, updates)
+}
+
+func int64ptr(v int64) *int64 {
+	return &v
 }
