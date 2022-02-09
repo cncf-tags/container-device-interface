@@ -57,7 +57,7 @@ devices:
 		{
 			name: "valid",
 			data: `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device
 devices:
   - name: "dev1"
@@ -134,7 +134,7 @@ devices:
 		{
 			name: "invalid, missing vendor/class",
 			data: `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 devices:
   - name: "dev1"
     containerEdits:
@@ -146,7 +146,7 @@ devices:
 		{
 			name: "invalid, invalid vendor",
 			data: `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com-/device
 devices:
   - name: "dev1"
@@ -159,7 +159,7 @@ devices:
 		{
 			name: "invalid, invalid class",
 			data: `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device=
 devices:
   - name: "dev1"
@@ -172,7 +172,7 @@ devices:
 		{
 			name: "invalid, invalid device",
 			data: `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device
 devices:
   - name: "dev1"
@@ -182,7 +182,7 @@ devices:
 		{
 			name: "invalid, conflicting devices",
 			data: `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device
 devices:
   - name: "dev1"
@@ -203,7 +203,7 @@ devices:
 		{
 			name: "valid",
 			data: `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device
 devices:
   - name: "dev1"
@@ -280,7 +280,7 @@ devices:
 			name:     "valid",
 			priority: 1,
 			data: `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device
 devices:
   - name: "dev1"

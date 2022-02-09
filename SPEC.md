@@ -8,7 +8,7 @@
 
 ## Version
 
-This is CDI **spec** version **0.1.0**.
+This is CDI **spec** version **0.3.0**.
 
 #### Released versions
 
@@ -16,6 +16,7 @@ Released versions of the spec are available as Git tags.
 
 | Tag  | Spec Permalink   | Change |
 | -----| -----------------| -------|
+| v0.3.0 |   | Initial tagged release of Spec |
 
 ## Overview
 
@@ -68,7 +69,7 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
 
 ```
 {
-    "cdiVersion": "0.1.0",
+    "cdiVersion": "0.3.0",
     "kind": "<name>",
 
     "devices": [

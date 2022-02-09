@@ -43,7 +43,7 @@ func TestRegistryResolver(t *testing.T) {
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
   env:
@@ -100,7 +100,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
   env:
@@ -182,7 +182,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
   env:
@@ -341,7 +341,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
   env:
@@ -422,7 +422,7 @@ func TestRegistrySpecDB(t *testing.T) {
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
   env:
@@ -452,7 +452,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
 devices:
@@ -474,7 +474,7 @@ devices:
         minor: 2
 `,
 					"vendor1-other.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/other-device"
 containerEdits:
 devices:
@@ -510,7 +510,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
 devices:
@@ -532,7 +532,7 @@ devices:
         minor: 2
 `,
 					"vendor2.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor2.com/other-device"
 containerEdits:
 devices:
@@ -546,7 +546,7 @@ devices:
       - path: "/dev/vendor2-dev2"
 `,
 					"vendor2-other.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor2.com/another-device"
 containerEdits:
 devices:
@@ -560,7 +560,7 @@ devices:
       - path: "/dev/vendor2-another-dev2"
 `,
 					"vendor3.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor3.com/yet-another-device"
 containerEdits:
 devices:
@@ -635,7 +635,7 @@ func TestRegistryDeviceDB(t *testing.T) {
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
   env:
@@ -662,7 +662,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
 devices:
@@ -684,7 +684,7 @@ devices:
         minor: 2
 `,
 					"vendor1-other.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/other-device"
 containerEdits:
 devices:
@@ -719,7 +719,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
 devices:
@@ -741,7 +741,7 @@ devices:
         minor: 2
 `,
 					"vendor2.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor2.com/other-device"
 containerEdits:
 devices:
@@ -755,7 +755,7 @@ devices:
       - path: "/dev/vendor2-dev2"
 `,
 					"vendor2-other.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor2.com/another-device"
 containerEdits:
 devices:
@@ -769,7 +769,7 @@ devices:
       - path: "/dev/vendor2-another-dev2"
 `,
 					"vendor3.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor3.com/yet-another-device"
 containerEdits:
 devices:

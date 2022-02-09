@@ -46,7 +46,7 @@ func TestNewCache(t *testing.T) {
 			name: "one spec file",
 			etc: map[string]string{
 				"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -66,7 +66,7 @@ devices:
 			name: "multiple spec files with override",
 			etc: map[string]string{
 				"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -87,7 +87,7 @@ devices:
 			},
 			run: map[string]string{
 				"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -108,7 +108,7 @@ devices:
 			name: "multiple spec files, with conflicts",
 			run: map[string]string{
 				"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -127,7 +127,7 @@ devices:
         minor: 2
 `,
 				"vendor1-other.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -217,7 +217,7 @@ func TestRefreshCache(t *testing.T) {
 				{
 					run: map[string]string{
 						"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -254,7 +254,7 @@ devices:
 				{
 					etc: map[string]string{
 						"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -270,7 +270,7 @@ devices:
 				{
 					run: map[string]string{
 						"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev2"
@@ -313,7 +313,7 @@ devices:
 				{
 					run: map[string]string{
 						"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -325,7 +325,7 @@ devices:
         minor: 1
 `,
 						"vendor1-other.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev2"
@@ -373,7 +373,7 @@ devices:
 				{
 					etc: map[string]string{
 						"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -389,7 +389,7 @@ devices:
 				{
 					run: map[string]string{
 						"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -430,7 +430,7 @@ devices:
 				{
 					run: map[string]string{
 						"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -453,7 +453,7 @@ devices:
 				{
 					run: map[string]string{
 						"vendor1-other.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 devices:
   - name: "dev1"
@@ -583,7 +583,7 @@ func TestInjectDevice(t *testing.T) {
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
   env:
@@ -640,7 +640,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
   env:
@@ -722,7 +722,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
   env:
@@ -881,7 +881,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
   env:
@@ -962,7 +962,7 @@ func TestListVendorsAndClasses(t *testing.T) {
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
   env:
@@ -992,7 +992,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
 devices:
@@ -1014,7 +1014,7 @@ devices:
         minor: 2
 `,
 					"vendor1-other.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/other-device"
 containerEdits:
 devices:
@@ -1050,7 +1050,7 @@ devices:
 			cdiSpecs: specDirs{
 				etc: map[string]string{
 					"vendor1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor1.com/device"
 containerEdits:
 devices:
@@ -1072,7 +1072,7 @@ devices:
         minor: 2
 `,
 					"vendor2.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor2.com/other-device"
 containerEdits:
 devices:
@@ -1092,7 +1092,7 @@ devices:
         minor: 2
 `,
 					"vendor2-other.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor2.com/another-device"
 containerEdits:
 devices:
@@ -1112,7 +1112,7 @@ devices:
         minor: 2
 `,
 					"vendor3.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind:       "vendor3.com/yet-another-device"
 containerEdits:
 devices:

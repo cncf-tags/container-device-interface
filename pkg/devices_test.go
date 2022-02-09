@@ -210,7 +210,7 @@ func TestUpdateOCISpecForDevicesWithSpecs(t *testing.T) {
 			devices: []string{"vendor.com/device=ABC", "vstartand.org/prodsnow=XYZ"},
 			specs: map[string]*cdispec.Spec{
 				"vendor.com/device": {
-					Version: "0.2.0",
+					Version: "0.3.0",
 					Kind:    "vendor.com/device",
 					Devices: []cdispec.Device{
 						{
@@ -237,7 +237,7 @@ func TestUpdateOCISpecForDevicesWithSpecs(t *testing.T) {
 					},
 				},
 				"vstartand.org/prodsnow": {
-					Version: "0.2.0",
+					Version: "0.3.0",
 					Kind:    "vstartand.org/prodsnow",
 					Devices: []cdispec.Device{
 						{
@@ -282,7 +282,7 @@ func TestUpdateOCISpecForDevicesWithSpecs(t *testing.T) {
 			devices: []string{"BAR", "ABC"},
 			specs: map[string]*cdispec.Spec{
 				"vendor.com/device": {
-					Version: "0.2.0",
+					Version: "0.3.0",
 					Kind:    "vendor.com/device",
 					Devices: []cdispec.Device{
 						{
@@ -309,7 +309,7 @@ func TestUpdateOCISpecForDevicesWithSpecs(t *testing.T) {
 					},
 				},
 				"vstartand.org/prodsnow": {
-					Version: "0.2.0",
+					Version: "0.3.0",
 					Kind:    "vstartand.org/prodsnow",
 					Devices: []cdispec.Device{
 						{
@@ -354,7 +354,7 @@ func TestUpdateOCISpecForDevicesWithSpecs(t *testing.T) {
 			devices: []string{"BAR"},
 			specs: map[string]*cdispec.Spec{
 				"vendor.com/device": {
-					Version: "0.2.0",
+					Version: "0.3.0",
 					Kind:    "vendor.com/device",
 					Devices: []cdispec.Device{
 						{
