@@ -131,8 +131,8 @@ func (s *Spec) edits() *ContainerEdits {
 
 // Validate the Spec.
 func (s *Spec) validate() (map[string]*Device, error) {
-	if _, ok := validSpecVersions[s.Version]; !ok {
-		return nil, errors.Errorf("invalid version %q", s.Version)
+	if err := validateVersion(s.Version); err != nil {
+		return nil, err
 	}
 	if err := ValidateVendorName(s.vendor); err != nil {
 		return nil, err
@@ -157,6 +157,15 @@ func (s *Spec) validate() (map[string]*Device, error) {
 	}
 
 	return devices, nil
+}
+
+// validateVersion checks whether the specified spec version is supported.
+func validateVersion(version string) error {
+	if _, ok := validSpecVersions[version]; !ok {
+		return errors.Errorf("invalid version %q", version)
+	}
+
+	return nil
 }
 
 // Parse raw CDI Spec file data.

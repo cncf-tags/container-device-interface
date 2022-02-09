@@ -346,3 +346,7 @@ func mkTestFile(t *testing.T, data []byte) (string, error) {
 	tmp.Close()
 	return file, nil
 }
+
+func TestCurrentVersionIsValid(t *testing.T) {
+	require.NoError(t, validateVersion(cdi.CurrentVersion))
+}
