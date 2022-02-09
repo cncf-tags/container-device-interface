@@ -11,10 +11,6 @@
             "description": "The kind of the device usually of the form 'vendor.com/device'",
             "type": "string"
         },
-        "containerRuntime": {
-            "description": "A list of container runtimes this spec applies to",
-            "$ref": "defs.json#/definitions/ArrayOfStrings"
-        },
         "devices": {
             "type": "array",
             "items": {

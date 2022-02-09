@@ -70,7 +70,6 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
 {
     "cdiVersion": "0.1.0",
     "kind": "<name>",
-    "containerRuntime": ["<container-runtime-name>"], (optional)
 
     "devices": [
         {
@@ -97,7 +96,7 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
                     "major": <int32> (optional),
                     "minor": <int32> (optional),
                     // file mode for the device
-                    "fileMode": <int> (optional), 
+                    "fileMode": <int> (optional),
                     // Cgroups permissions of the device, candidates are one or more of
                     // * r - allows container to read from the specified device.
                     // * w - allows container to write to the specified device.
@@ -142,12 +141,6 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
     * Examples (not an exhaustive list):
       * Valid: `vendor.com/foo`, `foo.bar.baz/foo-bar123.B_az`.
       * Invalid: `foo`, `vendor.com/foo/`, `vendor.com/foo/bar`.
-
-#### Container Runtime
-
-* `containerRuntime` (array of string, OPTIONAL) indicates that this CDI specification targets only a specific container runtime.
-  If this field is indicated, the container runtime MUST use the one that matches its name if non exists it should use the one that does not indicate any `containerRuntime` value.
-  Possible values (not an exhaustive list): docker, podman, gvisor, lxc
 
 #### CDI Devices
 
@@ -203,8 +196,6 @@ The `containerEdits` field has the following definition:
     * `timeout` (int, OPTIONAL) is the number of seconds before aborting the hook. If set, timeout MUST be greater than zero. If not set container runtime will wait for the hook to return.
 
 ## Error Handling
-  * Two or more files with identical `kind` values and identical `containerRuntime` field.
-    Container runtimes should surface this error when any device with that `kind` is requested.
   * Kind requested is not present in any CDI file.
     Container runtimes should surface an error when a non existent kind is requested.
   * Device (not device node) Requested does not exist.

@@ -7,9 +7,8 @@ const CurrentVersion = "0.2.0"
 
 // Spec is the base configuration for CDI
 type Spec struct {
-	Version          string   `json:"cdiVersion"`
-	Kind             string   `json:"kind"`
-	ContainerRuntime []string `json:"containerRuntime,omitempty"`
+	Version string `json:"cdiVersion"`
+	Kind    string `json:"kind"`
 
 	Devices        []Device       `json:"devices"`
 	ContainerEdits ContainerEdits `json:"containerEdits,omitempty"`
