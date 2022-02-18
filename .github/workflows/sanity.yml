@@ -17,3 +17,5 @@ jobs:
       run: make fmt
     - name: Vet
       run: make vet
+    - name: Test
+      run: make test
