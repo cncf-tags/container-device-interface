@@ -8,7 +8,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-go@v2
       with:
-        go-version: 1.14.x
+        go-version: 1.17.x
     - name: Install golint
       run: go get -u golang.org/x/lint/golint
     - name: Lint
