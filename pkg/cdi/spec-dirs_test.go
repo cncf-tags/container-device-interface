@@ -53,7 +53,7 @@ func TestScanSpecDirs(t *testing.T) {
 			name: "one valid file",
 			files: map[string]string{
 				"valid.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device
 devices:
   - name: "dev1"
@@ -77,7 +77,7 @@ devices:
 			name: "one invalid file",
 			files: map[string]string{
 				"invalid.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device
 devices:
   - name: "dev1"
@@ -94,7 +94,7 @@ devices:
 			name: "two valid files, one invalid file",
 			files: map[string]string{
 				"valid1.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device1
 devices:
   - name: "dev1"
@@ -103,7 +103,7 @@ devices:
         - "FOO=BAR"
 `,
 				"valid2.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device2
 devices:
   - name: "dev1"
@@ -112,7 +112,7 @@ devices:
         - "FOO=BAR"
 `,
 				"invalid.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device
 devices:
   - name: "dev1"
@@ -139,7 +139,7 @@ devices:
 			name: "one valid file, one invalid file, abort on first error",
 			files: map[string]string{
 				"valid.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device
 devices:
   - name: "dev1"
@@ -148,7 +148,7 @@ devices:
         - "FOO=BAR"
 `,
 				"invalid.yaml": `
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: vendor.com/device
 devices:
   - name: "dev1"

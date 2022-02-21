@@ -307,7 +307,7 @@ func TestApplyOCIEdits(t *testing.T) {
 			name:   "edit empty spec",
 			config: &spec.Spec{},
 			cdiSpec: &Spec{
-				Version: "0.2.0",
+				Version: "0.3.0",
 				Kind:    "vendor.com/device",
 				Devices: []Device{},
 				ContainerEdits: ContainerEdits{
@@ -354,7 +354,7 @@ func TestApplyOCIEditsForDevice(t *testing.T) {
 			name:   "add device to the empty spec",
 			config: &spec.Spec{},
 			cdiSpec: &Spec{
-				Version: "0.2.0",
+				Version: "0.3.0",
 				Kind:    "vendor.com/device",
 				Devices: []Device{
 					{
@@ -395,7 +395,7 @@ func TestApplyOCIEditsForDevice(t *testing.T) {
 			name:   "device not found",
 			config: &spec.Spec{},
 			cdiSpec: &Spec{
-				Version: "0.2.0",
+				Version: "0.3.0",
 				Kind:    "vendor.com/device",
 				Devices: []Device{
 					{
