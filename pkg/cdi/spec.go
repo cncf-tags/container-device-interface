@@ -68,6 +68,9 @@ func ReadSpec(path string, priority int) (*Spec, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to parse CDI Spec %q", path)
 	}
+	if raw == nil {
+		return nil, errors.Errorf("failed to parse CDI Spec %q, no Spec data", path)
+	}
 
 	return NewSpec(raw, path, priority)
 }
@@ -170,7 +173,7 @@ func validateVersion(version string) error {
 
 // Parse raw CDI Spec file data.
 func parseSpec(data []byte) (*cdi.Spec, error) {
-	raw := &cdi.Spec{}
+	var raw *cdi.Spec
 	err := yaml.UnmarshalStrict(data, &raw)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal CDI Spec")

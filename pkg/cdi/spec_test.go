@@ -55,6 +55,11 @@ devices:
 			invalid: true,
 		},
 		{
+			name:       "empty",
+			data:       "",
+			unparsable: true,
+		},
+		{
 			name: "valid",
 			data: `
 cdiVersion: "0.3.0"
