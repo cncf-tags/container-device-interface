@@ -40,6 +40,8 @@ type Registry interface {
 // RegistryRefresher is the registry interface for refreshing the
 // cache of CDI Specs and devices.
 //
+// Configure reconfigures the registry with the given options.
+//
 // Refresh rescans all CDI Spec directories and updates the
 // state of the cache to reflect any changes. It returns any
 // errors encountered during the refresh.
@@ -50,10 +52,15 @@ type Registry interface {
 // GetSpecDirectories returns the set up CDI Spec directories
 // currently in use. The directories are returned in the scan
 // order of Refresh().
+//
+// GetSpecDirErrors returns any errors related to the configured
+// Spec directories.
 type RegistryRefresher interface {
+	Configure(...Option) error
 	Refresh() error
 	GetErrors() map[string][]error
 	GetSpecDirectories() []string
+	GetSpecDirErrors() map[string]error
 }
 
 // RegistryResolver is the registry interface for injecting CDI
