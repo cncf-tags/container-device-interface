@@ -79,7 +79,7 @@ test-schema: bin/validate
 # dependencies
 #
 
-bin/validate: cmd/validate/validate.go
+bin/validate: cmd/validate/validate.go $(wildcard schema/*.json)
 
 # quasi-automatic dependency for bin/cdi
 bin/cdi: $(wildcard cmd/cdi/*.go cmd/cdi/cmd/*.go) $(shell \

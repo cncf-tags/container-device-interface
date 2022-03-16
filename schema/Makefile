@@ -1,4 +1,5 @@
 VALIDATE ?= ../bin/validate
+SCHEMA ?= schema.json
 
 test:
 	@FMT_RED=$$(tput setaf 1); \
@@ -7,7 +8,7 @@ test:
 	echo "Running Good Tests"; \
 	for FILE in $$(ls "testdata/good"); do \
 		FILE_PATH="testdata/good/$${FILE}"; \
-		if $(VALIDATE) "schema.json" "$${FILE_PATH}" > /dev/null ; then \
+		if $(VALIDATE) --schema "$(SCHEMA)" "$${FILE_PATH}" > /dev/null ; then \
 			printf '%s[OK]%s %s\n' "$${FMT_BLUE}" "$${FMT_CLEAR}" "$${FILE_PATH}"; \
 		else \
 			printf '%s[KO]%s %s\n' "$${FMT_RED}" "$${FMT_CLEAR}" "$${FILE_PATH}"; \
@@ -17,7 +18,7 @@ test:
 	echo "Running Bad Tests"; \
 	for FILE in $$(ls "testdata/bad"); do \
 		FILE_PATH="testdata/bad/$${FILE}"; \
-		if $(VALIDATE) "schema.json" "$${FILE_PATH}" > /dev/null ; then \
+		if $(VALIDATE) --schema "$(SCHEMA)" "$${FILE_PATH}" > /dev/null ; then \
 			printf '%s[KO]%s %s\n' "$${FMT_RED}" "$${FMT_CLEAR}" "$${FILE_PATH}"; \
 			exit 1; \
 		else \
