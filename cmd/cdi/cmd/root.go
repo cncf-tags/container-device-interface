@@ -17,12 +17,18 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
 )
 
-var specDirs []string
+var (
+	specDirs   []string
+	schemaName string
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -48,9 +54,16 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initSpecDirs)
 	rootCmd.PersistentFlags().StringSliceVarP(&specDirs, "spec-dirs", "d", nil, "directories to scan for CDI Spec files")
+	rootCmd.PersistentFlags().StringVarP(&schemaName, "schema", "s", "builtin", "JSON schema to use for validation")
 }
 
 func initSpecDirs() {
+	err := cdi.SetSchema(schemaName)
+	if err != nil {
+		fmt.Printf("failed to load JSON schema %s: %v\n", schemaName, err)
+		os.Exit(1)
+	}
+
 	if len(specDirs) > 0 {
 		cdi.GetRegistry(cdi.WithSpecDirs(specDirs...))
 		if len(cdi.GetRegistry().GetErrors()) > 0 {
