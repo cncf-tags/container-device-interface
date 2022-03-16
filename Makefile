@@ -8,7 +8,7 @@ GO_VET   := $(GO_CMD) vet
 
 CDI_PKG  := $(shell grep ^module go.mod | sed 's/^module *//g')
 
-BINARIES := bin/cdi
+BINARIES := bin/cdi bin/validate
 
 ifneq ($(V),1)
   Q := @
@@ -70,7 +70,7 @@ test-gopkgs:
 	$(Q)$(GO_TEST) ./...
 
 # tests for CDI Spec JSON schema
-test-schema:
+test-schema: bin/validate
 	$(Q)echo "Building in schema..."; \
 	$(MAKE) -C schema test
 
@@ -78,6 +78,8 @@ test-schema:
 #
 # dependencies
 #
+
+bin/validate: cmd/validate/validate.go
 
 # quasi-automatic dependency for bin/cdi
 bin/cdi: $(wildcard cmd/cdi/*.go cmd/cdi/cmd/*.go) $(shell \
