@@ -25,8 +25,8 @@
       {"hostPath": "/usr/lib/libVendor.so.0", "containerPath": "/usr/lib/libVendor.so.0"}
     ],
     "hooks": [
-      {"createContainer": {"path": "/bin/vendor-hook"} },
-      {"startContainer": {"path": "/usr/bin/ldconfig"} }
+      {"hookName": "createContainer", "path": "/bin/vendor-hook"},
+      {"hookName": "startContainer", "path": "/usr/bin/ldconfig"}
     ]
   }
 }
