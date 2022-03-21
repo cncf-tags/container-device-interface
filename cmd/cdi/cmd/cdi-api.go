@@ -345,7 +345,7 @@ func cdiPrintRegistryErrors() {
 	for path, specErrors := range cdiErrors {
 		fmt.Printf("Spec file %s:\n", path)
 		for idx, err := range specErrors {
-			fmt.Printf("  %d: %v", idx, err)
+			fmt.Printf("  %d: %v\n", idx, strings.TrimRight(err.Error(), "\n"))
 		}
 	}
 }

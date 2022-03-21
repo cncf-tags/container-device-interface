@@ -40,9 +40,6 @@ were reported by the registry.`,
 			return
 		}
 
-		fmt.Printf("CDI Registry has errors:\n")
-		cdiPrintRegistryErrors()
-
 		os.Exit(1)
 	},
 }

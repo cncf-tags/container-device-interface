@@ -101,6 +101,7 @@ func TestNewSpec(t *testing.T) {
 		name       string
 		data       string
 		unparsable bool
+		schemaFail bool
 		invalid    bool
 	}
 	for _, tc := range []*testCase{
@@ -121,7 +122,7 @@ devices:
       env:
         - "FOO=BAR"
 `,
-			invalid: true,
+			schemaFail: true,
 		},
 		{
 			name: "invalid, invalid CDI version",
@@ -146,7 +147,7 @@ devices:
       env:
         - "FOO=BAR"
 `,
-			invalid: true,
+			schemaFail: true,
 		},
 		{
 			name: "invalid, invalid vendor",
@@ -175,14 +176,14 @@ devices:
 			invalid: true,
 		},
 		{
-			name: "invalid, invalid device",
+			name: "invalid, missing required edits",
 			data: `
 cdiVersion: "0.3.0"
 kind: vendor.com/device
 devices:
   - name: "dev1"
 `,
-			invalid: true,
+			schemaFail: true,
 		},
 		{
 			name: "invalid, conflicting devices",
@@ -241,7 +242,7 @@ devices:
 			require.NoError(t, err)
 
 			spec, err = NewSpec(raw, tc.name, 0)
-			if tc.invalid {
+			if tc.invalid || tc.schemaFail {
 				require.Error(t, err)
 				require.Nil(t, spec)
 				return

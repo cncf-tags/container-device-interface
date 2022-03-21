@@ -72,7 +72,12 @@ func ReadSpec(path string, priority int) (*Spec, error) {
 		return nil, errors.Errorf("failed to parse CDI Spec %q, no Spec data", path)
 	}
 
-	return NewSpec(raw, path, priority)
+	spec, err := NewSpec(raw, path, priority)
+	if err != nil {
+		return nil, err
+	}
+
+	return spec, nil
 }
 
 // NewSpec creates a new Spec from the given CDI Spec data. The
@@ -80,7 +85,10 @@ func ReadSpec(path string, priority int) (*Spec, error) {
 // priority. If Spec data validation fails NewSpec returns a nil
 // Spec and an error.
 func NewSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
-	var err error
+	err := validateWithSchema(raw)
+	if err != nil {
+		return nil, err
+	}
 
 	spec := &Spec{
 		Spec:     raw,
@@ -178,11 +186,5 @@ func parseSpec(data []byte) (*cdi.Spec, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal CDI Spec")
 	}
-	return raw, validateJSONSchema(raw)
-}
-
-// Validate CDI Spec against JSON Schema.
-func validateJSONSchema(raw *cdi.Spec) error {
-	// TODO
-	return nil
+	return raw, nil
 }
