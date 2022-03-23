@@ -19,10 +19,14 @@ package cdi
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/pkg/errors"
+	"sigs.k8s.io/yaml"
 
+	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
+	"github.com/container-orchestrated-devices/container-device-interface/schema"
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	"github.com/stretchr/testify/require"
 )
@@ -234,7 +238,7 @@ devices:
 				err  error
 			)
 
-			raw, err = parseSpec([]byte(tc.data))
+			raw, err = ParseSpec([]byte(tc.data))
 			if tc.unparsable {
 				require.Error(t, err)
 				return
@@ -249,6 +253,141 @@ devices:
 			}
 			require.NoError(t, err)
 			require.NotNil(t, spec)
+		})
+	}
+}
+
+func TestWriteSpec(t *testing.T) {
+	type testCase struct {
+		name    string
+		data    string
+		invalid bool
+	}
+	for _, tc := range []*testCase{
+		{
+			name:    "invalid-spec1.yaml",
+			invalid: true,
+			data: `
+cdiVersion: ""
+kind: vendor.com/device
+devices:
+  - name: "dev1"
+    containerEdits:
+      env:
+        - "FOO=BAR"
+`,
+		},
+		{
+			name:    "invalid-spec2.yaml",
+			invalid: true,
+			data: `
+cdiVersion: "0.3.0"
+kind: vendor.com/device
+containerEdits:
+  env:
+    - "FOO=BAR"
+`,
+		},
+		{
+			name: "spec1.yaml",
+			data: `
+cdiVersion: "0.3.0"
+kind: vendor.com/device
+devices:
+  - name: "dev1"
+    containerEdits:
+      env:
+        - "FOO=BAR"
+  - name: "dev2"
+    containerEdits:
+      env:
+        - "BAR=FOO"
+  - name: "dev3"
+    containerEdits:
+      env:
+        - "SPACE=BAR"
+`,
+		},
+		{
+			name: "spec2.yaml",
+			data: `
+cdiVersion: "0.3.0"
+kind: vendor.com/device
+devices:
+  - name: "dev4"
+    containerEdits:
+      env:
+        - "BAR=FOO"
+  - name: "dev5"
+    containerEdits:
+      env:
+        - "XYZ=ZY"
+  - name: "dev6"
+    containerEdits:
+      env:
+        - "BAR=SPACE"
+`,
+		},
+		{
+			name: "spec3.yaml",
+			data: `
+cdiVersion: "0.3.0"
+kind: vendor.com/device
+devices:
+  - name: "dev7"
+    containerEdits:
+      env:
+        - "FOO=BAR"
+  - name: "dev8"
+    containerEdits:
+      env:
+        - "FOOBAR=BARFOO"
+  - name: "dev9"
+    containerEdits:
+      env:
+        - "SPACE=BAR"
+`,
+		},
+	} {
+		dir, err := mkTestDir(t, nil)
+		require.NoError(t, err)
+
+		SetSpecValidator(validate.WithDefaultSchema())
+		defer SetSpecValidator(validate.WithSchema(schema.NopSchema()))
+
+		t.Run(tc.name, func(t *testing.T) {
+			var (
+				raw  = &cdi.Spec{}
+				spec *Spec
+				chk  *Spec
+				err  error
+			)
+
+			err = yaml.Unmarshal([]byte(tc.data), raw)
+			require.NoError(t, err)
+
+			spec, err = NewSpec(raw, filepath.Join(dir, tc.name), 0)
+			if tc.invalid {
+				require.Error(t, err, "NewSpec with invalid data")
+				require.Nil(t, spec, "NewSpec with invalid data")
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, spec)
+
+			err = spec.Write(true)
+			require.NoError(t, err)
+			_, err = os.Stat(spec.GetPath())
+			require.NoError(t, err, "spec.Write destination file")
+
+			err = spec.Write(false)
+			require.Error(t, err)
+
+			chk, err = ReadSpec(spec.GetPath(), spec.GetPriority())
+			require.NoError(t, err)
+			require.NotNil(t, chk)
+			require.Equal(t, spec.Spec, chk.Spec)
 		})
 	}
 }

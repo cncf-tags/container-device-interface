@@ -19,6 +19,7 @@ package cdi
 import (
 	"sync"
 
+	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 )
 
@@ -97,11 +98,15 @@ type RegistryDeviceDB interface {
 //
 // GetSpecErrors returns any errors for the Spec encountered during
 // the last cache refresh.
+//
+// WriteSpec writes the Spec with the given content and name to the
+// last Spec directory.
 type RegistrySpecDB interface {
 	ListVendors() []string
 	ListClasses() []string
 	GetVendorSpecs(vendor string) []*Spec
 	GetSpecErrors(*Spec) []error
+	WriteSpec(raw *cdi.Spec, name string) error
 }
 
 type registry struct {
