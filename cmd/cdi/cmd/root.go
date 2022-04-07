@@ -23,6 +23,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
+	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
+	"github.com/container-orchestrated-devices/container-device-interface/schema"
 )
 
 var (
@@ -58,14 +60,17 @@ func init() {
 }
 
 func initSpecDirs() {
-	err := cdi.SetSchema(schemaName)
+	s, err := schema.Load(schemaName)
 	if err != nil {
 		fmt.Printf("failed to load JSON schema %s: %v\n", schemaName, err)
 		os.Exit(1)
 	}
+	cdi.SetSpecValidator(validate.WithSchema(s))
 
 	if len(specDirs) > 0 {
-		cdi.GetRegistry(cdi.WithSpecDirs(specDirs...))
+		cdi.GetRegistry(
+			cdi.WithSpecDirs(specDirs...),
+		)
 		if len(cdi.GetRegistry().GetErrors()) > 0 {
 			cdiPrintRegistryErrors()
 		}
