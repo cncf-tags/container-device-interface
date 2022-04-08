@@ -62,7 +62,7 @@
                     "$ref": "#/definitions/FilePath"
                 },
                 "options": {
-                    "type": "string"
+                    "$ref": "#/definitions/ArrayOfStrings"
                 }
             },
             "required": [
