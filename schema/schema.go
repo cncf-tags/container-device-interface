@@ -34,13 +34,10 @@ import (
 )
 
 const (
-	// BuiltinSchemaName references the builtin schema for Load()/Set().
+	// BuiltinSchemaName names the builtin schema for Load()/Set().
 	BuiltinSchemaName = "builtin"
-	// NoneSchemaName references a disabled/NOP schema for Load()/Set().
+	// NoneSchemaName names the NOP-schema for Load()/Set().
 	NoneSchemaName = "none"
-	// DefaultSchemaName is the none schema.
-	DefaultSchemaName = NoneSchemaName
-
 	// builtinSchemaFile is the builtin schema URI in our embedded FS.
 	builtinSchemaFile = "file:///schema.json"
 )
@@ -65,8 +62,26 @@ func Get() *Schema {
 	return current
 }
 
-// BuiltinSchema returns the builtin validating JSON Schema.
+// BuiltinSchema returns the builtin schema if we have a valid one. Otherwise
+// it falls back to NopSchema().
 func BuiltinSchema() *Schema {
+	if builtin != nil {
+		return builtin
+	}
+
+	s, err := schema.NewSchema(
+		schema.NewReferenceLoaderFileSystem(
+			builtinSchemaFile,
+			http.FS(builtinFS),
+		),
+	)
+
+	if err == nil {
+		builtin = &Schema{schema: s}
+	} else {
+		builtin = NopSchema()
+	}
+
 	return builtin
 }
 
@@ -229,25 +244,8 @@ var (
 	// our builtin schema
 	builtin *Schema
 	// currently loaded schema, builtin by default
-	current *Schema
+	current = BuiltinSchema()
 )
 
 //go:embed *.json
 var builtinFS embed.FS
-
-func init() {
-	s, err := schema.NewSchema(
-		schema.NewReferenceLoaderFileSystem(
-			builtinSchemaFile,
-			http.FS(builtinFS),
-		),
-	)
-
-	if err != nil {
-		builtin = NopSchema()
-	} else {
-		builtin = &Schema{schema: s}
-	}
-
-	current = builtin
-}
