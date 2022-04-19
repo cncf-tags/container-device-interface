@@ -8,7 +8,7 @@
 
 ## Version
 
-This is CDI **spec** version **0.3.0**.
+This is CDI **spec** version **0.4.0**.
 
 #### Released versions
 
@@ -17,6 +17,7 @@ Released versions of the spec are available as Git tags.
 | Tag  | Spec Permalink   | Change |
 | -----| -----------------| -------|
 | v0.3.0 |   | Initial tagged release of Spec |
+| v0.4.0 |   | Added `type` field to Mount specification |
 
 ## Overview
 

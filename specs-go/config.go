@@ -3,7 +3,7 @@ package specs
 import "os"
 
 // CurrentVersion is the current version of the Spec.
-const CurrentVersion = "0.3.0"
+const CurrentVersion = "0.4.0"
 
 // Spec is the base configuration for CDI
 type Spec struct {

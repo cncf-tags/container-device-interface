@@ -25,7 +25,7 @@ Additionally runtimes don't uniformly expose a plugin system (or even expose a p
 $ mkdir /etc/cdi
 $ cat > /etc/cdi/vendor.json <<EOF
 {
-  "cdiVersion": "0.3.0",
+  "cdiVersion": "0.4.0",
   "kind": "vendor.com/device",
   "devices": [
     {
