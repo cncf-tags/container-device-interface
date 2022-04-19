@@ -183,11 +183,7 @@ The `containerEdits` field has the following definition:
   * `mounts` (array of objects, OPTIONAL) describes the mounts that should be mounted:
     * `hostPath` (string, REQUIRED) path of the device on the host.
     * `containerPath` (string, REQUIRED) path of the device within the container.
-    * `readonly` (boolean, OPTIONAL) If set, the mount is read-only.
-    * `propagation` (string, OPTIONAL) Requested propagation mode, candidates are one of:
-      * private - No mount propagation ("private" in Linux terminology).
-      * hostToContainer - Mounts get propagated from the host to the container ("rslave" in Linux terminology).
-      * bidirectional - Mounts get propagated from the host to the container and from the container to the host ("rshared" in Linux terminology).
+    * `options` (array of strings, OPTIONAL) Mount options of the filesystem to be used.
   * `hooks` (array of objects, OPTIONAL) describes the hooks that should be ran:
     * `hookName` is the name of the hook to invoke, if the runtime is OCI compliant it should be one of {createRuntime, createContainer, startContainer, poststart, poststop}.
       Runtimes are free to allow custom hooks but it is advised for vendors to create a specific JSON file targeting that runtime
