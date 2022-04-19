@@ -111,7 +111,8 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
                 {
                     "hostPath": "<source>",
                     "containerPath": "<destination>",
-                    "options": "<OCI Mount Options>", (optional)
+                    "type": "<OCI Mount Type>", (optional)
+                    "options": "<OCI Mount Options>" (optional)
                 }
             ],
             "hooks": [ (optional)
@@ -183,6 +184,7 @@ The `containerEdits` field has the following definition:
   * `mounts` (array of objects, OPTIONAL) describes the mounts that should be mounted:
     * `hostPath` (string, REQUIRED) path of the device on the host.
     * `containerPath` (string, REQUIRED) path of the device within the container.
+    * `type` (string, OPTIONAL) the type of the filesystem to be mounted. For bind mounts (when options include either bind or rbind), the type is a dummy, often "none" (not listed in /proc/filesystems).
     * `options` (array of strings, OPTIONAL) Mount options of the filesystem to be used.
   * `hooks` (array of objects, OPTIONAL) describes the hooks that should be ran:
     * `hookName` is the name of the hook to invoke, if the runtime is OCI compliant it should be one of {createRuntime, createContainer, startContainer, poststart, poststop}.

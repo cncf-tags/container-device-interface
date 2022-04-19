@@ -45,6 +45,7 @@ type Mount struct {
 	HostPath      string   `json:"hostPath"`
 	ContainerPath string   `json:"containerPath"`
 	Options       []string `json:"options,omitempty"`
+	Type          string   `json:"type,omitempty"`
 }
 
 // Hook represents a hook that needs to be added to the OCI spec.
