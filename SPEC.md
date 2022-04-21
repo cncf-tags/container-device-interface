@@ -10,7 +10,14 @@
 
 This is CDI **spec** version **0.3.0**.
 
-#### Released versions
+### Update policy
+
+Any modifications to the **spec** will result in at least a minor version bump. When releasing changes
+that only affect the API also implemented in this repository, the patch version will be bumped.
+
+*Note*: The **spec** is still under active development and there exists the posibility of breaking changes being
+introduced with new versions.
+### Released versions
 
 Released versions of the spec are available as Git tags.
 
@@ -18,6 +25,8 @@ Released versions of the spec are available as Git tags.
 | -----| -----------------| -------|
 | v0.3.0 |   | Initial tagged release of Spec |
 
+*Note*: The initial release of a **spec** with version `v0.x.0` will be tagged as
+`v0.x.0` with subsequent changes to the API applicable to this version tagged as `v0.x.y`.
 ## Overview
 
 The _Container Device Interface_, or _CDI_ describes a mechanism for container runtimes to create containers which are able to interact with third party devices.
