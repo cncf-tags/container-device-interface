@@ -8,7 +8,7 @@
 
 ## Version
 
-This is CDI **spec** version **0.3.0**.
+This is CDI **spec** version **0.4.0**.
 
 ### Update policy
 
@@ -24,6 +24,7 @@ Released versions of the spec are available as Git tags.
 | Tag  | Spec Permalink   | Change |
 | -----| -----------------| -------|
 | v0.3.0 |   | Initial tagged release of Spec |
+| v0.4.0 |   | Added `type` field to Mount specification |
 
 *Note*: The initial release of a **spec** with version `v0.x.0` will be tagged as
 `v0.x.0` with subsequent changes to the API applicable to this version tagged as `v0.x.y`.
@@ -120,7 +121,8 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
                 {
                     "hostPath": "<source>",
                     "containerPath": "<destination>",
-                    "options": "<OCI Mount Options>", (optional)
+                    "type": "<OCI Mount Type>", (optional)
+                    "options": "<OCI Mount Options>" (optional)
                 }
             ],
             "hooks": [ (optional)
@@ -192,11 +194,8 @@ The `containerEdits` field has the following definition:
   * `mounts` (array of objects, OPTIONAL) describes the mounts that should be mounted:
     * `hostPath` (string, REQUIRED) path of the device on the host.
     * `containerPath` (string, REQUIRED) path of the device within the container.
-    * `readonly` (boolean, OPTIONAL) If set, the mount is read-only.
-    * `propagation` (string, OPTIONAL) Requested propagation mode, candidates are one of:
-      * private - No mount propagation ("private" in Linux terminology).
-      * hostToContainer - Mounts get propagated from the host to the container ("rslave" in Linux terminology).
-      * bidirectional - Mounts get propagated from the host to the container and from the container to the host ("rshared" in Linux terminology).
+    * `type` (string, OPTIONAL) the type of the filesystem to be mounted. For bind mounts (when options include either bind or rbind), the type is a dummy, often "none" (not listed in /proc/filesystems).
+    * `options` (array of strings, OPTIONAL) Mount options of the filesystem to be used.
   * `hooks` (array of objects, OPTIONAL) describes the hooks that should be ran:
     * `hookName` is the name of the hook to invoke, if the runtime is OCI compliant it should be one of {createRuntime, createContainer, startContainer, poststart, poststop}.
       Runtimes are free to allow custom hooks but it is advised for vendors to create a specific JSON file targeting that runtime

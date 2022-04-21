@@ -63,6 +63,9 @@
                 },
                 "options": {
                     "$ref": "#/definitions/ArrayOfStrings"
+                },
+                "type": {
+                    "type": "string"
                 }
             },
             "required": [

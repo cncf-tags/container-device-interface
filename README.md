@@ -25,7 +25,7 @@ Additionally runtimes don't uniformly expose a plugin system (or even expose a p
 $ mkdir /etc/cdi
 $ cat > /etc/cdi/vendor.json <<EOF
 {
-  "cdiVersion": "0.3.0",
+  "cdiVersion": "0.4.0",
   "kind": "vendor.com/device",
   "devices": [
     {
@@ -48,7 +48,8 @@ $ cat > /etc/cdi/vendor.json <<EOF
     ],
     "mounts": [
       {"hostPath": "/bin/vendorBin", "containerPath": "/bin/vendorBin"},
-      {"hostPath": "/usr/lib/libVendor.so.0", "containerPath": "/usr/lib/libVendor.so.0"}
+      {"hostPath": "/usr/lib/libVendor.so.0", "containerPath": "/usr/lib/libVendor.so.0"},
+      {"hostPath": "tmpfs", "containerPath": "/tmp/data", "type": "tmpfs", "options": ["nosuid","strictatime","mode=755","size=65536k"]}
     ],
     "hooks": [
       {"createContainer": {"path": "/bin/vendor-hook"} },

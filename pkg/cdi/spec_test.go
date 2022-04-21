@@ -297,6 +297,29 @@ devices:
 			vendor: "vendor.com",
 			class:  "device",
 		},
+		{
+			name:     "valid",
+			priority: 1,
+			data: `
+cdiVersion: "0.4.0"
+kind: vendor.com/device
+devices:
+  - name: "dev1"
+    containerEdits:
+      mounts:
+        - hostPath: "tmpfs"
+          containerPath: "/usr/local/container"
+          type: "tmpfs"
+          options:
+            - "ro"
+            - "mode=755"
+            - "size=65536k"
+      env:
+        - "FOO=BAR"
+`,
+			vendor: "vendor.com",
+			class:  "device",
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			file, err := mkTestFile(t, []byte(tc.data))
