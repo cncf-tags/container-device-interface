@@ -1,7 +1,7 @@
 # CDI - The Container Device Interface
 ## What is CDI?
 
-CDI (Container Device Interface), is a specification, for container runtimes, to support third party devices.
+CDI (Container Device Interface), is a [specification](SPEC.md), for container runtimes, to support third party devices.
 
 CDI concerns itself only with enabling container to be device aware. Areas like resource management are explicitly left out of CDI (and is expected to be handled by the orchestrator). Because of this focus, the CDI specification is simple to implement and allows great flexibility to runtimes and orchestrators.
 
