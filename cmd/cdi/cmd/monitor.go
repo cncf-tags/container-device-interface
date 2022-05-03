@@ -19,8 +19,8 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -81,49 +81,48 @@ func monitorSpecDirs(args ...string) {
 	done = make(chan error, 1)
 
 	go func() {
+		var (
+			// don't print registry content more often than this
+			oneSecond = 1 * time.Second
+			timer     *time.Timer
+		)
+
 		if len(args) == 0 {
 			args = []string{"all"}
 		}
 
-		cdiPrintRegistry(args...)
+		timer = time.NewTimer(oneSecond)
+		refresh := timer.C
+
+		defer func() {
+			timer.Stop()
+		}()
 
 		for {
 			select {
-			case evt, ok := <-dirWatch.Events:
+			case _, ok := <-dirWatch.Events:
 				if !ok {
 					close(done)
 					return
 				}
 
-				if evt.Op != fsnotify.Write && evt.Op != fsnotify.Remove {
-					continue
+				if refresh != nil {
+					if !timer.Stop() {
+						<-timer.C
+					}
 				}
-
-				name, ext := filepath.Base(evt.Name), filepath.Ext(evt.Name)
-				if ext != ".json" && ext != ".yaml" {
-					fmt.Printf("ignoring %s %q (not a CDI Spec)...\n", evt.Op, evt.Name)
-					continue
-				}
-
-				if name != "" && (name[0] == '.' || name[0] == '#') {
-					fmt.Printf("ignoring probable editor temporary file %q...\n", evt.Name)
-					continue
-				}
-
-				fmt.Printf("refreshing CDI registry (%s changed)...\n", evt.Name)
-
-				if err = registry.Refresh(); err != nil {
-					fmt.Printf("  => refresh failed: %v\n", err)
-				} else {
-					fmt.Printf("  => refresh OK\n")
-					cdiPrintRegistry(args...)
-				}
+				timer.Reset(oneSecond)
+				refresh = timer.C
 
 			case err, ok := <-dirWatch.Errors:
 				if ok {
 					done <- err
 				}
 				return
+
+			case _ = <-refresh:
+				refresh = nil
+				cdiPrintRegistry(args...)
 			}
 		}
 	}()

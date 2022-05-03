@@ -242,8 +242,12 @@ func updateTestDir(t *testing.T, tmp string, dirs map[string]map[string]string) 
 		}
 		for file, data := range content {
 			file := filepath.Join(dir, file)
-			if err := ioutil.WriteFile(file, []byte(data), 0644); err != nil {
-				return errors.Wrapf(err, "failed to write file %q", file)
+			tmp := file + ".tmp"
+			if err := ioutil.WriteFile(tmp, []byte(data), 0644); err != nil {
+				return errors.Wrapf(err, "failed to write file %q", tmp)
+			}
+			if err := os.Rename(tmp, file); err != nil {
+				return errors.Wrapf(err, "failed to rename %q to %q", tmp, file)
 			}
 		}
 	}
