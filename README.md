@@ -50,6 +50,10 @@ To enable and configure CDI support in the [containerd runtime](https://github.c
 
 Remember to restart containerd for any configuration changes to take effect.
 
+### Podman configuration
+
+[podman](https://github.com/containers/podman) does not require any specific configuration to enable CDI support and processes specified `--device` flags directly. If fully-qualified device selectors (e.g. `vendor.com/device=myDevice`) are included the CDI specifications at the default location (`/etc/cdi` and `/var/run/cdi`) are checked for matching devices.
+
 ## Examples
 ```bash
 $ mkdir /etc/cdi
