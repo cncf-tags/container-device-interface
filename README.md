@@ -38,6 +38,16 @@ For CDI to work the following needs to be done:
 
 ### CRI-O configuration
 
+In CRI-O CDI support is enabled by default. It is configured with the default `/etc/cdi, /var/run/cdi`
+CDI directory locations. Therefore you can start using CDI simply by dropping CDI configuration files
+in either of those directories, static configuration into `/etc/cdi` and dynamically updated one into
+`/var/run/cdi`. If you are unsure of the configured directories you can run this command to find them
+out:
+
+```bash
+$ crio config |& grep -B1 -A5 cdi_spec_dirs
+```
+
 ### Containerd configuration
 
 To enable and configure CDI support in the [containerd runtime](https://github.com/containerd/containerd) 2 configuration options `enable_cdi` and `cdi_spec_dirs` should be set in the `plugins."io.containerd.grpc.v1.cri` section of the containerd configuration file (`/etc/containerd/config.toml` by default):
