@@ -25,6 +25,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
+	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
@@ -1416,6 +1418,218 @@ devices:
 			require.Equal(t, tc.vendors, vendors)
 			classes := cache.ListClasses()
 			require.Equal(t, tc.classes, classes)
+		})
+	}
+}
+
+func TestCacheWriteSpec(t *testing.T) {
+	type testCase struct {
+		name    string
+		etc     map[string]string
+		invalid map[string]bool
+	}
+	for _, tc := range []*testCase{
+		{
+			name: "one spec file",
+			etc: map[string]string{
+				"vendor1.yaml": `
+cdiVersion: "0.3.0"
+kind:       "vendor1.com/device"
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
+`,
+			},
+		},
+		{
+			name: "multiple spec files",
+			etc: map[string]string{
+				"vendor1.yaml": `
+cdiVersion: "0.3.0"
+kind:       "vendor1.com/device"
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
+  - name: "dev2"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor1-dev2"
+        type: b
+        major: 10
+        minor: 2
+`,
+				"vendor2.yaml": `
+cdiVersion: "0.3.0"
+kind:       "vendor2.com/device"
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor2-dev1"
+        type: b
+        major: 10
+        minor: 1
+`,
+				"vendor3.yaml": `
+cdiVersion: "0.3.0"
+kind:       "vendor3.com/device"
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor3-dev1"
+        type: b
+        major: 10
+        minor: 1
+`,
+			},
+		},
+
+		{
+			name: "multiple spec files/data, some invalid",
+			etc: map[string]string{
+				"vendor1.yaml": `
+cdiVersion: "0.3.0"
+kind:       "vendor1.comdevice"
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
+  - name: "dev2"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor1-dev2"
+        type: b
+        major: 10
+        minor: 2
+`,
+				"vendor2.yaml": `
+cdiVersion: "0.3.0"
+kind:       "vendor2.com/device"
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor2-dev1"
+        type: b
+        major: 10
+        minor: 1
+`,
+				"vendor3.yaml": `
+cdiVersion: "0.3.0"
+kind:       "vendor3.com/device"
+containerEdits:
+  deviceNodes:
+  - path: "/dev/vendor3-dev1"
+    type: b
+    major: 10
+    minor: 1
+`,
+			},
+			invalid: map[string]bool{
+				"vendor1.yaml": true,
+				"vendor3.yaml": true,
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var (
+				dir   string
+				etc   map[string]string
+				raw   *cdi.Spec
+				err   error
+				cache *Cache
+				other *Cache
+			)
+
+			SetSpecValidator(validate.WithNamedSchema("builtin"))
+
+			if len(tc.invalid) != 0 {
+				dir, err = createSpecDirs(t, nil, nil)
+				require.NoError(t, err)
+				cache, err = NewCache(
+					WithSpecDirs(
+						filepath.Join(dir, "etc"),
+						filepath.Join(dir, "run"),
+					),
+					WithAutoRefresh(false),
+				)
+
+				require.NoError(t, err)
+				require.NotNil(t, cache)
+
+				etc = map[string]string{}
+				for name, data := range tc.etc {
+					raw, err = ParseSpec([]byte(data))
+					require.NoError(t, err)
+					require.NotNil(t, raw)
+
+					err = cache.WriteSpec(raw, name)
+
+					if tc.invalid[name] {
+						require.Error(t, err)
+					} else {
+						require.NoError(t, err)
+						etc[name] = data
+					}
+				}
+			} else {
+				etc = tc.etc
+			}
+
+			dir, err = createSpecDirs(t, etc, nil)
+			require.NoError(t, err)
+
+			cache, err = NewCache(
+				WithSpecDirs(
+					filepath.Join(dir, "etc"),
+				),
+			)
+			require.NoError(t, err)
+			require.NotNil(t, cache)
+
+			other, err = NewCache(
+				WithSpecDirs(
+					filepath.Join(dir, "run"),
+				),
+				WithAutoRefresh(false),
+			)
+			require.NoError(t, err)
+			require.NotNil(t, other)
+
+			cSpecs := map[string]*cdi.Spec{}
+			for _, vendor := range cache.ListVendors() {
+				for _, spec := range cache.GetVendorSpecs(vendor) {
+					name := filepath.Base(spec.GetPath())
+					cSpecs[name] = spec.Spec
+					err = other.WriteSpec(spec.Spec, name)
+					require.NoError(t, err)
+				}
+			}
+
+			err = other.Refresh()
+			require.NoError(t, err)
+
+			for _, vendor := range other.ListVendors() {
+				for _, spec := range other.GetVendorSpecs(vendor) {
+					name := filepath.Base(spec.GetPath())
+					require.Equal(t, spec.Spec, cSpecs[name])
+				}
+			}
 		})
 	}
 }

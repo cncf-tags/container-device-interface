@@ -22,6 +22,7 @@ import (
 	"strings"
 	"sync"
 
+	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	"github.com/fsnotify/fsnotify"
 	"github.com/hashicorp/go-multierror"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
@@ -252,6 +253,39 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 	}
 
 	return nil, nil
+}
+
+// WriteSpec writes a Spec file with the given content. Priority is used
+// as an index into the list of Spec directories to pick a directory for
+// the file, adjusting for any under- or overflows. If name has a "json"
+// or "yaml" extension it choses the encoding. Otherwise JSON encoding
+// is used with a "json" extension.
+func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
+	var (
+		specDir string
+		path    string
+		prio    int
+		spec    *Spec
+		err     error
+	)
+
+	if len(c.specDirs) == 0 {
+		return errors.New("no Spec directories to write to")
+	}
+
+	prio = len(c.specDirs) - 1
+	specDir = c.specDirs[prio]
+	path = filepath.Join(specDir, name)
+	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
+		path += ".json"
+	}
+
+	spec, err = NewSpec(raw, path, prio)
+	if err != nil {
+		return err
+	}
+
+	return spec.Write(true)
 }
 
 // GetDevice returns the cached device for the given qualified name.
