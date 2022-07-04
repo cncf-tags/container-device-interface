@@ -172,8 +172,11 @@ func ValidateDeviceName(name string) error {
 	if name == "" {
 		return errors.Errorf("invalid (empty) device name")
 	}
-	if !isLetter(rune(name[0])) {
-		return errors.Errorf("invalid name %q, should start with letter", name)
+	if !isAlphaNumeric(rune(name[0])) {
+		return errors.Errorf("invalid class %q, should start with a letter or digit", name)
+	}
+	if len(name) == 1 {
+		return nil
 	}
 	for _, c := range string(name[1 : len(name)-1]) {
 		switch {
