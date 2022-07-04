@@ -130,7 +130,7 @@ func ValidateVendorName(vendor string) error {
 		}
 	}
 	if !isAlphaNumeric(rune(vendor[len(vendor)-1])) {
-		return errors.Errorf("invalid vendor %q, should end with letter", vendor)
+		return errors.Errorf("invalid vendor %q, should end with a letter or digit", vendor)
 	}
 
 	return nil
@@ -158,7 +158,7 @@ func ValidateClassName(class string) error {
 		}
 	}
 	if !isAlphaNumeric(rune(class[len(class)-1])) {
-		return errors.Errorf("invalid class %q, should end with letter", class)
+		return errors.Errorf("invalid class %q, should end with a letter or digit", class)
 	}
 	return nil
 }
@@ -188,7 +188,7 @@ func ValidateDeviceName(name string) error {
 		}
 	}
 	if !isAlphaNumeric(rune(name[len(name)-1])) {
-		return errors.Errorf("invalid name %q, should start with letter", name)
+		return errors.Errorf("invalid name %q, should end with a letter or digit", name)
 	}
 	return nil
 }
