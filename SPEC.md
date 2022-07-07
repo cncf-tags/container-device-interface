@@ -103,6 +103,7 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
             "deviceNodes": [ (optional)
                 {
                     "path": "<path>",
+                    "hostPath": "<hostPath>" (optional),
                     "type": "<type>" (optional),
                     "major": <int32> (optional),
                     "minor": <int32> (optional),
@@ -181,6 +182,7 @@ The `containerEdits` field has the following definition:
   * `env` (array of strings in the format of "VARNAME=VARVALUE", OPTIONAL) describes the environment variables that should be set. These values are appended to the container environment array.
   * `deviceNodes` (array of objects, OPTIONAL) describes the device nodes that should be mounted:
     * `path` (string, REQUIRED) path of the device within the container.
+    * `hostPath` (string, OPTIONAL) path of the device node on the host. If not specified the value for `path` is used.
     * `type` (string, OPTIONAL) Device type: block, char, etc.
     * `major` (int64, OPTIONAL) Device major number.
     * `minor` (int64, OPTIONAL) Device minor number.

@@ -6,7 +6,7 @@
       "name": "myDevice",
       "containerEdits": {
         "deviceNodes": [
-          {"path": "/dev/card1"},
+          {"hostPath": "/vendorroot/dev/card1", "path": "/dev/card1"},
           {"path": "/dev/card2"}
         ]
       }

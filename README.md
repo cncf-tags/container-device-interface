@@ -32,7 +32,7 @@ $ cat > /etc/cdi/vendor.json <<EOF
       "name": "myDevice",
       "containerEdits": {
         "deviceNodes": [
-          {"path": "/dev/card1", "type": "c", "major": 25, "minor": 25, "fileMode": 384, "permissions": "rw", "uid": 1000, "gid": 1000},
+          {"hostPath": "/vendor/dev/card1": "path": "/dev/card1", "type": "c", "major": 25, "minor": 25, "fileMode": 384, "permissions": "rw", "uid": 1000, "gid": 1000},
           {"path": "/dev/card-render1", "type": "c", "major": 25, "minor": 25, "fileMode": 384, "permissions": "rwm", "uid": 1000, "gid": 1000}
         ]
       }
