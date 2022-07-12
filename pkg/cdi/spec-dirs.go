@@ -45,6 +45,10 @@ var (
 // WithSpecDirs returns an option to override the CDI Spec directories.
 func WithSpecDirs(dirs ...string) Option {
 	return func(c *Cache) error {
+		// If the specified directories are empty, we don't make any changes.
+		if len(dirs) == 0 {
+			return nil
+		}
 		specDirs := make([]string, len(dirs))
 		for i, dir := range dirs {
 			specDirs[i] = filepath.Clean(dir)
