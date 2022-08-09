@@ -71,14 +71,14 @@ Remember to restart containerd for any configuration changes to take effect.
 $ mkdir /etc/cdi
 $ cat > /etc/cdi/vendor.json <<EOF
 {
-  "cdiVersion": "0.4.0",
+  "cdiVersion": "0.5.0",
   "kind": "vendor.com/device",
   "devices": [
     {
       "name": "myDevice",
       "containerEdits": {
         "deviceNodes": [
-          {"path": "/dev/card1", "type": "c", "major": 25, "minor": 25, "fileMode": 384, "permissions": "rw", "uid": 1000, "gid": 1000},
+          {"hostPath": "/vendor/dev/card1": "path": "/dev/card1", "type": "c", "major": 25, "minor": 25, "fileMode": 384, "permissions": "rw", "uid": 1000, "gid": 1000},
           {"path": "/dev/card-render1", "type": "c", "major": 25, "minor": 25, "fileMode": 384, "permissions": "rwm", "uid": 1000, "gid": 1000}
         ]
       }

@@ -29,6 +29,9 @@
                 "path": {
                     "$ref": "#/definitions/FilePath"
                 },
+                "hostPath": {
+                    "$ref": "#/definitions/FilePath"
+                },
                 "permissions": {
                     "type": "string"
                 },

@@ -8,7 +8,7 @@
 
 ## Version
 
-This is CDI **spec** version **0.4.0**.
+This is CDI **spec** version **0.5.0**.
 
 ### Update policy
 
@@ -25,6 +25,7 @@ Released versions of the spec are available as Git tags.
 | -----| -----------------| -------|
 | v0.3.0 |   | Initial tagged release of Spec |
 | v0.4.0 |   | Added `type` field to Mount specification |
+| v0.5.0 |   | Add `HostPath` to `DeviceNodes` |
 
 *Note*: The initial release of a **spec** with version `v0.x.0` will be tagged as
 `v0.x.0` with subsequent changes to the API applicable to this version tagged as `v0.x.y`.
@@ -79,7 +80,7 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
 
 ```
 {
-    "cdiVersion": "0.3.0",
+    "cdiVersion": "0.5.0",
     "kind": "<name>",
 
     "devices": [
@@ -103,6 +104,7 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
             "deviceNodes": [ (optional)
                 {
                     "path": "<path>",
+                    "hostPath": "<hostPath>" (optional),
                     "type": "<type>" (optional),
                     "major": <int32> (optional),
                     "minor": <int32> (optional),
@@ -181,6 +183,7 @@ The `containerEdits` field has the following definition:
   * `env` (array of strings in the format of "VARNAME=VARVALUE", OPTIONAL) describes the environment variables that should be set. These values are appended to the container environment array.
   * `deviceNodes` (array of objects, OPTIONAL) describes the device nodes that should be mounted:
     * `path` (string, REQUIRED) path of the device within the container.
+    * `hostPath` (string, OPTIONAL) path of the device node on the host. If not specified the value for `path` is used.
     * `type` (string, OPTIONAL) Device type: block, char, etc.
     * `major` (int64, OPTIONAL) Device major number.
     * `minor` (int64, OPTIONAL) Device minor number.
