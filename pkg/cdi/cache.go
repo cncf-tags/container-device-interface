@@ -255,11 +255,10 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 	return nil, nil
 }
 
-// WriteSpec writes a Spec file with the given content. Priority is used
-// as an index into the list of Spec directories to pick a directory for
-// the file, adjusting for any under- or overflows. If name has a "json"
-// or "yaml" extension it choses the encoding. Otherwise JSON encoding
-// is used with a "json" extension.
+// WriteSpec writes a Spec file with the given content into the highest
+// priority Spec directory. If name has a "json" or "yaml" extension it
+// choses the encoding. Otherwise JSON encoding is used with a "json"
+// extension appended.
 func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
 	var (
 		specDir string
