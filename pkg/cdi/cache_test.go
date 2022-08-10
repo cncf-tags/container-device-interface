@@ -17,8 +17,10 @@
 package cdi
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -29,6 +31,7 @@ import (
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
+	"sigs.k8s.io/yaml"
 )
 
 func TestNewCache(t *testing.T) {
@@ -1628,6 +1631,215 @@ containerEdits:
 					name := filepath.Base(spec.GetPath())
 					require.Equal(t, spec.Spec, cSpecs[name])
 				}
+			}
+		})
+	}
+}
+
+func TestCacheTransientSpecs(t *testing.T) {
+	type testCase struct {
+		name         string
+		specs        []string
+		invalid      map[int]bool
+		expected     [][]string
+		numSpecFiles []int
+	}
+	for _, tc := range []*testCase{
+		{
+			name: "invalid spec",
+			specs: []string{
+				`
+cdiVersion: "` + cdi.CurrentVersion + `"
+kind:       "vendor.comdevice"
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1`,
+			},
+			invalid: map[int]bool{
+				0: true,
+			},
+		},
+		{
+			name: "add/remove one valid spec",
+			specs: []string{
+				`
+cdiVersion: "` + cdi.CurrentVersion + `"
+kind:       "vendor.com/device"
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor-dev1"
+        type: b
+        major: 10
+        minor: 1
+`,
+				"-0",
+			},
+			expected: [][]string{
+				[]string{
+					"vendor.com/device=dev1",
+				},
+				nil,
+			},
+			numSpecFiles: []int{
+				1,
+				0,
+			},
+		},
+		{
+			name: "add/remove multiple valid specs",
+			specs: []string{
+				`
+cdiVersion: "` + cdi.CurrentVersion + `"
+kind:       "vendor.com/device"
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor-dev1"
+        type: b
+        major: 10
+        minor: 1
+`,
+				`
+cdiVersion: "` + cdi.CurrentVersion + `"
+kind:       "vendor.com/device"
+devices:
+  - name: "dev2"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor-dev2"
+        type: b
+        major: 10
+        minor: 2
+`,
+				`
+cdiVersion: "` + cdi.CurrentVersion + `"
+kind:       "vendor.com/device"
+devices:
+  - name: "dev3"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor-dev3"
+        type: b
+        major: 10
+        minor: 3
+  - name: "dev4"
+    containerEdits:
+      deviceNodes:
+      - path: "/dev/vendor-dev4"
+        type: b
+        major: 10
+        minor: 4
+`,
+				"-0",
+				"-1",
+				"-2",
+			},
+			expected: [][]string{
+				[]string{
+					"vendor.com/device=dev1",
+				},
+				[]string{
+					"vendor.com/device=dev1",
+					"vendor.com/device=dev2",
+				},
+				[]string{
+					"vendor.com/device=dev1",
+					"vendor.com/device=dev2",
+					"vendor.com/device=dev3",
+					"vendor.com/device=dev4",
+				},
+				[]string{
+					"vendor.com/device=dev2",
+					"vendor.com/device=dev3",
+					"vendor.com/device=dev4",
+				},
+				[]string{
+					"vendor.com/device=dev3",
+					"vendor.com/device=dev4",
+				},
+				nil,
+			},
+			numSpecFiles: []int{
+				1,
+				2,
+				3,
+				2,
+				1,
+				0,
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var (
+				dir       string
+				err       error
+				cache     *Cache
+				specFiles []os.DirEntry
+				specs     = map[int]string{}
+			)
+
+			dir, err = createSpecDirs(t, nil, nil)
+			require.NoError(t, err)
+			cache, err = NewCache(
+				WithSpecDirs(
+					filepath.Join(dir, "etc"),
+					filepath.Join(dir, "run"),
+				),
+				WithAutoRefresh(false),
+			)
+
+			require.NoError(t, err)
+			require.NotNil(t, cache)
+
+			for idx, data := range tc.specs {
+				var (
+					transientID string
+					raw         *cdi.Spec
+					delIdx      int
+					err         error
+				)
+
+				if data[0] == '-' {
+					delIdx, err = strconv.Atoi(string(data[1:]))
+					require.NoError(t, err)
+
+					err = cache.RemoveSpec(specs[delIdx])
+					require.NoError(t, err)
+				} else {
+					err = yaml.Unmarshal([]byte(data), &raw)
+					require.NoError(t, err)
+
+					transientID = fmt.Sprintf("id%d", idx)
+					specs[idx], err = GenerateNameForTransientSpec(raw, transientID)
+					if tc.invalid[idx] {
+						require.NotNil(t, err)
+						continue
+					}
+					require.NoError(t, err)
+
+					err = cache.WriteSpec(raw, specs[idx])
+					require.NoError(t, err)
+				}
+
+				err = cache.Refresh()
+				require.NoError(t, err)
+
+				devices := cache.ListDevices()
+				require.Equal(t, tc.expected[idx], devices)
+
+				specFiles, err = os.ReadDir(
+					filepath.Join(dir, "run"),
+				)
+				require.NoError(t, err)
+				require.Equal(t, tc.numSpecFiles[idx], len(specFiles))
 			}
 		})
 	}
