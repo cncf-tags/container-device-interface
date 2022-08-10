@@ -17,10 +17,14 @@
 package cdi
 
 import (
+	"io/fs"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
+
+	stderr "errors"
 
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	"github.com/fsnotify/fsnotify"
@@ -255,6 +259,19 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 	return nil, nil
 }
 
+// highestPrioritySpecDir returns the Spec directory with highest priority
+// and its priority.
+func (c *Cache) highestPrioritySpecDir() (string, int) {
+	if len(c.specDirs) == 0 {
+		return "", -1
+	}
+
+	prio := len(c.specDirs) - 1
+	dir := c.specDirs[prio]
+
+	return dir, prio
+}
+
 // WriteSpec writes a Spec file with the given content into the highest
 // priority Spec directory. If name has a "json" or "yaml" extension it
 // choses the encoding. Otherwise JSON encoding is used with a "json"
@@ -268,12 +285,11 @@ func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
 		err     error
 	)
 
-	if len(c.specDirs) == 0 {
+	specDir, prio = c.highestPrioritySpecDir()
+	if specDir == "" {
 		return errors.New("no Spec directories to write to")
 	}
 
-	prio = len(c.specDirs) - 1
-	specDir = c.specDirs[prio]
 	path = filepath.Join(specDir, name)
 	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
 		path += ".json"
@@ -285,6 +301,35 @@ func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
 	}
 
 	return spec.Write(true)
+}
+
+// RemoveSpec removes a Spec with the given name from the highest
+// priority Spec directory. This function can be used to remove a
+// Spec previously written by WriteSpec(). If the file exists and
+// its removal fails RemoveSpec returns an error.
+func (c *Cache) RemoveSpec(name string) error {
+	var (
+		specDir string
+		path    string
+		err     error
+	)
+
+	specDir, _ = c.highestPrioritySpecDir()
+	if specDir == "" {
+		return errors.New("no Spec directories to remove from")
+	}
+
+	path = filepath.Join(specDir, name)
+	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
+		path += ".json"
+	}
+
+	err = os.Remove(path)
+	if err != nil && stderr.Is(err, fs.ErrNotExist) {
+		err = nil
+	}
+
+	return err
 }
 
 // GetDevice returns the cached device for the given qualified name.
