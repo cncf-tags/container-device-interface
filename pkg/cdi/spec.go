@@ -31,6 +31,11 @@ import (
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 )
 
+const (
+	// defaultSpecExt is the file extension for the default encoding.
+	defaultSpecExt = ".yaml"
+)
+
 var (
 	// Valid CDI Spec versions.
 	validSpecVersions = map[string]struct{}{
@@ -103,6 +108,10 @@ func NewSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
 		Spec:     raw,
 		path:     filepath.Clean(path),
 		priority: priority,
+	}
+
+	if ext := filepath.Ext(spec.path); ext != ".yaml" && ext != ".json" {
+		spec.path += defaultSpecExt
 	}
 
 	spec.vendor, spec.class = ParseQualifier(spec.Kind)

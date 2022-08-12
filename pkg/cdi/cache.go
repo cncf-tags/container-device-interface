@@ -274,8 +274,7 @@ func (c *Cache) highestPrioritySpecDir() (string, int) {
 
 // WriteSpec writes a Spec file with the given content into the highest
 // priority Spec directory. If name has a "json" or "yaml" extension it
-// choses the encoding. Otherwise JSON encoding is used with a "json"
-// extension appended.
+// choses the encoding. Otherwise the default YAML encoding is used.
 func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
 	var (
 		specDir string
@@ -292,7 +291,7 @@ func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
 
 	path = filepath.Join(specDir, name)
 	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
-		path += ".json"
+		path += defaultSpecExt
 	}
 
 	spec, err = NewSpec(raw, path, prio)
@@ -321,7 +320,7 @@ func (c *Cache) RemoveSpec(name string) error {
 
 	path = filepath.Join(specDir, name)
 	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
-		path += ".json"
+		path += defaultSpecExt
 	}
 
 	err = os.Remove(path)

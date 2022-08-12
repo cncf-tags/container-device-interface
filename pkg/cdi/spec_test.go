@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -77,7 +78,7 @@ devices:
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			file, err := mkTestFile(t, []byte(tc.data))
+			file, err := mkTestSpec(t, []byte(tc.data))
 			if err != nil {
 				t.Errorf("failed to create CDI Spec test file: %v", err)
 				return
@@ -461,7 +462,7 @@ devices:
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			file, err := mkTestFile(t, []byte(tc.data))
+			file, err := mkTestSpec(t, []byte(tc.data))
 			if err != nil {
 				t.Errorf("failed to create CDI Spec test file: %v", err)
 				return
@@ -493,8 +494,8 @@ devices:
 }
 
 // Create an automatically cleaned up temporary file for a test.
-func mkTestFile(t *testing.T, data []byte) (string, error) {
-	tmp, err := ioutil.TempFile("", ".cdi-test.*")
+func mkTestSpec(t *testing.T, data []byte) (string, error) {
+	tmp, err := ioutil.TempFile("", ".cdi-test.*."+specType(data))
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to create test file")
 	}
@@ -513,6 +514,14 @@ func mkTestFile(t *testing.T, data []byte) (string, error) {
 
 	tmp.Close()
 	return file, nil
+}
+
+func specType(content []byte) string {
+	spec := strings.TrimSpace(string(content))
+	if spec != "" && spec[0] == '{' {
+		return "json"
+	}
+	return "yaml"
 }
 
 func TestCurrentVersionIsValid(t *testing.T) {
