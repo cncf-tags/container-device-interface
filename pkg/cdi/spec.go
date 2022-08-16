@@ -86,7 +86,7 @@ func ReadSpec(path string, priority int) (*Spec, error) {
 		return nil, errors.Errorf("failed to parse CDI Spec %q, no Spec data", path)
 	}
 
-	spec, err := NewSpec(raw, path, priority)
+	spec, err := newSpec(raw, path, priority)
 	if err != nil {
 		return nil, err
 	}
@@ -94,11 +94,11 @@ func ReadSpec(path string, priority int) (*Spec, error) {
 	return spec, nil
 }
 
-// NewSpec creates a new Spec from the given CDI Spec data. The
+// newSpec creates a new Spec from the given CDI Spec data. The
 // Spec is marked as loaded from the given path with the given
-// priority. If Spec data validation fails NewSpec returns a nil
+// priority. If Spec data validation fails newSpec returns a nil
 // Spec and an error.
-func NewSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
+func newSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
 	err := validateSpec(raw)
 	if err != nil {
 		return nil, err
@@ -124,8 +124,8 @@ func NewSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
 }
 
 // Write the CDI Spec to the file associated with it during instantiation
-// by NewSpec() or ReadSpec().
-func (s *Spec) Write(overwrite bool) error {
+// by newSpec() or ReadSpec().
+func (s *Spec) write(overwrite bool) error {
 	var (
 		data []byte
 		dir  string
@@ -259,7 +259,7 @@ func ParseSpec(data []byte) (*cdi.Spec, error) {
 
 // SetSpecValidator sets a CDI Spec validator function. This function
 // is used for extra CDI Spec content validation whenever a Spec file
-// loaded (using ReadSpec() or NewSpec()) or written (Spec.Write()).
+// loaded (using ReadSpec() or written (using WriteSpec()).
 func SetSpecValidator(fn func(*cdi.Spec) error) {
 	validatorLock.Lock()
 	defer validatorLock.Unlock()

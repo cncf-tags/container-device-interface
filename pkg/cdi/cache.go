@@ -294,12 +294,12 @@ func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
 		path += defaultSpecExt
 	}
 
-	spec, err = NewSpec(raw, path, prio)
+	spec, err = newSpec(raw, path, prio)
 	if err != nil {
 		return err
 	}
 
-	return spec.Write(true)
+	return spec.write(true)
 }
 
 // RemoveSpec removes a Spec with the given name from the highest

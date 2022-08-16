@@ -246,7 +246,7 @@ devices:
 			}
 			require.NoError(t, err)
 
-			spec, err = NewSpec(raw, tc.name, 0)
+			spec, err = newSpec(raw, tc.name, 0)
 			if tc.invalid || tc.schemaFail {
 				require.Error(t, err)
 				require.Nil(t, spec)
@@ -367,22 +367,22 @@ devices:
 			err = yaml.Unmarshal([]byte(tc.data), raw)
 			require.NoError(t, err)
 
-			spec, err = NewSpec(raw, filepath.Join(dir, tc.name), 0)
+			spec, err = newSpec(raw, filepath.Join(dir, tc.name), 0)
 			if tc.invalid {
-				require.Error(t, err, "NewSpec with invalid data")
-				require.Nil(t, spec, "NewSpec with invalid data")
+				require.Error(t, err, "newSpec with invalid data")
+				require.Nil(t, spec, "newSpec with invalid data")
 				return
 			}
 
 			require.NoError(t, err)
 			require.NotNil(t, spec)
 
-			err = spec.Write(true)
+			err = spec.write(true)
 			require.NoError(t, err)
 			_, err = os.Stat(spec.GetPath())
 			require.NoError(t, err, "spec.Write destination file")
 
-			err = spec.Write(false)
+			err = spec.write(false)
 			require.Error(t, err)
 
 			chk, err = ReadSpec(spec.GetPath(), spec.GetPriority())
