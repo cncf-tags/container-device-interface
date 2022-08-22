@@ -186,7 +186,7 @@ devices:
 				classes = map[string]string{}
 			}
 
-			dirs := []string{dir}
+			dirs := []string{"/no-such-dir", dir}
 			err = scanSpecDirs(dirs, func(path string, prio int, spec *Spec, err error) error {
 				name := filepath.Base(path)
 				if err != nil {
@@ -201,12 +201,6 @@ devices:
 				}
 				return nil
 			})
-
-			if tc.files == nil {
-				require.Error(t, err)
-				require.True(t, os.IsNotExist(err))
-				return
-			}
 
 			require.Equal(t, tc.success, success)
 			require.Equal(t, tc.failure, failure)
