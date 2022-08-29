@@ -32,6 +32,9 @@ import (
 )
 
 const (
+	// CurrentVersion is the current vesion of the CDI Spec.
+	CurrentVersion = cdi.CurrentVersion
+
 	// defaultSpecExt is the file extension for the default encoding.
 	defaultSpecExt = ".yaml"
 )

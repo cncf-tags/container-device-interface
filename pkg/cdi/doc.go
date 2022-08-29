@@ -180,7 +180,7 @@
 // func generateDeviceSpecs() error {
 //     registry := cdi.GetRegistry()
 //     spec := &specs.Spec{
-//         Version: specVersion,
+//         Version: specs.CurrentVersion,
 //         Kind:    vendor+"/"+class,
 //     }
 //
@@ -216,7 +216,7 @@
 //     registry := cdi.GetRegistry()
 //     devices := getContainerDevs(ctr, vendor, class)
 //     spec := &specs.Spec{
-//         Version: specVersion,
+//         Version: specs.CurrentVersion,
 //         Kind:    vendor+"/"+class,
 //     }
 //
