@@ -1,6 +1,6 @@
 GO_CMD   := go
 GO_BUILD := $(GO_CMD) build
-GO_TEST  := $(GO_CMD) test -v -cover
+GO_TEST  := $(GO_CMD) test -race -v -cover
 
 GO_LINT  := golint -set_exit_status
 GO_FMT   := gofmt
