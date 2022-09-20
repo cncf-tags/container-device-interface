@@ -8,6 +8,14 @@ jobs:
   build:
     name: "Run go sanity tools"
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: windows
+            goarch: amd64
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-go@v2
@@ -21,13 +29,22 @@ jobs:
       run: make fmt
     - name: Vet
       run: make vet
+
+  test:
+    name: "Run tests"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
     - name: Test
       run: make test
 
 
   # Make sure binaries compile on multiple platforms.
   crossbuild:
-    name: Build/Crossbuild Binaries
+    name: "Build / Crossbuild Binaries"
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -37,7 +54,6 @@ jobs:
             goarch: amd64
           - goos: windows
             goarch: amd64
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
