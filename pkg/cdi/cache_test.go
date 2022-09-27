@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-	"syscall"
 	"testing"
 	"time"
 
@@ -770,10 +769,10 @@ devices:
 				for {
 					select {
 					case _ = <-stopCh:
-						go syscall.Sync()
+						go osSync()
 						return
 					case _ = <-sync.C:
-						go syscall.Sync()
+						go osSync()
 						sync.Reset(2 * time.Second)
 					}
 				}
