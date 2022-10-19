@@ -28,6 +28,7 @@ func ValidateSpecAnnotations(name string, any interface{}) error {
 	if any == nil {
 		return nil
 	}
+
 	switch v := any.(type) {
 	case map[string]interface{}:
 		annotations := make(map[string]string)
@@ -41,7 +42,7 @@ func ValidateSpecAnnotations(name string, any interface{}) error {
 		return validateSpecAnnotations(name, annotations)
 	}
 
-	return fmt.Errorf("invalid spec annotations %v: %v", name, any)
+	return nil
 }
 
 // validateSpecAnnotations checks whether spec annotations are valid.

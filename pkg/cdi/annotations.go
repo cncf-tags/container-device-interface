@@ -20,6 +20,11 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/container-orchestrated-devices/container-device-interface/internal/multierror"
+	"k8s.io/apimachinery/pkg/api/validation"
+	"k8s.io/apimachinery/pkg/api/validation/field"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
 const (
@@ -136,4 +141,17 @@ func AnnotationValue(devices []string) (string, error) {
 	}
 
 	return value, nil
+}
+
+// ValidateSpecAnnotations checks whether spec annotations are valid.
+func ValidateSpecAnnotations(name string, annotations map[string]string) error {
+	fldErrorList := validation.ValidateAnnotations(annotations, field.NewPath(name, "annotations"))
+	if len(fldErrorList) > 0 {
+		err := multierror.New()
+		for _, e := range fldErrorList {
+			err = multierror.Append(err, e)
+		}
+		return err
+	}
+	return nil
 }

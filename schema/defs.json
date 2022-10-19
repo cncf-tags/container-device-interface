@@ -23,6 +23,14 @@
         "Env": {
             "$ref": "#/definitions/ArrayOfStrings"
         },
+        "mapStringString": {
+            "type": "object",
+            "patternProperties": {
+                ".{1,}": {
+                    "type": "string"
+                }
+            }
+        },
         "DeviceNode": {
             "type": "object",
             "properties": {
@@ -128,6 +136,9 @@
                     }
                 }
             }
+        },
+        "annotations": {
+            "$ref": "#/definitions/mapStringString"
         }
     }
 }

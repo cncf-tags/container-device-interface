@@ -583,6 +583,9 @@ func TestRequiredVersion(t *testing.T) {
 		{
 			description: "newest required version is selected",
 			spec: &cdi.Spec{
+				Annotations: map[string]string{
+					"key": "value",
+				},
 				ContainerEdits: cdi.ContainerEdits{
 					DeviceNodes: []*cdi.DeviceNode{
 						{
@@ -596,7 +599,7 @@ func TestRequiredVersion(t *testing.T) {
 					},
 				},
 			},
-			expectedVersion: "0.5.0",
+			expectedVersion: "0.6.0",
 		},
 		{
 			description: "device with name starting with digit requires v0.5.0",
@@ -629,6 +632,34 @@ func TestRequiredVersion(t *testing.T) {
 				},
 			},
 			expectedVersion: "0.3.0",
+		},
+		{
+			description: "spec annotations require v0.6.0",
+			spec: &cdi.Spec{
+				Annotations: map[string]string{
+					"key": "value",
+				},
+			},
+			expectedVersion: "0.6.0",
+		},
+		{
+			description: "device annotations require v0.6.0",
+			spec: &cdi.Spec{
+				Devices: []cdi.Device{
+					{
+						Name: "device0",
+						Annotations: map[string]string{
+							"key": "value",
+						},
+						ContainerEdits: cdi.ContainerEdits{
+							Env: []string{
+								"FOO=bar",
+							},
+						},
+					},
+				},
+			},
+			expectedVersion: "0.6.0",
 		},
 	}
 

@@ -37,6 +37,7 @@ const (
 	v030 version = "v0.3.0"
 	v040 version = "v0.4.0"
 	v050 version = "v0.5.0"
+	v060 version = "v0.6.0"
 
 	// vEarliest is the earliest supported version of the CDI specification
 	vEarliest version = v030
@@ -51,6 +52,7 @@ var validSpecVersions = requiredVersionMap{
 	v030: nil,
 	v040: requiresV040,
 	v050: requiresV050,
+	v060: requiresV060,
 }
 
 // MinimumRequiredVersion determines the minumum spec version for the input spec.
@@ -113,6 +115,23 @@ func (r requiredVersionMap) requiredVersion(spec *cdi.Spec) version {
 	}
 
 	return minVersion
+}
+
+// requiresV060 returns true if the spec uses v0.6.0 features
+func requiresV060(spec *cdi.Spec) bool {
+	// The v0.6.0 spec allows annotations to be specified at a spec level
+	for range spec.Annotations {
+		return true
+	}
+
+	// The v0.6.0 spec allows annotations to be specified at a device level
+	for _, d := range spec.Devices {
+		for range d.Annotations {
+			return true
+		}
+	}
+
+	return false
 }
 
 // requiresV050 returns true if the spec uses v0.5.0 features
