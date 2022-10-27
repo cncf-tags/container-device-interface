@@ -5,8 +5,8 @@ go 1.17
 require (
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/opencontainers/runc v1.1.2
-	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
-	github.com/opencontainers/runtime-tools v0.0.0-20190417131837-cd1349b7c47e
+	github.com/opencontainers/runtime-spec v1.0.3-0.20220825212826-86290f6a00fb
+	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.6.0
 	github.com/stretchr/testify v1.7.0
@@ -16,14 +16,9 @@ require (
 )
 
 require (
-	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/hashicorp/errwrap v1.0.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
-	github.com/opencontainers/selinux v1.10.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
