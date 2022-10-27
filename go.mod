@@ -6,8 +6,8 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/opencontainers/runc v1.1.2
-	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
-	github.com/opencontainers/runtime-tools v0.0.0-20190417131837-cd1349b7c47e
+	github.com/opencontainers/runtime-spec v1.0.3-0.20220825212826-86290f6a00fb
+	github.com/opencontainers/runtime-tools v0.9.1-0.20221026201742-946c877fa809
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
