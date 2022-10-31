@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -77,7 +78,7 @@ devices:
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			file, err := mkTestFile(t, []byte(tc.data))
+			file, err := mkTestSpec(t, []byte(tc.data))
 			if err != nil {
 				t.Errorf("failed to create CDI Spec test file: %v", err)
 				return
@@ -245,7 +246,7 @@ devices:
 			}
 			require.NoError(t, err)
 
-			spec, err = NewSpec(raw, tc.name, 0)
+			spec, err = newSpec(raw, tc.name, 0)
 			if tc.invalid || tc.schemaFail {
 				require.Error(t, err)
 				require.Nil(t, spec)
@@ -366,22 +367,22 @@ devices:
 			err = yaml.Unmarshal([]byte(tc.data), raw)
 			require.NoError(t, err)
 
-			spec, err = NewSpec(raw, filepath.Join(dir, tc.name), 0)
+			spec, err = newSpec(raw, filepath.Join(dir, tc.name), 0)
 			if tc.invalid {
-				require.Error(t, err, "NewSpec with invalid data")
-				require.Nil(t, spec, "NewSpec with invalid data")
+				require.Error(t, err, "newSpec with invalid data")
+				require.Nil(t, spec, "newSpec with invalid data")
 				return
 			}
 
 			require.NoError(t, err)
 			require.NotNil(t, spec)
 
-			err = spec.Write(true)
+			err = spec.write(true)
 			require.NoError(t, err)
 			_, err = os.Stat(spec.GetPath())
 			require.NoError(t, err, "spec.Write destination file")
 
-			err = spec.Write(false)
+			err = spec.write(false)
 			require.Error(t, err)
 
 			chk, err = ReadSpec(spec.GetPath(), spec.GetPriority())
@@ -461,7 +462,7 @@ devices:
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			file, err := mkTestFile(t, []byte(tc.data))
+			file, err := mkTestSpec(t, []byte(tc.data))
 			if err != nil {
 				t.Errorf("failed to create CDI Spec test file: %v", err)
 				return
@@ -493,8 +494,8 @@ devices:
 }
 
 // Create an automatically cleaned up temporary file for a test.
-func mkTestFile(t *testing.T, data []byte) (string, error) {
-	tmp, err := ioutil.TempFile("", ".cdi-test.*")
+func mkTestSpec(t *testing.T, data []byte) (string, error) {
+	tmp, err := ioutil.TempFile("", ".cdi-test.*."+specType(data))
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to create test file")
 	}
@@ -513,6 +514,14 @@ func mkTestFile(t *testing.T, data []byte) (string, error) {
 
 	tmp.Close()
 	return file, nil
+}
+
+func specType(content []byte) string {
+	spec := strings.TrimSpace(string(content))
+	if spec != "" && spec[0] == '{' {
+		return "json"
+	}
+	return "yaml"
 }
 
 func TestCurrentVersionIsValid(t *testing.T) {
