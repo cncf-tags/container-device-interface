@@ -25,10 +25,11 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"fmt"
 
 	"sigs.k8s.io/yaml"
 
-	"github.com/hashicorp/go-multierror"
+	"github.com/container-orchestrated-devices/container-device-interface/internal/multierror"
 	"github.com/pkg/errors"
 	schema "github.com/xeipuuv/gojsonschema"
 )
@@ -227,7 +228,7 @@ func (s *Schema) validate(doc schema.JSONLoader) error {
 	return &Error{Result: docErr}
 }
 
-// Error returns the given Result's error as a multierror(.Error()).
+// Error returns the given Result's errors as a single error string.
 func (e *Error) Error() string {
 	if e == nil || e.Result == nil || e.Result.Valid() {
 		return ""
@@ -235,9 +236,9 @@ func (e *Error) Error() string {
 
 	var multi error
 	for _, err := range e.Result.Errors() {
-		multi = multierror.Append(multi, errors.Errorf("%v", err))
+		multi = multierror.Append(multi, fmt.Errorf("%v", err))
 	}
-	return strings.TrimRight(multi.Error(), "\n")
+	return multi.Error()
 }
 
 var (

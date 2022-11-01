@@ -26,9 +26,9 @@ import (
 
 	stderr "errors"
 
+	"github.com/container-orchestrated-devices/container-device-interface/internal/multierror"
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	"github.com/fsnotify/fsnotify"
-	"github.com/hashicorp/go-multierror"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 )
@@ -127,8 +127,8 @@ func (c *Cache) Refresh() error {
 
 	// collect and return cached errors, much like refresh() does it
 	var result error
-	for _, err := range c.errors {
-		result = multierror.Append(result, err...)
+	for _, errors := range c.errors {
+		result = multierror.Append(result, errors...)
 	}
 	return result
 }
@@ -198,11 +198,7 @@ func (c *Cache) refresh() error {
 	c.devices = devices
 	c.errors = specErrors
 
-	if len(result) > 0 {
-		return multierror.Append(nil, result...)
-	}
-
-	return nil
+	return multierror.New(result...)
 }
 
 // RefreshIfRequired triggers a refresh if necessary.
