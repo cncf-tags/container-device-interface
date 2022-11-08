@@ -527,3 +527,119 @@ func specType(content []byte) string {
 func TestCurrentVersionIsValid(t *testing.T) {
 	require.NoError(t, validateVersion(cdi.CurrentVersion))
 }
+
+func TestRequiredVersion(t *testing.T) {
+
+	testCases := []struct {
+		description     string
+		spec            *cdi.Spec
+		expectedVersion string
+	}{
+		{
+			description:     "empty spec returns lowest version",
+			spec:            &cdi.Spec{},
+			expectedVersion: "0.2.0",
+		},
+		{
+			description: "hostPath set returns version 0.5.0",
+			spec: &cdi.Spec{
+				ContainerEdits: cdi.ContainerEdits{
+					DeviceNodes: []*cdi.DeviceNode{
+						{
+							HostPath: "/host/path/set",
+						},
+					},
+				},
+			},
+			expectedVersion: "0.5.0",
+		},
+		{
+			description: "hostPath equal to Path required v0.5.0",
+			spec: &cdi.Spec{
+				ContainerEdits: cdi.ContainerEdits{
+					DeviceNodes: []*cdi.DeviceNode{
+						{
+							HostPath: "/some/path",
+							Path:     "/some/path",
+						},
+					},
+				},
+			},
+			expectedVersion: "0.5.0",
+		},
+		{
+			description: "mount type set returns version 0.4.0",
+			spec: &cdi.Spec{
+				ContainerEdits: cdi.ContainerEdits{
+					Mounts: []*cdi.Mount{
+						{
+							Type: "bind",
+						},
+					},
+				},
+			},
+			expectedVersion: "0.4.0",
+		},
+		{
+			description: "newest required version is selected",
+			spec: &cdi.Spec{
+				ContainerEdits: cdi.ContainerEdits{
+					DeviceNodes: []*cdi.DeviceNode{
+						{
+							HostPath: "/host/path/set",
+						},
+					},
+					Mounts: []*cdi.Mount{
+						{
+							Type: "bind",
+						},
+					},
+				},
+			},
+			expectedVersion: "0.5.0",
+		},
+		{
+			description: "device with name starting with digit requires v0.5.0",
+			spec: &cdi.Spec{
+				Devices: []cdi.Device{
+					{
+						Name: "0",
+						ContainerEdits: cdi.ContainerEdits{
+							Env: []string{
+								"FOO=bar",
+							},
+						},
+					},
+				},
+			},
+			expectedVersion: "0.5.0",
+		},
+		{
+			description: "device with name starting with letter requires minimum version",
+			spec: &cdi.Spec{
+				Devices: []cdi.Device{
+					{
+						Name: "device0",
+						ContainerEdits: cdi.ContainerEdits{
+							Env: []string{
+								"FOO=bar",
+							},
+						},
+					},
+				},
+			},
+			expectedVersion: "0.2.0",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			s := Spec{Spec: tc.spec}
+
+			v, err := s.MinimumRequiredVersion()
+			require.NoError(t, err)
+
+			require.Equal(t, tc.expectedVersion, v)
+		})
+	}
+}

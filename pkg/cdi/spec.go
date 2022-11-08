@@ -32,9 +32,6 @@ import (
 )
 
 const (
-	// CurrentVersion is the current vesion of the CDI Spec.
-	CurrentVersion = cdi.CurrentVersion
-
 	// defaultSpecExt is the file extension for the default encoding.
 	defaultSpecExt = ".yaml"
 )
@@ -248,6 +245,12 @@ func validateVersion(version string) error {
 	}
 
 	return nil
+}
+
+// MinimumRequiredVersion checks the minimum required version for the spec
+func (s *Spec) MinimumRequiredVersion() (string, error) {
+	minVersion := required.minVersion(s.Spec)
+	return minVersion.String(), nil
 }
 
 // ParseSpec parses CDI Spec data into a raw CDI Spec.

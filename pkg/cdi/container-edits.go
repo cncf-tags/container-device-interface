@@ -298,7 +298,8 @@ func sortMounts(specgen *ocigen.Generator) {
 // orderedMounts defines how to sort an OCI Spec Mount slice.
 // This is the almost the same implementation sa used by CRI-O and Docker,
 // with a minor tweak for stable sorting order (easier to test):
-//   https://github.com/moby/moby/blob/17.05.x/daemon/volumes.go#L26
+//
+//	https://github.com/moby/moby/blob/17.05.x/daemon/volumes.go#L26
 type orderedMounts []oci.Mount
 
 // Len returns the number of mounts. Used in sorting.
