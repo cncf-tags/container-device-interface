@@ -213,6 +213,15 @@ func (s *Spec) validate() (map[string]*Device, error) {
 	if err := validateVersion(s.Version); err != nil {
 		return nil, err
 	}
+
+	minVersion, err := s.MinimumRequiredVersion()
+	if err != nil {
+		return nil, errors.Errorf("could not determine minumum required version: %v", err)
+	}
+	if semver.Compare("v"+s.Version, "v"+minVersion) < 0 {
+		return nil, errors.Errorf("the spec version must be at least v%v", minVersion)
+	}
+
 	if err := ValidateVendorName(s.vendor); err != nil {
 		return nil, err
 	}
