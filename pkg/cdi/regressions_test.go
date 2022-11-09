@@ -43,7 +43,7 @@ func TestCDIInjectionRace(t *testing.T) {
 		{description: "expect properly injected resolvable CDI devices",
 			cdiSpecFiles: []string{
 				`
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: "vendor1.com/device"
 devices:
   - name: foo
@@ -60,7 +60,7 @@ containerEdits:
     - "VENDOR1=present"
 `,
 				`
-cdiVersion: "0.2.0"
+cdiVersion: "0.3.0"
 kind: "vendor2.com/device"
 devices:
   - name: bar

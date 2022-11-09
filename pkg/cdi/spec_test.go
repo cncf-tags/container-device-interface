@@ -538,7 +538,7 @@ func TestRequiredVersion(t *testing.T) {
 		{
 			description:     "empty spec returns lowest version",
 			spec:            &cdi.Spec{},
-			expectedVersion: "0.2.0",
+			expectedVersion: "0.3.0",
 		},
 		{
 			description: "hostPath set returns version 0.5.0",
@@ -628,7 +628,7 @@ func TestRequiredVersion(t *testing.T) {
 					},
 				},
 			},
-			expectedVersion: "0.2.0",
+			expectedVersion: "0.3.0",
 		},
 	}
 

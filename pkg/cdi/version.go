@@ -39,7 +39,7 @@ const (
 	v050 version = "v0.5.0"
 
 	// vEarliest is the earliest supported version of the CDI specification
-	vEarliest version = v020
+	vEarliest version = v030
 )
 
 // validSpecVersions stores a map of spec versions to functions to check the required versions.
