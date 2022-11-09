@@ -634,9 +634,7 @@ func TestRequiredVersion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			s := Spec{Spec: tc.spec}
-
-			v, err := s.MinimumRequiredVersion()
+			v, err := MinimumRequiredVersion(tc.spec)
 			require.NoError(t, err)
 
 			require.Equal(t, tc.expectedVersion, v)

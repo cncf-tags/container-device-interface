@@ -25,21 +25,47 @@ import (
 )
 
 const (
-	// CurrentVersion is the current vesion of the CDI Spec.
+	// CurrentVersion is the current version of the CDI Spec.
 	CurrentVersion = cdi.CurrentVersion
 
+	// vCurrent is the current version as a semver-comparable type
 	vCurrent version = "v" + CurrentVersion
 
-	vEarliest version = v020
-
+	// These represent the released versions of the CDI specification
+	v010 version = "v0.1.0"
 	v020 version = "v0.2.0"
 	v030 version = "v0.3.0"
 	v040 version = "v0.4.0"
 	v050 version = "v0.5.0"
+
+	// vEarliest is the earliest supported version of the CDI specification
+	vEarliest version = v020
 )
+
+// validSpecVersions stores a map of spec versions to functions to check the required versions.
+// Adding new fields / spec versions requires that a `requiredFunc` be implemented and
+// this map be updated.
+var validSpecVersions = requiredVersionMap{
+	v010: nil,
+	v020: nil,
+	v030: nil,
+	v040: requiresV040,
+	v050: requiresV050,
+}
+
+// MinimumRequiredVersion determines the minumum spec version for the input spec.
+func MinimumRequiredVersion(spec *cdi.Spec) (string, error) {
+	minVersion := validSpecVersions.requiredVersion(spec)
+	return minVersion.String(), nil
+}
 
 // version represents a semantic version string
 type version string
+
+// newVersion creates a version that can be used for semantic version comparisons.
+func newVersion(v string) version {
+	return version("v" + strings.TrimPrefix(v, "v"))
+}
 
 // String returns the string representation of the version.
 // This trims a leading v if present.
@@ -47,10 +73,9 @@ func (v version) String() string {
 	return strings.TrimPrefix(string(v), "v")
 }
 
-// LT checks whether a version is less than the specified version.
-// Semantic versioning is used to perform the comparison.
-func (v version) LT(o version) bool {
-	return semver.Compare(string(v), string(o)) < 0
+// IsGreaterThan checks with a version is greater than the specified version.
+func (v version) IsGreaterThan(o version) bool {
+	return semver.Compare(string(v), string(o)) > 0
 }
 
 // IsLatest checks whether the version is the latest supported version
@@ -62,24 +87,24 @@ type requiredFunc func(*cdi.Spec) bool
 
 type requiredVersionMap map[version]requiredFunc
 
-// required stores a map of spec versions to functions to check the required versions.
-// Adding new fields / spec versions requires that a `requiredFunc` be implemented and
-// this map be updated.
-var required = requiredVersionMap{
-	v050: requiresV050,
-	v040: requiresV040,
+// isValidVersion checks whether the specified version is valid.
+// A version is valid if it is contained in the required version map.
+func (r requiredVersionMap) isValidVersion(specVersion string) bool {
+	_, ok := validSpecVersions[newVersion(specVersion)]
+
+	return ok
 }
 
-// minVersion returns the minimum version required for the given spec
-func (r requiredVersionMap) minVersion(spec *cdi.Spec) version {
+// requiredVersion returns the minimum version required for the given spec
+func (r requiredVersionMap) requiredVersion(spec *cdi.Spec) version {
 	minVersion := vEarliest
 
-	for specVersion := range validSpecVersions {
-		v := version("v" + strings.TrimPrefix(specVersion, "v"))
-		if f, ok := r[v]; ok {
-			if f(spec) && minVersion.LT(v) {
-				minVersion = v
-			}
+	for v, isRequired := range validSpecVersions {
+		if isRequired == nil {
+			continue
+		}
+		if isRequired(spec) && v.IsGreaterThan(minVersion) {
+			minVersion = v
 		}
 		// If we have already detected the latest version then no later version could be detected
 		if minVersion.IsLatest() {
