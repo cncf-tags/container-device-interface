@@ -22,9 +22,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"gopkg.in/fsnotify.v1"
 
 	cdi "github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
 )
