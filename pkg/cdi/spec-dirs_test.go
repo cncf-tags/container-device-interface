@@ -17,12 +17,12 @@
 package cdi
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -214,7 +214,7 @@ devices:
 func mkTestDir(t *testing.T, dirs map[string]map[string]string) (string, error) {
 	tmp, err := ioutil.TempDir("", ".cache-test*")
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to create test directory")
+		return "", fmt.Errorf("failed to create test directory: %w", err)
 	}
 
 	t.Cleanup(func() {
@@ -232,16 +232,16 @@ func updateTestDir(t *testing.T, tmp string, dirs map[string]map[string]string) 
 	for sub, content := range dirs {
 		dir := filepath.Join(tmp, sub)
 		if err := os.MkdirAll(dir, 0755); err != nil {
-			return errors.Wrapf(err, "failed to create directory %q", dir)
+			return fmt.Errorf("failed to create directory %q: %w", dir, err)
 		}
 		for file, data := range content {
 			file := filepath.Join(dir, file)
 			tmp := file + ".tmp"
 			if err := ioutil.WriteFile(tmp, []byte(data), 0644); err != nil {
-				return errors.Wrapf(err, "failed to write file %q", tmp)
+				return fmt.Errorf("failed to write file %q: %w", tmp, err)
 			}
 			if err := os.Rename(tmp, file); err != nil {
-				return errors.Wrapf(err, "failed to rename %q to %q", tmp, file)
+				return fmt.Errorf("failed to rename %q to %q: %w", tmp, file, err)
 			}
 		}
 	}

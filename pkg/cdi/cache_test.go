@@ -29,7 +29,6 @@ import (
 	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/yaml"
 )
@@ -703,17 +702,17 @@ devices:
 					ociSpec := &oci.Spec{}
 					unresolved, err = cache.InjectDevices(ociSpec, inject)
 					if err != nil {
-						err = errors.Wrap(err, "device injection failed")
+						err = fmt.Errorf("device injection failed: %w", err)
 						return
 					}
 					if unresolved != nil {
-						err = errors.Errorf("unresolved devices %s", strings.Join(unresolved, ","))
+						err = fmt.Errorf("unresolved devices %s", strings.Join(unresolved, ","))
 						return
 					}
 
 					result := ociSpec.Linux.Devices[0].Path
 					if _, ok := expect[result]; !ok {
-						err = errors.Errorf("unexpected device path %s", result)
+						err = fmt.Errorf("unexpected device path %s", result)
 						return
 					}
 

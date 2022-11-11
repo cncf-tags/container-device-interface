@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	cdi "github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
@@ -137,8 +136,8 @@ func monitorSpecDirs(args ...string) {
 func monitorDirectories(dirs ...string) (*fsnotify.Watcher, error) {
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create directory watch for %s",
-			strings.Join(dirs, ","))
+		return nil, fmt.Errorf("failed to create directory watch for %s: %w",
+			strings.Join(dirs, ","), err)
 	}
 
 	for _, dir := range dirs {
@@ -148,7 +147,7 @@ func monitorDirectories(dirs ...string) (*fsnotify.Watcher, error) {
 		}
 
 		if err = w.Add(dir); err != nil {
-			return nil, errors.Wrapf(err, "failed to add %q to fsnotify watch", dir)
+			return nil, fmt.Errorf("failed to add %q to fsnotify watch: %w", dir, err)
 		}
 	}
 

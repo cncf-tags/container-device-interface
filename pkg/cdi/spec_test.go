@@ -17,13 +17,13 @@
 package cdi
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/pkg/errors"
 	"sigs.k8s.io/yaml"
 
 	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
@@ -497,13 +497,13 @@ devices:
 func mkTestSpec(t *testing.T, data []byte) (string, error) {
 	tmp, err := ioutil.TempFile("", ".cdi-test.*."+specType(data))
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to create test file")
+		return "", fmt.Errorf("failed to create test file: %w", err)
 	}
 
 	if data != nil {
 		_, err := tmp.Write(data)
 		if err != nil {
-			return "", errors.Wrap(err, "failed to write test file content")
+			return "", fmt.Errorf("failed to write test file content: %w", err)
 		}
 	}
 
