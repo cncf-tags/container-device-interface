@@ -409,7 +409,17 @@ func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
 // GetSpecErrors returns all errors encountered for the spec during the
 // last cache refresh.
 func (c *Cache) GetSpecErrors(spec *Spec) []error {
-	return c.errors[spec.GetPath()]
+	var errors []error
+
+	c.Lock()
+	defer c.Unlock()
+
+	if errs, ok := c.errors[spec.GetPath()]; ok {
+		errors = make([]error, len(errs))
+		copy(errors, errs)
+	}
+
+	return errors
 }
 
 // GetErrors returns all errors encountered during the last
