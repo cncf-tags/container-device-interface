@@ -196,7 +196,7 @@
 //         return fmt.Errorf("failed to generate Spec name: %w", err)
 //     }
 //
-//     return registry.WriteSpec(spec, specName)
+//     return registry.SpecDB().WriteSpec(spec, specName)
 // }
 //
 // Similary, generating and later cleaning up transient Spec files can be
@@ -241,7 +241,7 @@
 //         return fmt.Errorf("failed to generate Spec name: %w", err)
 //     }
 //
-//     return registry.WriteSpec(spec, specName)
+//     return registry.SpecDB().WriteSpec(spec, specName)
 // }
 //
 // func removeTransientSpec(ctr Container) error {
@@ -249,7 +249,7 @@
 //     transientID := getSomeSufficientlyUniqueIDForContainer(ctr)
 //     specName := cdi.GenerateNameForTransientSpec(vendor, class, transientID)
 //
-//     return registry.RemoveSpec(specName)
+//     return registry.SpecDB().RemoveSpec(specName)
 // }
 //
 // CDI Spec Validation
