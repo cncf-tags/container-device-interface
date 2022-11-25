@@ -20,17 +20,16 @@ import (
 	"bytes"
 	"embed"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"strings"
-	"fmt"
 
 	"sigs.k8s.io/yaml"
 
 	"github.com/container-orchestrated-devices/container-device-interface/internal/multierror"
-	"github.com/pkg/errors"
 	schema "github.com/xeipuuv/gojsonschema"
 )
 
@@ -138,8 +137,8 @@ func Load(source string) (*Schema, error) {
 		if strings.Index(source, "://") < 0 {
 			source, err = filepath.Abs(source)
 			if err != nil {
-				return nil, errors.Wrapf(err,
-					"failed to get JSON schema absolute path for %s", source)
+				return nil, fmt.Errorf("failed to get JSON schema absolute path for %s: %w",
+					source, err)
 			}
 			source = "file://" + source
 		}
@@ -149,7 +148,7 @@ func Load(source string) (*Schema, error) {
 
 	s, err = schema.NewSchema(loader)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to load JSON schema")
+		return nil, fmt.Errorf("failed to load JSON schema: %w", err)
 	}
 
 	return &Schema{schema: s}, nil
@@ -160,7 +159,7 @@ func (s *Schema) ReadAndValidate(r io.Reader) ([]byte, error) {
 	loader, reader := schema.NewReaderLoader(r)
 	data, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read data for validation")
+		return nil, fmt.Errorf("failed to read data for validation: %w", err)
 	}
 	return data, s.validate(loader)
 }
@@ -181,11 +180,11 @@ func (s *Schema) ValidateData(data []byte) error {
 	if !bytes.HasPrefix(bytes.TrimSpace(data), []byte{'{'}) {
 		err = yaml.Unmarshal(data, &any)
 		if err != nil {
-			return errors.Wrap(err, "failed to YAML unmarshal data for validation")
+			return fmt.Errorf("failed to YAML unmarshal data for validation: %w", err)
 		}
 		data, err = json.Marshal(any)
 		if err != nil {
-			return errors.Wrap(err, "failed to JSON remarshal data for validation")
+			return fmt.Errorf("failed to JSON remarshal data for validation: %w", err)
 		}
 	}
 
@@ -219,7 +218,7 @@ func (s *Schema) validate(doc schema.JSONLoader) error {
 
 	docErr, jsonErr := s.schema.Validate(doc)
 	if jsonErr != nil {
-		return errors.Wrap(jsonErr, "failed to load JSON data for validation")
+		return fmt.Errorf("failed to load JSON data for validation: %w", jsonErr)
 	}
 	if docErr.Valid() {
 		return nil

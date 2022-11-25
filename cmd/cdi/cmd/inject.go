@@ -21,8 +21,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/pkg/errors"
-
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"sigs.k8s.io/yaml"
 
@@ -74,12 +72,12 @@ func readOCISpec(path string) (*oci.Spec, error) {
 	}
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read OCI Spec (%q)", path)
+		return nil, fmt.Errorf("failed to read OCI Spec (%q): %w", path, err)
 	}
 
 	spec = &oci.Spec{}
 	if err = yaml.Unmarshal(data, spec); err != nil {
-		return nil, errors.Wrapf(err, "failed to parse OCI Spec (%q)", path)
+		return nil, fmt.Errorf("failed to parse OCI Spec (%q): %w", path, err)
 	}
 
 	return spec, nil

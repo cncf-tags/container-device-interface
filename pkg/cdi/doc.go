@@ -46,7 +46,6 @@
 //      "fmt"
 //      "strings"
 //
-//      "github.com/pkg/errors"
 //      log "github.com/sirupsen/logrus"
 //
 //      "github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
@@ -58,7 +57,7 @@
 //
 //      unresolved, err := cdi.GetRegistry().InjectDevices(spec, devices)
 //      if err != nil {
-//          return errors.Wrap(err, "CDI device injection failed")
+//          return fmt.Errorf("CDI device injection failed: %w", err)
 //      }
 //
 //      log.Debug("CDI-updated OCI Spec: %s", dumpSpec(spec))
@@ -90,7 +89,6 @@
 //      "fmt"
 //      "strings"
 //
-//      "github.com/pkg/errors"
 //      log "github.com/sirupsen/logrus"
 //
 //      "github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
@@ -115,7 +113,7 @@
 //
 //      unresolved, err := registry.InjectDevices(spec, devices)
 //      if err != nil {
-//          return errors.Wrap(err, "CDI device injection failed")
+//          return fmt.Errorf("CDI device injection failed: %w", err)
 //      }
 //
 //      log.Debug("CDI-updated OCI Spec: %s", dumpSpec(spec))

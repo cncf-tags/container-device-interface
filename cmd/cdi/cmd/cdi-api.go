@@ -25,7 +25,6 @@ import (
 	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	gen "github.com/opencontainers/runtime-tools/generate"
-	"github.com/pkg/errors"
 )
 
 func cdiListVendors() {
@@ -149,8 +148,8 @@ func cdiInjectDevices(format string, ociSpec *oci.Spec, patterns []string) error
 		for _, glob := range patterns {
 			match, err := filepath.Match(glob, device)
 			if err != nil {
-				return errors.Wrapf(err, "failed to match pattern %q against %q",
-					glob, device)
+				return fmt.Errorf("failed to match pattern %q against %q: %w",
+					glob, device, err)
 			}
 			if match {
 				matches[device] = struct{}{}
@@ -171,7 +170,7 @@ func cdiInjectDevices(format string, ociSpec *oci.Spec, patterns []string) error
 		}
 	}
 	if err != nil {
-		return errors.Wrapf(err, "OCI device injection failed")
+		return fmt.Errorf("OCI device injection failed: %w", err)
 	}
 
 	fmt.Printf("Updated OCI Spec:\n")
@@ -190,7 +189,7 @@ func cdiResolveDevices(ociSpecFiles ...string) error {
 	)
 
 	if cache, err = cdi.NewCache(); err != nil {
-		return errors.Wrap(err, "failed to create CDI cache instance")
+		return fmt.Errorf("failed to create CDI cache instance: %w", err)
 	}
 
 	for _, ociSpecFile := range ociSpecFiles {
@@ -209,7 +208,7 @@ func cdiResolveDevices(ociSpecFiles ...string) error {
 			}
 		}
 		if err != nil {
-			return errors.Wrapf(err, "failed to resolve devices for OCI Spec %q", ociSpecFile)
+			return fmt.Errorf("failed to resolve devices for OCI Spec %q: %w", ociSpecFile, err)
 		}
 
 		format := chooseFormat(injectCfg.output, ociSpecFile)
