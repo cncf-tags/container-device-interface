@@ -32,23 +32,11 @@ import (
 )
 
 const (
-	// CurrentVersion is the current vesion of the CDI Spec.
-	CurrentVersion = cdi.CurrentVersion
-
 	// defaultSpecExt is the file extension for the default encoding.
 	defaultSpecExt = ".yaml"
 )
 
 var (
-	// Valid CDI Spec versions.
-	validSpecVersions = map[string]struct{}{
-		"0.1.0": {},
-		"0.2.0": {},
-		"0.3.0": {},
-		"0.4.0": {},
-		"0.5.0": {},
-	}
-
 	// Externally set CDI Spec validation function.
 	specValidator func(*cdi.Spec) error
 	validatorLock sync.RWMutex
@@ -216,6 +204,15 @@ func (s *Spec) validate() (map[string]*Device, error) {
 	if err := validateVersion(s.Version); err != nil {
 		return nil, err
 	}
+
+	minVersion, err := MinimumRequiredVersion(s.Spec)
+	if err != nil {
+		return nil, fmt.Errorf("could not determine minumum required version: %v", err)
+	}
+	if newVersion(minVersion).IsGreaterThan(newVersion(s.Version)) {
+		return nil, fmt.Errorf("the spec version must be at least v%v", minVersion)
+	}
+
 	if err := ValidateVendorName(s.vendor); err != nil {
 		return nil, err
 	}
@@ -243,7 +240,7 @@ func (s *Spec) validate() (map[string]*Device, error) {
 
 // validateVersion checks whether the specified spec version is supported.
 func validateVersion(version string) error {
-	if _, ok := validSpecVersions[version]; !ok {
+	if !validSpecVersions.isValidVersion(version) {
 		return fmt.Errorf("invalid version %q", version)
 	}
 
