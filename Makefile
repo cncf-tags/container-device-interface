@@ -49,6 +49,10 @@ bin/%:
 	$(Q)echo "Building $@..."; \
 	$(GO_BUILD) -o $@ ./$(subst bin/,cmd/,$@)
 
+bin/cdi:
+	$(Q)echo "Building $@..."; \
+	cd cmd/cdi; $(GO_BUILD) -o $(abspath $@) .
+
 #
 # cleanup targets
 #
@@ -84,7 +88,7 @@ bin/validate: cmd/validate/validate.go $(wildcard schema/*.json)
 # quasi-automatic dependency for bin/cdi
 bin/cdi: $(wildcard cmd/cdi/*.go cmd/cdi/cmd/*.go) $(shell \
             for dir in \
-                $$($(GO_CMD) list -f '{{ join .Deps "\n"}}' ./cmd/cdi/... | \
+                $$(cd ./cmd/cdi; $(GO_CMD) list -f '{{ join .Deps "\n"}}' ./... | \
                       grep $(CDI_PKG)/pkg/ | \
                       sed 's:$(CDI_PKG):.:g'); do \
                 find $$dir -name \*.go; \
