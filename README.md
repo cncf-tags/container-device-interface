@@ -1,4 +1,7 @@
 # CDI - The Container Device Interface
+
+**NOTE:** The API for injecting CDI devices that existed at `github.com/container-orchestrated-devices/container-device-interface/pkg` has been removed. Users of this API should migrate to the one at `github.com/container-orchestrated-devices/container-device-interface/pkg/cdi` as this is actively maintained.
+
 ## What is CDI?
 
 CDI (Container Device Interface), is a [specification](SPEC.md), for container runtimes, to support third party devices.
