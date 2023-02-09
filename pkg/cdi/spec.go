@@ -28,6 +28,7 @@ import (
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"sigs.k8s.io/yaml"
 
+	"github.com/container-orchestrated-devices/container-device-interface/internal/validation"
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 )
 
@@ -217,6 +218,9 @@ func (s *Spec) validate() (map[string]*Device, error) {
 		return nil, err
 	}
 	if err := ValidateClassName(s.class); err != nil {
+		return nil, err
+	}
+	if err := validation.ValidateSpecAnnotations(s.Kind, s.Annotations); err != nil {
 		return nil, err
 	}
 	if err := s.edits().Validate(); err != nil {
