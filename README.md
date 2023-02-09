@@ -6,6 +6,14 @@
 
 CDI (Container Device Interface), is a [specification](SPEC.md), for container runtimes, to support third party devices.
 
+It introduces an abstract notion of a device as a resource. Such devices are uniquely specified by a fully-qualified name that is constructed from a vendor ID, a device class, and a name that is unique per vendor ID-device class pair.
+
+```
+vendor.com/class=unique_name
+```
+
+The combination of vendor ID and device class (`vendor.com/class` in the above example) is referred to as the device kind.
+
 CDI concerns itself only with enabling container to be device aware. Areas like resource management are explicitly left out of CDI (and is expected to be handled by the orchestrator). Because of this focus, the CDI specification is simple to implement and allows great flexibility to runtimes and orchestrators.
 
 Note: The CDI model is based on the Container Networking Interface (CNI) model and specification.
