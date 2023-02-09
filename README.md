@@ -107,22 +107,18 @@ $ cat > /etc/cdi/vendor.json <<EOF
   }
 }
 EOF
+```
 
-# CLI examples below
+Assuming this specification has been generated and is available in either `/etc/cdi` or `/var/run/cdi` (or whereever a CDI-enabled consumer is configured to read CDI specifications from), the devices can be accessed through their fully-qualified device names.
 
-# Verbose
-$ docker/podman run --device vendor.com/device=myDevice --device vendor.com/device=myDevice2 ...
-
-# Less verbose, through infering the vendor from the device name
-$ docker/podman run --device myDevice ...
-
-# Special case
-$ docker/podman run --device vendor.com/device=all ...
+For example, in the case of `podman` the CLI for accessing the device would be:
+```
+$ podman run --device vendor.com/device=myDevice ...
 ```
 
 ## Issues and Contributing
 
 [Checkout the Contributing document!](CONTRIBUTING.md)
 
-* Please let us know by [filing a new issue](https://github.com/RenaudWasTaken/cdi/issues/new)
+* Please let us know by [filing a new issue](https://github.com/container-orchestrated-devices/container-device-interface/issues/new)
 * You can contribute by opening a [pull request](https://help.github.com/articles/using-pull-requests/)
