@@ -6,6 +6,14 @@
 
 CDI (Container Device Interface), is a [specification](SPEC.md), for container runtimes, to support third party devices.
 
+It introduces an abstract notion of a device as a resource. Such devices are uniquely specified by a fully-qualified name that is constructed from a vendor ID, a device class, and a name that is unique per vendor ID-device class pair.
+
+```
+vendor.com/class=unique_name
+```
+
+The combination of vendor ID and device class (`vendor.com/class` in the above example) is referred to as the device kind.
+
 CDI concerns itself only with enabling container to be device aware. Areas like resource management are explicitly left out of CDI (and is expected to be handled by the orchestrator). Because of this focus, the CDI specification is simple to implement and allows great flexibility to runtimes and orchestrators.
 
 Note: The CDI model is based on the Container Networking Interface (CNI) model and specification.
@@ -107,22 +115,18 @@ $ cat > /etc/cdi/vendor.json <<EOF
   }
 }
 EOF
+```
 
-# CLI examples below
+Assuming this specification has been generated and is available in either `/etc/cdi` or `/var/run/cdi` (or whereever a CDI-enabled consumer is configured to read CDI specifications from), the devices can be accessed through their fully-qualified device names.
 
-# Verbose
-$ docker/podman run --device vendor.com/device=myDevice --device vendor.com/device=myDevice2 ...
-
-# Less verbose, through infering the vendor from the device name
-$ docker/podman run --device myDevice ...
-
-# Special case
-$ docker/podman run --device vendor.com/device=all ...
+For example, in the case of `podman` the CLI for accessing the device would be:
+```
+$ podman run --device vendor.com/device=myDevice ...
 ```
 
 ## Issues and Contributing
 
 [Checkout the Contributing document!](CONTRIBUTING.md)
 
-* Please let us know by [filing a new issue](https://github.com/RenaudWasTaken/cdi/issues/new)
+* Please let us know by [filing a new issue](https://github.com/container-orchestrated-devices/container-device-interface/issues/new)
 * You can contribute by opening a [pull request](https://help.github.com/articles/using-pull-requests/)
