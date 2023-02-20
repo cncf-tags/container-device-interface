@@ -114,9 +114,10 @@ func newSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
 	return spec, nil
 }
 
-// Write the CDI Spec to the file associated with it during instantiation
-// by newSpec() or ReadSpec().
-func (s *Spec) write(overwrite bool) error {
+// WriteSpec writes the specified raw CDI spec to the specified path.
+// An overwrite flag controls whether an existing file is overwritten or if an
+// error should be returned.
+func WriteSpec(raw *cdi.Spec, path string, overwrite bool) error {
 	var (
 		data []byte
 		dir  string
@@ -124,21 +125,21 @@ func (s *Spec) write(overwrite bool) error {
 		err  error
 	)
 
-	err = validateSpec(s.Spec)
+	err = validateSpec(raw)
 	if err != nil {
 		return err
 	}
 
-	if filepath.Ext(s.path) == ".yaml" {
-		data, err = yaml.Marshal(s.Spec)
+	if filepath.Ext(path) == ".yaml" {
+		data, err = yaml.Marshal(raw)
 	} else {
-		data, err = json.Marshal(s.Spec)
+		data, err = json.Marshal(raw)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to marshal Spec file: %w", err)
 	}
 
-	dir = filepath.Dir(s.path)
+	dir = filepath.Dir(path)
 	err = os.MkdirAll(dir, 0o755)
 	if err != nil {
 		return fmt.Errorf("failed to create Spec dir: %w", err)
@@ -154,7 +155,7 @@ func (s *Spec) write(overwrite bool) error {
 		return fmt.Errorf("failed to write Spec file: %w", err)
 	}
 
-	err = renameIn(dir, filepath.Base(tmp.Name()), filepath.Base(s.path), overwrite)
+	err = renameIn(dir, filepath.Base(tmp.Name()), filepath.Base(path), overwrite)
 
 	if err != nil {
 		os.Remove(tmp.Name())
@@ -162,6 +163,12 @@ func (s *Spec) write(overwrite bool) error {
 	}
 
 	return err
+}
+
+// Write the CDI Spec to the file associated with it during instantiation
+// by newSpec() or ReadSpec().
+func (s *Spec) write(overwrite bool) error {
+	return WriteSpec(s.Spec, s.path, overwrite)
 }
 
 // GetVendor returns the vendor of this Spec.
