@@ -1,3 +1,14 @@
+# Copyright © The CDI Authors
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 GO_CMD   := go
 GO_BUILD := $(GO_CMD) build
 GO_TEST  := $(GO_CMD) test -race -v -cover
@@ -8,7 +19,8 @@ GO_VET   := $(GO_CMD) vet
 
 CDI_PKG  := $(shell grep ^module go.mod | sed 's/^module *//g')
 
-BINARIES := bin/cdi bin/validate
+CMDS := $(patsubst ./cmd/%/,%,$(sort $(dir $(wildcard ./cmd/*/))))
+BINARIES := $(patsubst %,bin/%,$(CMDS))
 
 ifneq ($(V),1)
   Q := @
@@ -45,13 +57,37 @@ vet:
 # build targets
 #
 
-bin/%:
-	$(Q)echo "Building $@..."; \
-	$(GO_BUILD) -o $@ ./$(subst bin/,cmd/,$@)
+$(BINARIES): bin/%:
+	$(Q)echo "Building $@..."
+	$(Q)(cd cmd/$(*) && $(GO_BUILD) -o $(abspath $@) .)
 
-bin/cdi:
-	$(Q)echo "Building $@..."; \
-	cd cmd/cdi; $(GO_BUILD) -o $(abspath $@) .
+#
+# go module tidy and verify targets
+#
+.PHONY: mod-tidy $(CMD_MOD_TIDY_TARGETS) mod-tidy-root
+.PHONY: mod-verify $(CMD_MOD_VERIFY_TARGETS) mod-verify-root
+
+CMD_MOD_TIDY_TARGETS := mod-tidy-cdi mod-tidy-validate
+CMD_MOD_VERIFY_TARGETS := mod-verify-cdi mod-verify-validate
+
+mod-tidy-root:
+	$(Q)echo "Running $@..."; \
+	$(GO_CMD) mod tidy
+
+$(CMD_MOD_TIDY_TARGETS): mod-tidy-%: mod-tidy-root
+	$(Q)echo "Running $@... in $(abspath ./cmd/$(*))"; \
+	(cd $(abspath ./cmd/$(*)) && $(GO_CMD) mod tidy)
+
+mod-verify-root: mod-tidy-root
+	$(Q)echo "Running $@..."; \
+	$(GO_CMD) mod verify
+
+$(CMD_MOD_VERIFY_TARGETS): mod-verify-%: mod-tidy-% mod-verify-root
+	$(Q)echo "Running $@... in $(abspath ./cmd/$(*))"; \
+	(cd $(abspath ./cmd/$(*)) && pwd && $(GO_CMD) mod verify)
+
+mod-verify: $(CMD_MOD_VERIFY_TARGETS)
+mod-tidy: $(CMD_MOD_TIDY_TARGETS)
 
 #
 # cleanup targets
@@ -83,7 +119,13 @@ test-schema: bin/validate
 # dependencies
 #
 
-bin/validate: cmd/validate/validate.go $(wildcard schema/*.json)
+bin/validate: $(wildcard schema/*.json) $(wildcard cmd/validate/*.go cmd/validate/cmd/*.go) $(shell \
+            for dir in \
+                $$(cd ./cmd/validate; $(GO_CMD) list -f '{{ join .Deps "\n"}}' ./... | \
+                      grep $(CDI_PKG)/pkg/ | \
+                      sed 's:$(CDI_PKG):.:g'); do \
+                find $$dir -name \*.go; \
+            done | sort | uniq)
 
 # quasi-automatic dependency for bin/cdi
 bin/cdi: $(wildcard cmd/cdi/*.go cmd/cdi/cmd/*.go) $(shell \
@@ -93,3 +135,4 @@ bin/cdi: $(wildcard cmd/cdi/*.go cmd/cdi/cmd/*.go) $(shell \
                       sed 's:$(CDI_PKG):.:g'); do \
                 find $$dir -name \*.go; \
             done | sort | uniq)
+
