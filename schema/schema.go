@@ -30,6 +30,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/container-orchestrated-devices/container-device-interface/internal/multierror"
+	"github.com/container-orchestrated-devices/container-device-interface/internal/validation"
 	schema "github.com/xeipuuv/gojsonschema"
 )
 
@@ -173,7 +174,7 @@ func (s *Schema) Validate(r io.Reader) error {
 // ValidateData validates the given JSON data against the schema.
 func (s *Schema) ValidateData(data []byte) error {
 	var (
-		any interface{}
+		any map[string]interface{}
 		err error
 	)
 
@@ -188,7 +189,11 @@ func (s *Schema) ValidateData(data []byte) error {
 		}
 	}
 
-	return s.validate(schema.NewBytesLoader(data))
+	if err := s.validate(schema.NewBytesLoader(data)); err != nil {
+		return err
+	}
+
+	return s.validateContents(any)
 }
 
 // ValidateFile validates the given JSON file against the schema.
@@ -225,6 +230,101 @@ func (s *Schema) validate(doc schema.JSONLoader) error {
 	}
 
 	return &Error{Result: docErr}
+}
+
+type schemaContents map[string]interface{}
+
+func asSchemaContents(i interface{}) (schemaContents, error) {
+	if i == nil {
+		return nil, nil
+	}
+
+	if c, ok := i.(map[string]interface{}); ok {
+		return schemaContents(c), nil
+	}
+
+	return nil, fmt.Errorf("expected map[string]interface{} but got %T", i)
+}
+
+func (c schemaContents) getFieldAsString(key string) (string, bool) {
+	if c == nil {
+		return "", false
+	}
+	if value, ok := c[key]; ok {
+		if value, ok := value.(string); ok {
+			return value, true
+		}
+	}
+	return "", false
+}
+
+func (c schemaContents) getAnnotations() (map[string]interface{}, bool) {
+	if c == nil {
+		return nil, false
+	}
+	if annotations, ok := c["annotations"]; ok {
+		if annotations, ok := annotations.(map[string]interface{}); ok {
+			return annotations, true
+		}
+	}
+	return nil, false
+}
+
+func (c schemaContents) getDevices() ([]schemaContents, error) {
+	if c == nil {
+		return nil, nil
+	}
+	devicesIfc, ok := c["devices"]
+	if !ok {
+		return nil, nil
+	}
+
+	devices, ok := devicesIfc.([]interface{})
+	if !ok {
+		return nil, nil
+	}
+
+	var deviceContents []schemaContents
+	for _, device := range devices {
+		c, err := asSchemaContents(device)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse device: %w", err)
+		}
+		deviceContents = append(deviceContents, c)
+	}
+
+	return deviceContents, nil
+}
+
+// validateContents performs additional validation against the schema contents.
+func (s *Schema) validateContents(any map[string]interface{}) error {
+	if any == nil || s == nil {
+		return nil
+	}
+
+	contents := schemaContents(any)
+
+	if specAnnotations, ok := contents.getAnnotations(); ok {
+		if err := validation.ValidateSpecAnnotations("", specAnnotations); err != nil {
+			return err
+		}
+	}
+
+	devices, err := contents.getDevices()
+	if err != nil {
+		return err
+	}
+
+	for _, device := range devices {
+		name, _ := device.getFieldAsString("name")
+		if annotations, ok := device.getAnnotations(); ok {
+			if err := validation.ValidateSpecAnnotations(name, annotations); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 // Error returns the given Result's errors as a single error string.

@@ -8,7 +8,7 @@
 
 ## Version
 
-This is CDI **spec** version **0.5.0**.
+This is CDI **spec** version **0.6.0**.
 
 ### Update policy
 
@@ -26,6 +26,7 @@ Released versions of the spec are available as Git tags.
 | v0.3.0 |   | Initial tagged release of Spec |
 | v0.4.0 |   | Added `type` field to Mount specification |
 | v0.5.0 |   | Add `HostPath` to `DeviceNodes` |
+| v0.6.0 |   | Add `Annotations` field to `Spec` and `Device` specifications |
 
 *Note*: The initial release of a **spec** with version `v0.x.0` will be tagged as
 `v0.x.0` with subsequent changes to the API applicable to this version tagged as `v0.x.y`.
@@ -80,12 +81,24 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
 
 ```
 {
-    "cdiVersion": "0.5.0",
+    "cdiVersion": "0.6.0",
     "kind": "<name>",
+
+    // This field contains a set of key-value pairs that may be used to provide
+    // additional information to a consumer on the spec.
+    "annotations": { (optional)
+        "key": "value"
+    },
 
     "devices": [
         {
             "name": "<name>",
+
+            // This field contains a set of key-value pairs that may be used to provide
+            // additional information to a consumer on the specific device.
+            "annotations": { (optional)
+              "key": "value"
+            },
 
             // Same as the below containerSpec field.
             // This field should only be applied to the Container's OCI spec
