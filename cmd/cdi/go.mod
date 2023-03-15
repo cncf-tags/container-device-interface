@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/container-orchestrated-devices/container-device-interface v0.0.0
-	github.com/fsnotify/fsnotify v1.5.1
+	github.com/fsnotify/fsnotify v1.6.0
 	github.com/opencontainers/runtime-spec v1.0.3-0.20220825212826-86290f6a00fb
 	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
 	github.com/spf13/cobra v1.6.0
