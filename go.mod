@@ -10,7 +10,7 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/mod v0.4.2
-	golang.org/x/sys v0.1.0
+	golang.org/x/sys v0.6.0
 	sigs.k8s.io/yaml v1.3.0
 )
 
