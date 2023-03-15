@@ -132,6 +132,7 @@ func (s *Spec) write(overwrite bool) error {
 
 	if filepath.Ext(s.path) == ".yaml" {
 		data, err = yaml.Marshal(s.Spec)
+		data = append([]byte("---\n"), data...)
 	} else {
 		data, err = json.Marshal(s.Spec)
 	}
