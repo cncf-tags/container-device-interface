@@ -5,12 +5,16 @@ updates:
   schedule:
     interval: weekly
   open-pull-requests-limit: 10
+  ignore:
+  - versions: ["*-rc.*"]
 
 - package-ecosystem: gomod
   directory: "test/tools"
   schedule:
     interval: weekly
   open-pull-requests-limit: 10
+  ignore:
+  - versions: ["*-rc.*"]
 
 - package-ecosystem: "github-actions"
   directory: "/"
