@@ -94,6 +94,12 @@ The key words "must", "must not", "required", "shall", "shall not", "should", "s
         {
             "name": "<name>",
 
+            // This field contains a list of alternative names for the device.
+            // These names must be unique for a given kind.
+            "aliases": [ (optional)
+
+            ],
+
             // This field contains a set of key-value pairs that may be used to provide
             // additional information to a consumer on the specific device.
             "annotations": { (optional)

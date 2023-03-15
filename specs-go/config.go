@@ -18,6 +18,8 @@ type Spec struct {
 // Device is a "Device" a container runtime can add to a container
 type Device struct {
 	Name string `json:"name"`
+	// Aliases provide alternative names for a device. The fully-qualified names for the devices must be globally unique.
+	Aliases []string `json:"aliases,omitempty"`
 	// Annotations add meta information per device. Note these are CDI-specific and do not affect container metadata.
 	Annotations    map[string]string `json:"annotations,omitempty"`
 	ContainerEdits ContainerEdits    `json:"containerEdits"`

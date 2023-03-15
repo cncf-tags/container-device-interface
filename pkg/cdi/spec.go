@@ -233,10 +233,16 @@ func (s *Spec) validate() (map[string]*Device, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed add device %q: %w", d.Name, err)
 		}
-		if _, conflict := devices[d.Name]; conflict {
-			return nil, fmt.Errorf("invalid spec, multiple device %q", d.Name)
+		for _, name := range dev.GetNames() {
+			if _, conflict := devices[name]; conflict {
+				var additional string
+				if name != d.Name {
+					additional = fmt.Sprintf(" (alias of %q)", d.Name)
+				}
+				return nil, fmt.Errorf("invalid spec, multiple device name: %q%s", name, additional)
+			}
+			devices[name] = dev
 		}
-		devices[d.Name] = dev
 	}
 
 	return devices, nil

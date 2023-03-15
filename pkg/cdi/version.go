@@ -124,8 +124,12 @@ func requiresV060(spec *cdi.Spec) bool {
 		return true
 	}
 
-	// The v0.6.0 spec allows annotations to be specified at a device level
 	for _, d := range spec.Devices {
+		// The v0.6.0 spec allows aliases for device names
+		for range d.Aliases {
+			return true
+		}
+		// The v0.6.0 spec allows annotations to be specified at a device level
 		for range d.Annotations {
 			return true
 		}

@@ -176,14 +176,15 @@ func (c *Cache) refresh() error {
 		specs[vendor] = append(specs[vendor], spec)
 
 		for _, dev := range spec.devices {
-			qualified := dev.GetQualifiedName()
-			other, ok := devices[qualified]
-			if ok {
-				if resolveConflict(qualified, dev, other) {
-					continue
+			for _, qualified := range dev.GetQualifiedNames() {
+				other, ok := devices[qualified]
+				if ok {
+					if resolveConflict(qualified, dev, other) {
+						continue
+					}
 				}
+				devices[qualified] = dev
 			}
-			devices[qualified] = dev
 		}
 
 		return nil

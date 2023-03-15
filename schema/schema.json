@@ -23,6 +23,13 @@
                       "description": "The name of the device",
                       "type": "string"
                     },
+                    "aliases": {
+                        "description": "Alternative names for the device",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
                     "annotations": {
                         "$ref": "defs.json#/definitions/annotations"
                     },

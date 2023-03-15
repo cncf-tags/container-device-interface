@@ -966,6 +966,89 @@ devices:
 			},
 		},
 		{
+			name: "non-empty OCI Spec, inject one device by alias",
+			cdiSpecs: specDirs{
+				etc: map[string]string{
+					"vendor1.yaml": `
+cdiVersion: "0.6.0"
+kind:       "vendor1.com/device"
+containerEdits:
+  env:
+  - VENDOR1_SPEC_VAR1=VAL1
+devices:
+  - name: "notdev1"
+    aliases: ["dev1"]
+    containerEdits:
+      env:
+      - "VENDOR1_VAR1=VAL1"
+      deviceNodes:
+      - path: "/dev/vendor1-dev1"
+        type: b
+        major: 10
+        minor: 1
+`,
+				},
+			},
+			ociSpec: &oci.Spec{
+				Process: &oci.Process{
+					Env: []string{
+						"ORIG_VAR1=VAL1",
+						"ORIG_VAR2=VAL2",
+					},
+				},
+				Linux: &oci.Linux{
+					Devices: []oci.LinuxDevice{
+						{
+							Path: "/dev/null",
+						},
+						{
+							Path: "/dev/zero",
+						},
+					},
+				},
+			},
+			devices: []string{
+				"vendor1.com/device=dev1",
+			},
+			result: &oci.Spec{
+				Process: &oci.Process{
+					Env: []string{
+						"ORIG_VAR1=VAL1",
+						"ORIG_VAR2=VAL2",
+						"VENDOR1_SPEC_VAR1=VAL1",
+						"VENDOR1_VAR1=VAL1",
+					},
+				},
+				Linux: &oci.Linux{
+					Devices: []oci.LinuxDevice{
+						{
+							Path: "/dev/null",
+						},
+						{
+							Path: "/dev/zero",
+						},
+						{
+							Path:  "/dev/vendor1-dev1",
+							Type:  "b",
+							Major: 10,
+							Minor: 1,
+						},
+					},
+					Resources: &oci.LinuxResources{
+						Devices: []oci.LinuxDeviceCgroup{
+							{
+								Allow:  true,
+								Type:   "b",
+								Major:  int64ptr(10),
+								Minor:  int64ptr(1),
+								Access: "rwm",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "non-empty OCI Spec, inject several devices, hooks",
 			cdiSpecs: specDirs{
 				etc: map[string]string{

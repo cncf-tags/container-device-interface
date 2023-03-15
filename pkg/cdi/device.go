@@ -49,9 +49,25 @@ func (d *Device) GetSpec() *Spec {
 	return d.spec
 }
 
+// GetNames returns the possible names for the device including aliases
+func (d *Device) GetNames() []string {
+	names := []string{d.Name}
+	return append(names, d.Aliases...)
+}
+
 // GetQualifiedName returns the qualified name for this device.
 func (d *Device) GetQualifiedName() string {
 	return QualifiedName(d.spec.GetVendor(), d.spec.GetClass(), d.Name)
+}
+
+// GetQualifiedNames returns the qualified names for this device and its aliases.
+func (d *Device) GetQualifiedNames() []string {
+	var qualifiedNames []string
+	for _, name := range d.GetNames() {
+		qualified := QualifiedName(d.spec.GetVendor(), d.spec.GetClass(), name)
+		qualifiedNames = append(qualifiedNames, qualified)
+	}
+	return qualifiedNames
 }
 
 // ApplyEdits applies the device-speific container edits to an OCI Spec.
@@ -66,8 +82,10 @@ func (d *Device) edits() *ContainerEdits {
 
 // Validate the device.
 func (d *Device) validate() error {
-	if err := ValidateDeviceName(d.Name); err != nil {
-		return err
+	for _, name := range d.GetNames() {
+		if err := ValidateDeviceName(name); err != nil {
+			return err
+		}
 	}
 	name := d.Name
 	if d.spec != nil {

@@ -661,6 +661,23 @@ func TestRequiredVersion(t *testing.T) {
 			},
 			expectedVersion: "0.6.0",
 		},
+		{
+			description: "device aliases require v0.6.0",
+			spec: &cdi.Spec{
+				Devices: []cdi.Device{
+					{
+						Name:    "device0",
+						Aliases: []string{"0", "zero"},
+						ContainerEdits: cdi.ContainerEdits{
+							Env: []string{
+								"FOO=bar",
+							},
+						},
+					},
+				},
+			},
+			expectedVersion: "0.6.0",
+		},
 	}
 
 	for _, tc := range testCases {

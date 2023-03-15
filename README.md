@@ -169,6 +169,7 @@ $ cat > /etc/cdi/vendor-annotations.json <<EOF
   "devices": [
     {
       "name": "myDevice",
+      "aliases": ["device0"],
       "annotations": {
         "whatever": "false"
         "whenever": "true"
