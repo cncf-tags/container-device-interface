@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/container-orchestrated-devices/container-device-interface/internal/validation"
+	"github.com/container-orchestrated-devices/container-device-interface/pkg/parser"
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 )
@@ -51,7 +52,7 @@ func (d *Device) GetSpec() *Spec {
 
 // GetQualifiedName returns the qualified name for this device.
 func (d *Device) GetQualifiedName() string {
-	return QualifiedName(d.spec.GetVendor(), d.spec.GetClass(), d.Name)
+	return parser.QualifiedName(d.spec.GetVendor(), d.spec.GetClass(), d.Name)
 }
 
 // ApplyEdits applies the device-speific container edits to an OCI Spec.

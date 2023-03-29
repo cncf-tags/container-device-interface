@@ -21,6 +21,7 @@ import (
 
 	"golang.org/x/mod/semver"
 
+	"github.com/container-orchestrated-devices/container-device-interface/pkg/parser"
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 )
 
@@ -140,7 +141,7 @@ func requiresV050(spec *cdi.Spec) bool {
 
 	for _, d := range spec.Devices {
 		// The v0.5.0 spec allowed device names to start with a digit instead of requiring a letter
-		if len(d.Name) > 0 && !isLetter(rune(d.Name[0])) {
+		if len(d.Name) > 0 && !parser.IsLetter(rune(d.Name[0])) {
 			return true
 		}
 		edits = append(edits, &d.ContainerEdits)
