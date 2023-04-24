@@ -132,6 +132,14 @@ func requiresV060(spec *cdi.Spec) bool {
 		}
 	}
 
+	// The v0.6.0 spec allows dots "." in Kind name label (class)
+	vendor, class := parser.ParseQualifier(spec.Kind)
+	if vendor != "" {
+		if strings.ContainsRune(class, '.') {
+			return true
+		}
+	}
+
 	return false
 }
 

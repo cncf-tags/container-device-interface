@@ -55,6 +55,13 @@ func TestQualifiedName(t *testing.T) {
 			isQualified: true,
 		},
 		{
+			device:      "vendor1.com/class.subclass=dev1",
+			vendor:      "vendor1.com",
+			class:       "class.subclass",
+			name:        "dev1",
+			isQualified: true,
+		},
+		{
 			device:      "other-vendor1.com/class_1=dev_1",
 			vendor:      "other-vendor1.com",
 			class:       "class_1",
