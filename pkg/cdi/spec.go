@@ -156,6 +156,11 @@ func (s *Spec) write(overwrite bool) error {
 		return fmt.Errorf("failed to write Spec file: %w", err)
 	}
 
+	if err := os.Chmod(tmp.Name(), 0o644); err != nil {
+		os.Remove(tmp.Name())
+		return fmt.Errorf("failed to set read permissions on spec file: %w", err)
+	}
+
 	err = renameIn(dir, filepath.Base(tmp.Name()), filepath.Base(s.path), overwrite)
 
 	if err != nil {
