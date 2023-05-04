@@ -29,7 +29,7 @@ import (
 //
 //	'A'-'Z', 'a'-'z', '0'-'9', '.', '-', '_'.
 //
-// A valid device name may containe the following runes:
+// A valid device name may contain the following runes:
 //
 //	'A'-'Z', 'a'-'z', '0'-'9', '-', '_', '.', ':'
 //

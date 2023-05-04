@@ -57,7 +57,7 @@ func resolveDevices(ociSpecFiles ...string) error {
 
 		resolved, err := cdi.ResolveDevices(ociSpec)
 		if err != nil {
-			return errors.Wrapf(err, "CDI device resolution faile in %q",
+			return errors.Wrapf(err, "CDI device resolution failed in %q",
 				ociSpecFile)
 		}
 
