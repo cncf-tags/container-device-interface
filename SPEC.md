@@ -15,7 +15,7 @@ This is CDI **spec** version **0.6.0**.
 Any modifications to the **spec** will result in at least a minor version bump. When releasing changes
 that only affect the API also implemented in this repository, the patch version will be bumped.
 
-*Note*: The **spec** is still under active development and there exists the posibility of breaking changes being
+*Note*: The **spec** is still under active development and there exists the possibility of breaking changes being
 introduced with new versions.
 ### Released versions
 
@@ -72,7 +72,7 @@ For the purposes of this proposal, we define the following terms:
 - _container runtime_ which refers to the higher level component users tend to interact with for managing containers. It may also include lower level components that implement management of containers and pods (sets of containers). e.g: docker, podman, ...
 - _container runtime interface integration_ which refers to a server that implements the Container Runtime Interface (CRI) services, e.g: containerd+cri, cri-o, ...
 
-The key words "must", "must not", "required", "shall", "shall not", "should", "should not", "recommended", "may" and "optonal" are used as specified in [RFC 2119][rfc-2119].
+The key words "must", "must not", "required", "shall", "shall not", "should", "should not", "recommended", "may" and "optional" are used as specified in [RFC 2119][rfc-2119].
 
 [rfc-2119]: https://www.ietf.org/rfc/rfc2119.txt
 
