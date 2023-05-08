@@ -26,13 +26,9 @@ import (
 //
 //	"<vendor>/<class>=<name>".
 //
-// A valid vendor name may contain the following runes:
+// A valid vendor and class name may contain the following runes:
 //
 //	'A'-'Z', 'a'-'z', '0'-'9', '.', '-', '_'.
-//
-// A valid class name may contain the following runes:
-//
-//	'A'-'Z', 'a'-'z', '0'-'9', '-', '_'.
 //
 // A valid device name may containe the following runes:
 //
@@ -122,52 +118,51 @@ func ParseQualifier(kind string) (string, string) {
 //   - digits ('0'-'9')
 //   - underscore, dash, and dot ('_', '-', and '.')
 func ValidateVendorName(vendor string) error {
-	if vendor == "" {
-		return fmt.Errorf("invalid (empty) vendor name")
+	err := validateVendorOrClassName(vendor)
+	if err != nil {
+		err = fmt.Errorf("invalid vendor. %w", err)
 	}
-	if !IsLetter(rune(vendor[0])) {
-		return fmt.Errorf("invalid vendor %q, should start with letter", vendor)
-	}
-	for _, c := range string(vendor[1 : len(vendor)-1]) {
-		switch {
-		case IsAlphaNumeric(c):
-		case c == '_' || c == '-' || c == '.':
-		default:
-			return fmt.Errorf("invalid character '%c' in vendor name %q",
-				c, vendor)
-		}
-	}
-	if !IsAlphaNumeric(rune(vendor[len(vendor)-1])) {
-		return fmt.Errorf("invalid vendor %q, should end with a letter or digit", vendor)
-	}
-
-	return nil
+	return err
 }
 
 // ValidateClassName checks the validity of class name.
 // A class name may contain the following ASCII characters:
 //   - upper- and lowercase letters ('A'-'Z', 'a'-'z')
 //   - digits ('0'-'9')
-//   - underscore and dash ('_', '-')
+//   - underscore, dash, and dot ('_', '-', and '.')
 func ValidateClassName(class string) error {
-	if class == "" {
-		return fmt.Errorf("invalid (empty) device class")
+	err := validateVendorOrClassName(class)
+	if err != nil {
+		err = fmt.Errorf("invalid class. %w", err)
 	}
-	if !IsLetter(rune(class[0])) {
-		return fmt.Errorf("invalid class %q, should start with letter", class)
+	return err
+}
+
+// validateVendorOrClassName checks the validity of vendor or class name.
+// A name may contain the following ASCII characters:
+//   - upper- and lowercase letters ('A'-'Z', 'a'-'z')
+//   - digits ('0'-'9')
+//   - underscore, dash, and dot ('_', '-', and '.')
+func validateVendorOrClassName(name string) error {
+	if name == "" {
+		return fmt.Errorf("empty name")
 	}
-	for _, c := range string(class[1 : len(class)-1]) {
+	if !IsLetter(rune(name[0])) {
+		return fmt.Errorf("%q, should start with letter", name)
+	}
+	for _, c := range string(name[1 : len(name)-1]) {
 		switch {
 		case IsAlphaNumeric(c):
-		case c == '_' || c == '-':
+		case c == '_' || c == '-' || c == '.':
 		default:
-			return fmt.Errorf("invalid character '%c' in device class %q",
-				c, class)
+			return fmt.Errorf("invalid character '%c' in name %q",
+				c, name)
 		}
 	}
-	if !IsAlphaNumeric(rune(class[len(class)-1])) {
-		return fmt.Errorf("invalid class %q, should end with a letter or digit", class)
+	if !IsAlphaNumeric(rune(name[len(name)-1])) {
+		return fmt.Errorf("%q, should end with a letter or digit", name)
 	}
+
 	return nil
 }
 

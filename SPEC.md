@@ -27,6 +27,7 @@ Released versions of the spec are available as Git tags.
 | v0.4.0 |   | Added `type` field to Mount specification |
 | v0.5.0 |   | Add `HostPath` to `DeviceNodes` |
 | v0.6.0 |   | Add `Annotations` field to `Spec` and `Device` specifications |
+|            |    | Allow dots (`.`)  in name segment of `Kind` field |
 
 *Note*: The initial release of a **spec** with version `v0.x.0` will be tagged as
 `v0.x.0` with subsequent changes to the API applicable to this version tagged as `v0.x.y`.

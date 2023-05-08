@@ -662,6 +662,13 @@ func TestRequiredVersion(t *testing.T) {
 			},
 			expectedVersion: "0.6.0",
 		},
+		{
+			description: "dotted name (class) label require v0.6.0",
+			spec: &cdi.Spec{
+				Kind: "vendor.com/class.sub",
+			},
+			expectedVersion: "0.6.0",
+		},
 	}
 
 	for _, tc := range testCases {

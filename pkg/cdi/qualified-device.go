@@ -25,13 +25,9 @@ import (
 //
 //	"<vendor>/<class>=<name>".
 //
-// A valid vendor name may contain the following runes:
+// A valid vendor and class name may contain the following runes:
 //
 //	'A'-'Z', 'a'-'z', '0'-'9', '.', '-', '_'.
-//
-// A valid class name may contain the following runes:
-//
-//	'A'-'Z', 'a'-'z', '0'-'9', '-', '_'.
 //
 // A valid device name may containe the following runes:
 //
@@ -98,7 +94,7 @@ func ValidateVendorName(vendor string) error {
 // A class name may contain the following ASCII characters:
 //   - upper- and lowercase letters ('A'-'Z', 'a'-'z')
 //   - digits ('0'-'9')
-//   - underscore and dash ('_', '-')
+//   - underscore, dash, and dot ('_', '-', and '.')
 //
 // Deprecated: use parser.ValidateClassName instead
 func ValidateClassName(class string) error {
