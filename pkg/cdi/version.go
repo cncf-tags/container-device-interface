@@ -56,7 +56,7 @@ var validSpecVersions = requiredVersionMap{
 	v060: requiresV060,
 }
 
-// MinimumRequiredVersion determines the minumum spec version for the input spec.
+// MinimumRequiredVersion determines the minimum spec version for the input spec.
 func MinimumRequiredVersion(spec *cdi.Spec) (string, error) {
 	minVersion := validSpecVersions.requiredVersion(spec)
 	return minVersion.String(), nil

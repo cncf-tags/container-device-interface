@@ -149,7 +149,7 @@ EOF
 ```
 
 Assuming this specification has been generated and is available in either
-`/etc/cdi` or `/var/run/cdi` (or whereever a CDI-enabled consumer is configured
+`/etc/cdi` or `/var/run/cdi` (or wherever a CDI-enabled consumer is configured
 to read CDI specifications from), the devices can be accessed through their
 fully-qualified device names.
 
