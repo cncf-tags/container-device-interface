@@ -5,7 +5,7 @@ We welcome contributions. In addition to signing your work as described in
 the section below we ask that the following guidelines be considered when
 opening, reviewing, and merging pull requests.
 
-* No one should merge their own code or code from their own organzation
+* No one should merge their own code or code from their own organization
 * Reviewers should included people from an organization that is not your own
 * If no changes have been requested by other reviewers the (last) reviewer
 merges the pull request on approval

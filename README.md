@@ -4,8 +4,7 @@
 
 ## What is CDI?
 
-CDI (Container Device Interface), is a [specification](SPEC.md), for container-
-runtimes, to support third-party devices.
+CDI (Container Device Interface), is a [specification](SPEC.md), for container-runtimes, to support third-party devices.
 
 It introduces an abstract notion of a device as a resource. Such devices are
 uniquely specified by a fully-qualified name that is constructed from a vendor
@@ -24,7 +23,7 @@ handled by the orchestrator). Because of this focus, the CDI specification is
 simple to implement and allows great flexibility for runtimes and orchestrators.
 
 Note: The CDI model is based on the Container Networking Interface (CNI) model
-and specification.
+and [specification](https://github.com/containernetworking/cni/blob/main/SPEC.md).
 
 ## Why is CDI needed?
 
@@ -35,8 +34,8 @@ more complex, vendors want to perform more operations, such as:
 - Exposing a device to a container can require exposing more than one device
   node, mounting files from the runtime namespace, or hiding procfs entries.
 - Performing compatibility checks between the container and the device (e.g: Can
-  this container run on this device).
-- Performing runtime-specific operations (e.g: VM vs Linux containers-based
+  this container run on this device?).
+- Performing runtime-specific operations (e.g: VM vs Linux container-based
   runtimes).
 - Performing device-specific operations (e.g: scrubbing the memory of a GPU or
   reconfiguring an FPGA).
@@ -46,7 +45,7 @@ write and maintain multiple plugins for different runtimes or even directly
 contribute vendor-specific code in the runtime. Additionally, runtimes don't
 uniformly expose a plugin system (or even expose a plugin system at all) leading
 to duplication of the functionality in higher-level abstractions (such as
-Kubernetes device plugins).
+[Kubernetes device plugins](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/)).
 
 ## How does CDI work?
 
@@ -66,7 +65,7 @@ For CDI to work the following needs to be done:
 ### CRI-O configuration
 
 In CRI-O CDI support is enabled by default. It is configured with the default
-`/etc/cdi, /var/run/cdi` CDI directory locations. Therefore you can start using
+`/etc/cdi, /var/run/cdi` CDI directory locations. Therefore, you can start using
 CDI simply by dropping CDI configuration files in either of those directories,
 static configuration into `/etc/cdi` and dynamically updated one into
 `/var/run/cdi`. If you are unsure of the configured directories you can run this
