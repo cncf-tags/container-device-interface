@@ -3,8 +3,8 @@
 - [Version](#version)
 - [Overview](#overview)
 - [General considerations](#general-considerations)
-- [CDI JSON Specification](#well-known-error-codes)
-- [CDI CLI Specification](#well-known-error-codes)
+- [CDI JSON Specification](#cdi-json-specification)
+- [Error Handling](#error-handling)
 
 ## Version
 
@@ -72,7 +72,7 @@ For the purposes of this proposal, we define the following terms:
 - _container runtime_ which refers to the higher level component users tend to interact with for managing containers. It may also include lower level components that implement management of containers and pods (sets of containers). e.g: docker, podman, ...
 - _container runtime interface integration_ which refers to a server that implements the Container Runtime Interface (CRI) services, e.g: containerd+cri, cri-o, ...
 
-The key words "must", "must not", "required", "shall", "shall not", "should", "should not", "recommended", "may" and "optional" are used as specified in [RFC 2119][rfc-2119].
+The keywords "must", "must not", "required", "shall", "shall not", "should", "should not", "recommended", "may" and "optional" are used as specified in [RFC 2119][rfc-2119].
 
 [rfc-2119]: https://www.ietf.org/rfc/rfc2119.txt
 
@@ -186,11 +186,11 @@ Note: For a CDI file to be valid, at least one entry must be specified in this a
 
 #### OCI Edits
 
-The `containerEdits` field describes edits to be made to the OCI specification. Currently the following kinds of edits can be made to the OCI specification: `env`, `devices`, `mounts` and `hooks`.
+The `containerEdits` field describes edits to be made to the OCI specification. Currently, the following kinds of edits can be made to the OCI specification: `env`, `devices`, `mounts` and `hooks`.
 
 The `containerEdits` field is referenced in two places in the specification:
   * At the device level, where the edits MUST only be made if the matching device is requested by the container runtime user.
-  * At the container level, where the edits MUST be made if any of the of the device defined in the `devices` field are requested.
+  * At the container level, where the edits MUST be made if any of the device defined in the `devices` field are requested.
 
 
 The `containerEdits` field has the following definition:
@@ -223,11 +223,11 @@ The `containerEdits` field has the following definition:
 
 ## Error Handling
   * Kind requested is not present in any CDI file.
-    Container runtimes should surface an error when a non existent kind is requested.
+    Container runtimes should surface an error when a non-existent kind is requested.
   * Device (not device node) Requested does not exist.
     Container runtimes should surface this error when a non existent device is requested.
   * "Resource" does not exist (e.g: Mount, Hook, ...).
-    Container runtimes should surface this error when a non existent "resource" is requested (e.g: at "run" time).
-    This is because a resource does not need to exist when the spec is written but it needs to exist when the container is created.
+    Container runtimes should surface this error when a non-existent "resource" is requested (e.g: at "run" time).
+    This is because a resource does not need to exist when the spec is written, but it needs to exist when the container is created.
   * Hook fails to execute.
     Container runtimes should surface an error when hooks fails to execute.
