@@ -14,10 +14,12 @@
    limitations under the License.
 */
 
-package parser
+package parser_test
 
 import (
 	"testing"
+
+	"github.com/container-orchestrated-devices/container-device-interface/pkg/parser"
 
 	"github.com/stretchr/testify/require"
 )
@@ -126,24 +128,24 @@ func TestQualifiedName(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			vendor, class, name, err := ParseQualifiedName(tc.device)
+			vendor, class, name, err := parser.ParseQualifiedName(tc.device)
 			if tc.isQualified {
-				require.True(t, IsQualifiedName(tc.device), "qualified name %q", tc.device)
+				require.True(t, parser.IsQualifiedName(tc.device), "qualified name %q", tc.device)
 				require.NoError(t, err)
 				require.Equal(t, tc.vendor, vendor, "qualified name %q", tc.device)
 				require.Equal(t, tc.class, class, "qualified name %q", tc.device)
 				require.Equal(t, tc.name, name, "qualified name %q", tc.device)
 
-				vendor, class, name = ParseDevice(tc.device)
+				vendor, class, name = parser.ParseDevice(tc.device)
 				require.Equal(t, tc.vendor, vendor, "parsed name %q", tc.device)
 				require.Equal(t, tc.class, class, "parse name %q", tc.device)
 				require.Equal(t, tc.name, name, "parsed name %q", tc.device)
 
-				device := QualifiedName(vendor, class, name)
+				device := parser.QualifiedName(vendor, class, name)
 				require.Equal(t, tc.device, device, "constructed device %q", tc.device)
 			} else if tc.isParsable {
-				require.False(t, IsQualifiedName(tc.device), "parsed name %q", tc.device)
-				vendor, class, name = ParseDevice(tc.device)
+				require.False(t, parser.IsQualifiedName(tc.device), "parsed name %q", tc.device)
+				vendor, class, name = parser.ParseDevice(tc.device)
 				require.Equal(t, tc.vendor, vendor, "parsed name %q", tc.device)
 				require.Equal(t, tc.class, class, "parse name %q", tc.device)
 				require.Equal(t, tc.name, name, "parsed name %q", tc.device)
