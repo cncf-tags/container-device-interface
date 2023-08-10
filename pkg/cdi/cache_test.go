@@ -17,6 +17,7 @@
 package cdi
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -818,12 +819,13 @@ func TestInjectDevice(t *testing.T) {
 		run map[string]string
 	}
 	type testCase struct {
-		name       string
-		cdiSpecs   specDirs
-		ociSpec    *oci.Spec
-		devices    []string
-		result     *oci.Spec
-		unresolved []string
+		name        string
+		cdiSpecs    specDirs
+		ociSpec     *oci.Spec
+		devices     []string
+		result      *oci.Spec
+		unresolved  []string
+		expectedErr error
 	}
 	for _, tc := range []*testCase{
 		{
@@ -1155,6 +1157,7 @@ devices:
 			unresolved: []string{
 				"vendor1.com/device=dev2",
 			},
+			expectedErr: errors.New("unresolvable CDI devices vendor1.com/device=dev2"),
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1180,6 +1183,7 @@ devices:
 			unresolved, err := cache.InjectDevices(tc.ociSpec, tc.devices...)
 			if len(tc.unresolved) != 0 {
 				require.NotNil(t, err)
+				require.Equal(t, tc.expectedErr, err)
 				require.Equal(t, tc.unresolved, unresolved)
 				return
 			}
