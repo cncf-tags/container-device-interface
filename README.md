@@ -75,7 +75,7 @@ command to find them out:
 $ crio config |& grep -B1 -A5 cdi_spec_dirs
 ```
 
-### Containerd configuration
+### containerd configuration
 
 To enable and configure CDI support in the [containerd
 runtime](https://github.com/containerd/containerd) 2 configuration options
