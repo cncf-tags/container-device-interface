@@ -17,6 +17,9 @@
                     "type": "string"
             }
         },
+        "FileName": {
+            "type": "string"
+        },
         "FilePath": {
             "type": "string"
         },
@@ -133,6 +136,26 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/Hook"
+                    }
+                },
+                "intelRdt": {
+                    "type": "object",
+                    "properties": {
+                        "closID": {
+                            "$ref": "#/definitions/FileName"
+                        },
+                        "l3CacheSchema": {
+                            "type": "string"
+                        },
+                        "memBwSchema": {
+                            "type": "string"
+                        },
+                        "enableCMT": {
+                            "type": "boolean"
+                        },
+                        "enableMBM": {
+                            "type": "boolean"
+                        }
                     }
                 }
             }

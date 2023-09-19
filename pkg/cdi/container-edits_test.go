@@ -245,6 +245,50 @@ func TestValidateContainerEdits(t *testing.T) {
 			},
 			invalid: true,
 		},
+		{
+			name: "valid rdt config",
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID: "foo.bar",
+				},
+			},
+		},
+		{
+			name: "invalid rdt config, invalid closID (slash)",
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID: "foo/bar",
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid rdt config, invalid closID (dot)",
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID: ".",
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid rdt config, invalid closID (double dot)",
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID: "..",
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid rdt config, invalid closID (newline)",
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID: "foo\nbar",
+				},
+			},
+			invalid: true,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			edits := ContainerEdits{tc.edits}
@@ -467,6 +511,58 @@ func TestApplyContainerEdits(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "empty spec, rdt",
+			spec: &oci.Spec{},
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID:        "clos-1",
+					L3CacheSchema: "L3:0=ff;1=ff",
+					MemBwSchema:   "MB:0=50;1=50",
+					EnableCMT:     true,
+					EnableMBM:     true,
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					IntelRdt: &oci.LinuxIntelRdt{
+						ClosID:        "clos-1",
+						L3CacheSchema: "L3:0=ff;1=ff",
+						MemBwSchema:   "MB:0=50;1=50",
+						EnableCMT:     true,
+						EnableMBM:     true,
+					},
+				},
+			},
+		},
+		{
+			name: "non-empty spec, overriding rdt",
+			spec: &oci.Spec{
+				Linux: &oci.Linux{
+					IntelRdt: &oci.LinuxIntelRdt{
+						ClosID:        "clos-1",
+						L3CacheSchema: "L3:0=ff",
+						MemBwSchema:   "MB:0=100",
+						EnableCMT:     true,
+						EnableMBM:     true,
+					},
+				},
+			},
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID:        "clos-2",
+					L3CacheSchema: "L3:0=f",
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					IntelRdt: &oci.LinuxIntelRdt{
+						ClosID:        "clos-2",
+						L3CacheSchema: "L3:0=f",
+					},
+				},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			edits := ContainerEdits{tc.edits}
@@ -555,6 +651,10 @@ func TestAppend(t *testing.T) {
 								Path: "/dev/dev1",
 							},
 						},
+						IntelRdt: &cdi.IntelRdt{
+							ClosID:        "clos-1",
+							L3CacheSchema: "L3:0=ff",
+						},
 					},
 				},
 				{
@@ -583,6 +683,9 @@ func TestAppend(t *testing.T) {
 								Path: "/dev/dev4",
 							},
 						},
+						IntelRdt: &cdi.IntelRdt{
+							ClosID: "clos-2",
+						},
 					},
 				},
 			},
@@ -608,6 +711,9 @@ func TestAppend(t *testing.T) {
 						{
 							Path: "/dev/dev4",
 						},
+					},
+					IntelRdt: &cdi.IntelRdt{
+						ClosID: "clos-2",
 					},
 				},
 			},

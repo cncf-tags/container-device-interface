@@ -8,7 +8,7 @@
 
 ## Version
 
-This is CDI **spec** version **0.6.0**.
+This is CDI **spec** version **0.7.0**.
 
 ### Update policy
 
@@ -27,7 +27,8 @@ Released versions of the spec are available as Git tags.
 | v0.4.0 |   | Added `type` field to Mount specification |
 | v0.5.0 |   | Add `HostPath` to `DeviceNodes` |
 | v0.6.0 |   | Add `Annotations` field to `Spec` and `Device` specifications |
-|            |    | Allow dots (`.`)  in name segment of `Kind` field |
+|        |   | Allow dots (`.`)  in name segment of `Kind` field. |
+| v0.7.0 |   | Add `IntelRdt`field. |
 
 *Note*: The initial release of a **spec** with version `v0.x.0` will be tagged as
 `v0.x.0` with subsequent changes to the API applicable to this version tagged as `v0.x.y`.
@@ -82,7 +83,7 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
 
 ```
 {
-    "cdiVersion": "0.6.0",
+    "cdiVersion": "0.7.0",
     "kind": "<name>",
 
     // This field contains a set of key-value pairs that may be used to provide
@@ -150,6 +151,13 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
                     "timeout": <int> (optional)
                 }
             ]
+            "intelRdt": { (optional)
+                "closID": "<name>", (optional)
+                "l3CacheSchema": "string" (optional)
+                "memBwSchema": "string" (optional)
+                "enableCMT": "<boolean>" (optional)
+                "enableMBM": "<boolean>" (optional)
+            }
         }
     ]
 }
@@ -220,6 +228,12 @@ The `containerEdits` field has the following definition:
     * `args` (array of strings, OPTIONAL) with the same semantics as IEEE Std 1003.1-2008 execv's argv.
     * `env` (array of strings, OPTIONAL) with the same semantics as IEEE Std 1003.1-2008's environ.
     * `timeout` (int, OPTIONAL) is the number of seconds before aborting the hook. If set, timeout MUST be greater than zero. If not set container runtime will wait for the hook to return.
+  * `intelRdt` (object, OPTIONAL) describes the Linux [resctrl][resctrl] settings for the container (object, OPTIONAL)
+    * `closID` (string, OPTIONAL) name of the `CLOS` (Class of Service).
+    * `l3CacheSchema` (string, OPTIONAL) L3 cache allocation schema for the `CLOS`.
+    * `memBwSchema` (string, OPTIONAL) memory bandwidth allocation schema for the `CLOS`.
+    * `enableCMT` (boolean, OPTIONAL) whether to enable cache monitoring
+    * `enableMBM` (boolean, OPTIONAL) whether to enable memory bandwidth monitoring
 
 ## Error Handling
   * Kind requested is not present in any CDI file.
@@ -231,3 +245,5 @@ The `containerEdits` field has the following definition:
     This is because a resource does not need to exist when the spec is written, but it needs to exist when the container is created.
   * Hook fails to execute.
     Container runtimes should surface an error when hooks fails to execute.
+
+[resctrl]: https://docs.kernel.org/arch/x86/resctrl.html
