@@ -20,7 +20,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/stretchr/testify/require"
@@ -503,7 +502,7 @@ func TestAppend(t *testing.T) {
 			dst:  nil,
 			src: []*ContainerEdits{
 				{
-					ContainerEdits: &specs.ContainerEdits{
+					ContainerEdits: &cdi.ContainerEdits{
 						Env: []string{
 							"var1=val1",
 						},
@@ -511,7 +510,7 @@ func TestAppend(t *testing.T) {
 				},
 			},
 			result: &ContainerEdits{
-				ContainerEdits: &specs.ContainerEdits{
+				ContainerEdits: &cdi.ContainerEdits{
 					Env: []string{
 						"var1=val1",
 					},
@@ -521,7 +520,7 @@ func TestAppend(t *testing.T) {
 		{
 			name: "merge nil into non-nil",
 			dst: &ContainerEdits{
-				ContainerEdits: &specs.ContainerEdits{
+				ContainerEdits: &cdi.ContainerEdits{
 					Env: []string{
 						"var1=val1",
 					},
@@ -531,7 +530,7 @@ func TestAppend(t *testing.T) {
 				nil,
 			},
 			result: &ContainerEdits{
-				ContainerEdits: &specs.ContainerEdits{
+				ContainerEdits: &cdi.ContainerEdits{
 					Env: []string{
 						"var1=val1",
 					},
@@ -541,7 +540,7 @@ func TestAppend(t *testing.T) {
 		{
 			name: "merge multiple into non-nil",
 			dst: &ContainerEdits{
-				ContainerEdits: &specs.ContainerEdits{
+				ContainerEdits: &cdi.ContainerEdits{
 					Env: []string{
 						"var0=val0",
 					},
@@ -549,11 +548,11 @@ func TestAppend(t *testing.T) {
 			},
 			src: []*ContainerEdits{
 				{
-					ContainerEdits: &specs.ContainerEdits{
+					ContainerEdits: &cdi.ContainerEdits{
 						Env: []string{
 							"var1=val1",
 						},
-						DeviceNodes: []*specs.DeviceNode{
+						DeviceNodes: []*cdi.DeviceNode{
 							{
 								Path: "/dev/dev1",
 							},
@@ -561,12 +560,12 @@ func TestAppend(t *testing.T) {
 					},
 				},
 				{
-					ContainerEdits: &specs.ContainerEdits{
+					ContainerEdits: &cdi.ContainerEdits{
 						Env: []string{
 							"var2=val2",
 							"var3=val3",
 						},
-						DeviceNodes: []*specs.DeviceNode{
+						DeviceNodes: []*cdi.DeviceNode{
 							{
 								Path: "/dev/dev2",
 							},
@@ -577,11 +576,11 @@ func TestAppend(t *testing.T) {
 					},
 				},
 				{
-					ContainerEdits: &specs.ContainerEdits{
+					ContainerEdits: &cdi.ContainerEdits{
 						Env: []string{
 							"var4=val4",
 						},
-						DeviceNodes: []*specs.DeviceNode{
+						DeviceNodes: []*cdi.DeviceNode{
 							{
 								Path: "/dev/dev4",
 							},
@@ -590,7 +589,7 @@ func TestAppend(t *testing.T) {
 				},
 			},
 			result: &ContainerEdits{
-				ContainerEdits: &specs.ContainerEdits{
+				ContainerEdits: &cdi.ContainerEdits{
 					Env: []string{
 						"var0=val0",
 						"var1=val1",
@@ -598,7 +597,7 @@ func TestAppend(t *testing.T) {
 						"var3=val3",
 						"var4=val4",
 					},
-					DeviceNodes: []*specs.DeviceNode{
+					DeviceNodes: []*cdi.DeviceNode{
 						{
 							Path: "/dev/dev1",
 						},
