@@ -35,7 +35,7 @@ var (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "cdi",
-	Short: "Inpsect and interact with the CDI Registry",
+	Short: "Inspect and interact with the CDI Registry",
 	Long: `
 The 'cdi' utility allows you to inspect and interact with the
 CDI Registry. Various commands are available for listing CDI
