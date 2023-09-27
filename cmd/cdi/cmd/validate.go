@@ -19,6 +19,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -40,6 +41,13 @@ were reported by the registry.`,
 			return
 		}
 
+		fmt.Printf("CDI Registry has errors:\n")
+		for path, specErrors := range cdiErrors {
+			fmt.Printf("Spec file %s:\n", path)
+			for idx, err := range specErrors {
+				fmt.Printf("  %2d: %v\n", idx, strings.TrimSpace(err.Error()))
+			}
+		}
 		os.Exit(1)
 	},
 }
