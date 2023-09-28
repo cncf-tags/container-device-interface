@@ -17,7 +17,6 @@
 package cdi
 
 import (
-	"os"
 	"testing"
 
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
@@ -28,7 +27,6 @@ import (
 func TestValidateContainerEdits(t *testing.T) {
 	type testCase struct {
 		name    string
-		spec    *oci.Spec
 		edits   *cdi.ContainerEdits
 		invalid bool
 	}
@@ -623,9 +621,4 @@ func TestAppend(t *testing.T) {
 			require.Equal(t, tc.result, dst, "append container edits")
 		})
 	}
-}
-
-func fileMode(mode int) *os.FileMode {
-	fm := os.FileMode(mode)
-	return &fm
 }
