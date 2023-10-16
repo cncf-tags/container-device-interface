@@ -232,7 +232,10 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 	for _, device := range devices {
 		d := c.devices[device]
 		if d == nil {
-			unresolved = append(unresolved, device)
+			// In kata direct-volume case, no need to unresolve it.
+			if !strings.HasPrefix(device, "kata.direct.volume") {
+				unresolved = append(unresolved, device)
+			}
 			continue
 		}
 		if _, ok := specs[d.GetSpec()]; !ok {
