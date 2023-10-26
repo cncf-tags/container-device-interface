@@ -26,7 +26,8 @@ jobs:
     - name: Lint
       run: make lint
     - name: Fmt
-      run: make fmt
+      run: |
+        make fmt && git diff --exit-code
     - name: Vet
       run: make vet
     - name: Verify go modules are properly up-to-date
