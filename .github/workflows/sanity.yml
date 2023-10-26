@@ -2,7 +2,7 @@ on: [push, pull_request]
 name: Sanity
 
 env:
-  GO_VERSION: '1.17.x'
+  GO_VERSION: '1.19.x'
 
 jobs:
   build:
