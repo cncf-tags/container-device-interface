@@ -1685,7 +1685,7 @@ devices:
 				"-0",
 			},
 			expected: [][]string{
-				[]string{
+				{
 					"vendor.com/device=dev1",
 				},
 				nil,
@@ -1746,25 +1746,25 @@ devices:
 				"-2",
 			},
 			expected: [][]string{
-				[]string{
+				{
 					"vendor.com/device=dev1",
 				},
-				[]string{
-					"vendor.com/device=dev1",
-					"vendor.com/device=dev2",
-				},
-				[]string{
+				{
 					"vendor.com/device=dev1",
 					"vendor.com/device=dev2",
-					"vendor.com/device=dev3",
-					"vendor.com/device=dev4",
 				},
-				[]string{
+				{
+					"vendor.com/device=dev1",
 					"vendor.com/device=dev2",
 					"vendor.com/device=dev3",
 					"vendor.com/device=dev4",
 				},
-				[]string{
+				{
+					"vendor.com/device=dev2",
+					"vendor.com/device=dev3",
+					"vendor.com/device=dev4",
+				},
+				{
 					"vendor.com/device=dev3",
 					"vendor.com/device=dev4",
 				},
