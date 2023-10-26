@@ -12,6 +12,7 @@ require (
 )
 
 require (
+	github.com/container-orchestrated-devices/container-device-interface/specs-go v0.0.0-00010101000000-000000000000 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/opencontainers/selinux v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
@@ -25,3 +26,5 @@ require (
 )
 
 replace github.com/container-orchestrated-devices/container-device-interface => ../..
+
+replace github.com/container-orchestrated-devices/container-device-interface/specs-go => ../../specs-go
