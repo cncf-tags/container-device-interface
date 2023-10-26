@@ -29,6 +29,9 @@ jobs:
       run: make fmt
     - name: Vet
       run: make vet
+    - name: Verify go modules are properly up-to-date
+      run: |
+        make mod-tidy && git diff --exit-code
 
   test:
     name: "Run tests"
