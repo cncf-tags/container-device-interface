@@ -2,7 +2,7 @@ on: [push, pull_request]
 name: Sanity
 
 env:
-  GO_VERSION: '1.17.x'
+  GO_VERSION: '1.19.x'
 
 jobs:
   build:
@@ -26,9 +26,13 @@ jobs:
     - name: Lint
       run: make lint
     - name: Fmt
-      run: make fmt
+      run: |
+        make fmt && git diff --exit-code
     - name: Vet
       run: make vet
+    - name: Verify go modules are properly up-to-date
+      run: |
+        make mod-tidy && git diff --exit-code
 
   test:
     name: "Run tests"

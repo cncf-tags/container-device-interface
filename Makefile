@@ -64,30 +64,22 @@ $(BINARIES): bin/%:
 #
 # go module tidy and verify targets
 #
-.PHONY: mod-tidy $(CMD_MOD_TIDY_TARGETS) mod-tidy-root
-.PHONY: mod-verify $(CMD_MOD_VERIFY_TARGETS) mod-verify-root
+.PHONY: mod-tidy
+.PHONY: mod-verify
 
-CMD_MOD_TIDY_TARGETS := mod-tidy-cdi mod-tidy-validate
-CMD_MOD_VERIFY_TARGETS := mod-verify-cdi mod-verify-validate
+mod-tidy:
+	$(Q)for mod in $$(find . -name go.mod); do \
+	    echo "Tidying $$mod..."; ( \
+	        cd $$(dirname $$mod) && go mod tidy \
+            ) || exit 1; \
+	done
 
-mod-tidy-root:
-	$(Q)echo "Running $@..."; \
-	$(GO_CMD) mod tidy
-
-$(CMD_MOD_TIDY_TARGETS): mod-tidy-%: mod-tidy-root
-	$(Q)echo "Running $@... in $(abspath ./cmd/$(*))"; \
-	(cd $(abspath ./cmd/$(*)) && $(GO_CMD) mod tidy)
-
-mod-verify-root: mod-tidy-root
-	$(Q)echo "Running $@..."; \
-	$(GO_CMD) mod verify
-
-$(CMD_MOD_VERIFY_TARGETS): mod-verify-%: mod-tidy-% mod-verify-root
-	$(Q)echo "Running $@... in $(abspath ./cmd/$(*))"; \
-	(cd $(abspath ./cmd/$(*)) && pwd && $(GO_CMD) mod verify)
-
-mod-verify: $(CMD_MOD_VERIFY_TARGETS)
-mod-tidy: $(CMD_MOD_TIDY_TARGETS)
+mod-verify:
+	$(Q)for mod in $$(find . -name go.mod); do \
+	    echo "Verifying $$mod..."; ( \
+	        cd $$(dirname $$mod) && go mod verify | sed 's/^/  /g' \
+	    ) || exit 1; \
+	done
 
 #
 # cleanup targets

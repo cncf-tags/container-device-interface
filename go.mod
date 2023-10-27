@@ -1,6 +1,6 @@
 module github.com/container-orchestrated-devices/container-device-interface
 
-go 1.17
+go 1.19
 
 require (
 	github.com/fsnotify/fsnotify v1.5.1
