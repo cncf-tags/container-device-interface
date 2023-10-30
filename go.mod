@@ -3,6 +3,7 @@ module github.com/container-orchestrated-devices/container-device-interface
 go 1.19
 
 require (
+	github.com/container-orchestrated-devices/container-device-interface/specs-go v0.0.0-00010101000000-000000000000
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/opencontainers/runtime-spec v1.1.0
 	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
@@ -22,3 +23,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/container-orchestrated-devices/container-device-interface/specs-go => ./specs-go
