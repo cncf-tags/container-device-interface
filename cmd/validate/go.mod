@@ -13,3 +13,5 @@ require (
 )
 
 replace github.com/container-orchestrated-devices/container-device-interface => ../..
+
+replace github.com/container-orchestrated-devices/container-device-interface/specs-go => ../../specs-go
