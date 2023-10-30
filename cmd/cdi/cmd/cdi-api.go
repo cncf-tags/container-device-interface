@@ -22,9 +22,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	gen "github.com/opencontainers/runtime-tools/generate"
+	"tags.cncf.io/container-device-interface/pkg/cdi"
 )
 
 func cdiListVendors() {

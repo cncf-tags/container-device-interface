@@ -19,9 +19,9 @@ package cdi
 import (
 	"testing"
 
-	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/stretchr/testify/require"
+	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
 func TestValidateContainerEdits(t *testing.T) {

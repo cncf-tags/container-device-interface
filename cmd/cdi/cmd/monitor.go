@@ -25,7 +25,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/cobra"
 
-	cdi "github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
+	cdi "tags.cncf.io/container-device-interface/pkg/cdi"
 )
 
 type monitorFlags struct {

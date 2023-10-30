@@ -1,6 +1,6 @@
 # CDI - The Container Device Interface
 
-**NOTE:** The API for injecting CDI devices that existed at `github.com/container-orchestrated-devices/container-device-interface/pkg` has been removed. Users of this API should migrate to the one at `https://github.com/cncf-tags/container-device-interface/tree/main/pkg/cdi` as this is actively maintained.
+**NOTE:** The API for injecting CDI devices that existed at `container-device-interface/pkg` has been removed. Users of this API should migrate to the one at `container-device-interface/pkg/cdi` as this is actively maintained.
 
 ## What is CDI?
 
@@ -188,5 +188,5 @@ EOF
 
 [Check out the Contributing document!](CONTRIBUTING.md)
 
-* Please let us know by [filing a new issue](https://github.com/container-orchestrated-devices/container-device-interface/issues/new)
+* Please let us know by [filing a new issue](https://github.com/cncf-tags/container-device-interface/issues/new)
 * You can contribute by opening a [pull request](https://help.github.com/articles/using-pull-requests/)

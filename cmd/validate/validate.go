@@ -25,7 +25,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/container-orchestrated-devices/container-device-interface/schema"
+	"tags.cncf.io/container-device-interface/schema"
 )
 
 const usage = `Validate is used to check document with specified schema.

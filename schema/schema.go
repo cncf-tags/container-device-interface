@@ -29,9 +29,9 @@ import (
 
 	"sigs.k8s.io/yaml"
 
-	"github.com/container-orchestrated-devices/container-device-interface/internal/multierror"
-	"github.com/container-orchestrated-devices/container-device-interface/internal/validation"
 	schema "github.com/xeipuuv/gojsonschema"
+	"tags.cncf.io/container-device-interface/internal/multierror"
+	"tags.cncf.io/container-device-interface/internal/validation"
 )
 
 const (

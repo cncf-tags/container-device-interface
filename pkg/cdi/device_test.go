@@ -19,8 +19,8 @@ package cdi
 import (
 	"testing"
 
-	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	"github.com/stretchr/testify/require"
+	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
 func TestDeviceValidate(t *testing.T) {

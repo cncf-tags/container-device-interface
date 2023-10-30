@@ -23,7 +23,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
+	"tags.cncf.io/container-device-interface/pkg/cdi"
 )
 
 // validateCmd is our CDI command for validating CDI Spec files in the registry.

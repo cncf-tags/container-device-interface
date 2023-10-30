@@ -22,9 +22,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
-	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
-	"github.com/container-orchestrated-devices/container-device-interface/schema"
+	"tags.cncf.io/container-device-interface/pkg/cdi"
+	"tags.cncf.io/container-device-interface/pkg/cdi/validate"
+	"tags.cncf.io/container-device-interface/schema"
 )
 
 var (

@@ -1,18 +1,17 @@
-module github.com/container-orchestrated-devices/container-device-interface/cmd/cdi
+module tags.cncf.io/container-device-interface/cmd/cdi
 
 go 1.19
 
 require (
-	github.com/container-orchestrated-devices/container-device-interface v0.0.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/opencontainers/runtime-spec v1.1.0
 	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
 	github.com/spf13/cobra v1.6.0
 	sigs.k8s.io/yaml v1.3.0
+	tags.cncf.io/container-device-interface v0.0.0
 )
 
 require (
-	github.com/container-orchestrated-devices/container-device-interface/specs-go v0.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/opencontainers/selinux v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
@@ -23,8 +22,9 @@ require (
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	tags.cncf.io/container-device-interface/specs-go v0.6.0 // indirect
 )
 
-replace github.com/container-orchestrated-devices/container-device-interface => ../..
+replace tags.cncf.io/container-device-interface => ../..
 
-replace github.com/container-orchestrated-devices/container-device-interface/specs-go => ../../specs-go
+replace tags.cncf.io/container-device-interface/specs-go => ../../specs-go

@@ -1,4 +1,4 @@
-module github.com/container-orchestrated-devices/container-device-interface/specs-go
+module tags.cncf.io/container-device-interface/specs-go
 
 go 1.19
 
