@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
 	"github.com/spf13/cobra"
+	"tags.cncf.io/container-device-interface/pkg/cdi"
 )
 
 type specFlags struct {

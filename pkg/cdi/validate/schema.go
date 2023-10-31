@@ -17,8 +17,8 @@
 package validate
 
 import (
-	"github.com/container-orchestrated-devices/container-device-interface/schema"
-	raw "github.com/container-orchestrated-devices/container-device-interface/specs-go"
+	"tags.cncf.io/container-device-interface/schema"
+	raw "tags.cncf.io/container-device-interface/specs-go"
 )
 
 const (

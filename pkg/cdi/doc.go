@@ -2,7 +2,7 @@
 // interacting with CDI and consuming CDI devices.
 //
 // For more information about Container Device Interface, please refer to
-// https://github.com/container-orchestrated-devices/container-device-interface
+// https://tags.cncf.io/container-device-interface
 //
 // # Container Device Interface
 //
@@ -48,7 +48,7 @@
 //
 //	    log "github.com/sirupsen/logrus"
 //
-//	    "github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
+//	    "tags.cncf.io/container-device-interface/pkg/cdi"
 //	    oci "github.com/opencontainers/runtime-spec/specs-go"
 //	)
 //
@@ -91,7 +91,7 @@
 //
 //	    log "github.com/sirupsen/logrus"
 //
-//	    "github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
+//	    "tags.cncf.io/container-device-interface/pkg/cdi"
 //	    oci "github.com/opencontainers/runtime-spec/specs-go"
 //	)
 //
@@ -172,8 +172,8 @@
 //
 //	"fmt"
 //	...
-//	"github.com/container-orchestrated-devices/container-device-interface/specs-go"
-//	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
+//	"tags.cncf.io/container-device-interface/specs-go"
+//	"tags.cncf.io/container-device-interface/pkg/cdi"
 //
 // )
 //
@@ -209,8 +209,8 @@
 //
 //	"fmt"
 //	...
-//	"github.com/container-orchestrated-devices/container-device-interface/specs-go"
-//	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
+//	"tags.cncf.io/container-device-interface/specs-go"
+//	"tags.cncf.io/container-device-interface/pkg/cdi"
 //
 // )
 //

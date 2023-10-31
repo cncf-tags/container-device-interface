@@ -1,9 +1,8 @@
-module github.com/container-orchestrated-devices/container-device-interface
+module tags.cncf.io/container-device-interface
 
 go 1.19
 
 require (
-	github.com/container-orchestrated-devices/container-device-interface/specs-go v0.6.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/opencontainers/runtime-spec v1.1.0
 	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
@@ -12,6 +11,7 @@ require (
 	golang.org/x/mod v0.4.2
 	golang.org/x/sys v0.1.0
 	sigs.k8s.io/yaml v1.3.0
+	tags.cncf.io/container-device-interface/specs-go v0.6.0
 )
 
 require (
@@ -24,4 +24,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/container-orchestrated-devices/container-device-interface/specs-go => ./specs-go
+replace tags.cncf.io/container-device-interface/specs-go => ./specs-go

@@ -27,11 +27,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
-	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/yaml"
+	"tags.cncf.io/container-device-interface/pkg/cdi/validate"
+	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
 func TestNewCache(t *testing.T) {

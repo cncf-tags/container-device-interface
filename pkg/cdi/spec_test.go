@@ -26,11 +26,11 @@ import (
 
 	"sigs.k8s.io/yaml"
 
-	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
-	"github.com/container-orchestrated-devices/container-device-interface/pkg/parser"
-	"github.com/container-orchestrated-devices/container-device-interface/schema"
-	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	"github.com/stretchr/testify/require"
+	"tags.cncf.io/container-device-interface/pkg/cdi/validate"
+	"tags.cncf.io/container-device-interface/pkg/parser"
+	"tags.cncf.io/container-device-interface/schema"
+	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
 func TestReadSpec(t *testing.T) {
