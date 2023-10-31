@@ -3,7 +3,7 @@ module github.com/container-orchestrated-devices/container-device-interface
 go 1.19
 
 require (
-	github.com/container-orchestrated-devices/container-device-interface/specs-go v0.0.0-00010101000000-000000000000
+	github.com/container-orchestrated-devices/container-device-interface/specs-go v0.6.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/opencontainers/runtime-spec v1.1.0
 	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
