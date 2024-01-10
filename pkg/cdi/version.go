@@ -125,9 +125,17 @@ func requiresV070(spec *cdi.Spec) bool {
 	if spec.ContainerEdits.IntelRdt != nil {
 		return true
 	}
+	// The v0.7.0 spec allows additional GIDs to be specified at a spec level.
+	if len(spec.ContainerEdits.AdditionalGIDs) > 0 {
+		return true
+	}
 
 	for _, d := range spec.Devices {
 		if d.ContainerEdits.IntelRdt != nil {
+			return true
+		}
+		// The v0.7.0 spec allows additional GIDs to be specified at a device level.
+		if len(d.ContainerEdits.AdditionalGIDs) > 0 {
 			return true
 		}
 	}

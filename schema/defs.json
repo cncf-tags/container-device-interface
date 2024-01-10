@@ -157,6 +157,12 @@
                             "type": "boolean"
                         }
                     }
+                },
+                "additionalGids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/uint32"
+                    }
                 }
             }
         },
