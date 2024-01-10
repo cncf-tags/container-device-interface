@@ -22,8 +22,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -158,7 +158,7 @@ func Load(source string) (*Schema, error) {
 // ReadAndValidate all data from the given reader, using the schema for validation.
 func (s *Schema) ReadAndValidate(r io.Reader) ([]byte, error) {
 	loader, reader := schema.NewReaderLoader(r)
-	data, err := ioutil.ReadAll(reader)
+	data, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read data for validation: %w", err)
 	}
@@ -202,7 +202,7 @@ func (s *Schema) ValidateFile(path string) error {
 		return s.validate(schema.NewReferenceLoader("file://" + path))
 	}
 
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}

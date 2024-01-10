@@ -18,7 +18,7 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
@@ -66,9 +66,9 @@ func readOCISpec(path string) (*oci.Spec, error) {
 	)
 
 	if path == "-" {
-		data, err = ioutil.ReadAll(os.Stdin)
+		data, err = io.ReadAll(os.Stdin)
 	} else {
-		data, err = ioutil.ReadFile(path)
+		data, err = os.ReadFile(path)
 	}
 
 	if err != nil {

@@ -22,7 +22,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"tags.cncf.io/container-device-interface/schema"
@@ -80,7 +80,7 @@ func main() {
 	for _, docFile = range docs {
 		if docFile == "" || docFile == "-" {
 			docFile = "<stdin>"
-			docData, err = ioutil.ReadAll(os.Stdin)
+			docData, err = io.ReadAll(os.Stdin)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "failed to read document data from stdin: %v\n", err)
 				os.Exit(1)
