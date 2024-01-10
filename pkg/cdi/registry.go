@@ -128,8 +128,9 @@ func GetRegistry(options ...Option) Registry {
 		new = true
 	})
 	if !new && len(options) > 0 {
-		reg.Configure(options...)
-		reg.Refresh()
+		// We don't care about errors here
+		_ = reg.Configure(options...)
+		_ = reg.Refresh()
 	}
 	return reg
 }
