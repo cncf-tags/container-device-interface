@@ -718,7 +718,7 @@ devices:
 					}
 
 					select {
-					case _ = <-stopCh:
+					case <-stopCh:
 						return
 					default:
 					}
@@ -748,7 +748,7 @@ devices:
 					}
 
 					select {
-					case _ = <-stopCh:
+					case <-stopCh:
 						return
 					default:
 					}
@@ -771,10 +771,10 @@ devices:
 				// from updater()'s create+write+rename loop)
 				for {
 					select {
-					case _ = <-stopCh:
+					case <-stopCh:
 						go osSync()
 						return
-					case _ = <-sync.C:
+					case <-sync.C:
 						go osSync()
 						sync.Reset(2 * time.Second)
 					}
@@ -803,7 +803,7 @@ devices:
 				select {
 				case err = <-errCh:
 					require.NotNil(t, err)
-				case _ = <-done:
+				case <-done:
 					close(stopCh)
 					wg.Wait()
 					return
