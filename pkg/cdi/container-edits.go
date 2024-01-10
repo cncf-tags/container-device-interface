@@ -151,6 +151,13 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 		spec.Linux.IntelRdt = e.IntelRdt.ToOCI()
 	}
 
+	for _, additionalGID := range e.AdditionalGIDs {
+		if additionalGID == 0 {
+			continue
+		}
+		specgen.AddProcessAdditionalGid(additionalGID)
+	}
+
 	return nil
 }
 
@@ -207,6 +214,7 @@ func (e *ContainerEdits) Append(o *ContainerEdits) *ContainerEdits {
 	if o.IntelRdt != nil {
 		e.IntelRdt = o.IntelRdt
 	}
+	e.AdditionalGIDs = append(e.AdditionalGIDs, o.AdditionalGIDs...)
 
 	return e
 }
@@ -217,7 +225,25 @@ func (e *ContainerEdits) isEmpty() bool {
 	if e == nil {
 		return false
 	}
-	return len(e.Env)+len(e.DeviceNodes)+len(e.Hooks)+len(e.Mounts) == 0 && e.IntelRdt == nil
+	if len(e.Env) > 0 {
+		return false
+	}
+	if len(e.DeviceNodes) > 0 {
+		return false
+	}
+	if len(e.Hooks) > 0 {
+		return false
+	}
+	if len(e.Mounts) > 0 {
+		return false
+	}
+	if len(e.AdditionalGIDs) > 0 {
+		return false
+	}
+	if e.IntelRdt != nil {
+		return false
+	}
+	return true
 }
 
 // ValidateEnv validates the given environment variables.

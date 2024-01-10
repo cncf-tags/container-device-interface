@@ -29,6 +29,7 @@ Released versions of the spec are available as Git tags.
 | v0.6.0 |   | Add `Annotations` field to `Spec` and `Device` specifications |
 |        |   | Allow dots (`.`)  in name segment of `Kind` field. |
 | v0.7.0 |   | Add `IntelRdt`field. |
+| v0.7.0 |   | Add `AdditionalGIDs` to `ContainerEdits` |
 
 *Note*: The initial release of a **spec** with version `v0.x.0` will be tagged as
 `v0.x.0` with subsequent changes to the API applicable to this version tagged as `v0.x.y`.
@@ -150,6 +151,11 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
                     "env":  [ "<envName>=<envValue>"], (optional)
                     "timeout": <int> (optional)
                 }
+            ],
+            // Additional GIDs to add to the container process.
+            // Note that a value of 0 is ignored.
+            additionalGIDs: [ (optional)
+              <uint32>
             ]
             "intelRdt": { (optional)
                 "closID": "<name>", (optional)
@@ -234,6 +240,7 @@ The `containerEdits` field has the following definition:
     * `memBwSchema` (string, OPTIONAL) memory bandwidth allocation schema for the `CLOS`.
     * `enableCMT` (boolean, OPTIONAL) whether to enable cache monitoring
     * `enableMBM` (boolean, OPTIONAL) whether to enable memory bandwidth monitoring
+  * `additionalGids` (array of uint32s, OPTIONAL) A list of additional group IDs to add with the container process. These values are added to the `user.additionalGids` field in the OCI runtime specification. Values of 0 are ignored.
 
 ## Error Handling
   * Kind requested is not present in any CDI file.

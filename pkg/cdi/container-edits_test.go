@@ -563,6 +563,42 @@ func TestApplyContainerEdits(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "additional GIDs are applied",
+			spec: &oci.Spec{},
+			edits: &cdi.ContainerEdits{
+				AdditionalGIDs: []uint32{4, 5, 6},
+			},
+			result: &oci.Spec{
+				Process: &oci.Process{
+					User: oci.User{
+						AdditionalGids: []uint32{4, 5, 6},
+					},
+				},
+			},
+		},
+		{
+			name: "duplicate GIDs are ignored",
+			spec: &oci.Spec{},
+			edits: &cdi.ContainerEdits{
+				AdditionalGIDs: []uint32{4, 5, 6, 5, 6, 4},
+			},
+			result: &oci.Spec{
+				Process: &oci.Process{
+					User: oci.User{
+						AdditionalGids: []uint32{4, 5, 6},
+					},
+				},
+			},
+		},
+		{
+			name: "additional GID 0 is skipped",
+			spec: &oci.Spec{},
+			edits: &cdi.ContainerEdits{
+				AdditionalGIDs: []uint32{0},
+			},
+			result: &oci.Spec{},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			edits := ContainerEdits{tc.edits}
@@ -715,6 +751,36 @@ func TestAppend(t *testing.T) {
 					IntelRdt: &cdi.IntelRdt{
 						ClosID: "clos-2",
 					},
+				},
+			},
+		},
+		{
+			name: "merge additional GIDs does not deduplicate",
+			dst: &ContainerEdits{
+				ContainerEdits: &cdi.ContainerEdits{
+					AdditionalGIDs: []uint32{5},
+				},
+			},
+			src: []*ContainerEdits{
+				{
+					ContainerEdits: &cdi.ContainerEdits{
+						AdditionalGIDs: []uint32{0},
+					},
+				},
+				{
+					ContainerEdits: &cdi.ContainerEdits{
+						AdditionalGIDs: []uint32{5},
+					},
+				},
+				{
+					ContainerEdits: &cdi.ContainerEdits{
+						AdditionalGIDs: []uint32{6, 7, 6},
+					},
+				},
+			},
+			result: &ContainerEdits{
+				ContainerEdits: &cdi.ContainerEdits{
+					AdditionalGIDs: []uint32{5, 0, 5, 6, 7, 6},
 				},
 			},
 		},
