@@ -18,7 +18,6 @@ package cdi
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -496,7 +495,7 @@ devices:
 
 // Create an automatically cleaned up temporary file for a test.
 func mkTestSpec(t *testing.T, data []byte) (string, error) {
-	tmp, err := ioutil.TempFile("", ".cdi-test.*."+specType(data))
+	tmp, err := os.CreateTemp("", ".cdi-test.*."+specType(data))
 	if err != nil {
 		return "", fmt.Errorf("failed to create test file: %w", err)
 	}

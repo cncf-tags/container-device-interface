@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -269,7 +268,7 @@ func validateFile(t *testing.T, scm *schema.Schema, path string, shouldLoad, isV
 }
 
 func validateData(t *testing.T, scm *schema.Schema, path string, shouldLoad, isValid bool) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	require.NoError(t, err)
 
 	if scm != nil {

@@ -18,7 +18,6 @@ package cdi
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -212,7 +211,7 @@ devices:
 
 // Create an automatically cleaned up temporary directory, with optional content.
 func mkTestDir(t *testing.T, dirs map[string]map[string]string) (string, error) {
-	tmp, err := ioutil.TempDir("", ".cache-test*")
+	tmp, err := os.MkdirTemp("", ".cache-test*")
 	if err != nil {
 		return "", fmt.Errorf("failed to create test directory: %w", err)
 	}
@@ -237,7 +236,7 @@ func updateTestDir(t *testing.T, tmp string, dirs map[string]map[string]string) 
 		for file, data := range content {
 			file := filepath.Join(dir, file)
 			tmp := file + ".tmp"
-			if err := ioutil.WriteFile(tmp, []byte(data), 0644); err != nil {
+			if err := os.WriteFile(tmp, []byte(data), 0644); err != nil {
 				return fmt.Errorf("failed to write file %q: %w", tmp, err)
 			}
 			if err := os.Rename(tmp, file); err != nil {
