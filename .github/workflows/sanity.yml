@@ -33,6 +33,10 @@ jobs:
     - name: Verify go modules are properly up-to-date
       run: |
         make mod-tidy && git diff --exit-code
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: v1.55.2
 
   test:
     name: "Run tests"
