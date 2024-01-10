@@ -1,4 +1,3 @@
 [codespell]
 skip = .git,*.pdf,*.svg,*.sum,*.mod
-#
-# ignore-words-list =
+ignore-words-list = clos

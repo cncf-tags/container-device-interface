@@ -29,6 +29,7 @@ type ContainerEdits struct {
 	DeviceNodes []*DeviceNode `json:"deviceNodes,omitempty"`
 	Hooks       []*Hook       `json:"hooks,omitempty"`
 	Mounts      []*Mount      `json:"mounts,omitempty"`
+	IntelRdt    *IntelRdt     `json:"intelRdt,omitempty"`
 }
 
 // DeviceNode represents a device node that needs to be added to the OCI spec.
@@ -59,4 +60,13 @@ type Hook struct {
 	Args     []string `json:"args,omitempty"`
 	Env      []string `json:"env,omitempty"`
 	Timeout  *int     `json:"timeout,omitempty"`
+}
+
+// IntelRdt describes the Linux IntelRdt parameters to set in the OCI spec.
+type IntelRdt struct {
+	ClosID        string `json:"closID,omitempty"`
+	L3CacheSchema string `json:"l3CacheSchema,omitempty"`
+	MemBwSchema   string `json:"memBwSchema,omitempty"`
+	EnableCMT     bool   `json:"enableCMT,omitempty"`
+	EnableMBM     bool   `json:"enableMBM,omitempty"`
 }

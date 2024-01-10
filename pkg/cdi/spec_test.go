@@ -669,6 +669,33 @@ func TestRequiredVersion(t *testing.T) {
 			},
 			expectedVersion: "0.6.0",
 		},
+		{
+			description: "IntelRdt requires v0.7.0",
+			spec: &cdi.Spec{
+				ContainerEdits: cdi.ContainerEdits{
+					IntelRdt: &cdi.IntelRdt{
+						ClosID: "foo",
+					},
+				},
+			},
+			expectedVersion: "0.7.0",
+		},
+		{
+			description: "IntelRdt (on devices) requires v0.7.0",
+			spec: &cdi.Spec{
+				Devices: []cdi.Device{
+					{
+						Name: "device0",
+						ContainerEdits: cdi.ContainerEdits{
+							IntelRdt: &cdi.IntelRdt{
+								ClosID: "foo",
+							},
+						},
+					},
+				},
+			},
+			expectedVersion: "0.7.0",
+		},
 	}
 
 	for _, tc := range testCases {
