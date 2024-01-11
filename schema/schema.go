@@ -135,7 +135,7 @@ func Load(source string) (*Schema, error) {
 	case strings.HasPrefix(source, "http://"):
 	case strings.HasPrefix(source, "https://"):
 	default:
-		if strings.Index(source, "://") < 0 {
+		if !strings.Contains(source, "://") {
 			source, err = filepath.Abs(source)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get JSON schema absolute path for %s: %w",
