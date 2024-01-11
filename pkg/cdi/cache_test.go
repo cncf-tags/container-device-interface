@@ -177,6 +177,10 @@ devices:
 				}
 			} else {
 				dir, err = mkTestDir(t, nil)
+				if err != nil {
+					t.Errorf("failed to create test directory: %v", err)
+					return
+				}
 			}
 
 			cache, err = NewCache(WithSpecDirs(
@@ -554,6 +558,7 @@ devices:
 							opts = append(opts, WithAutoRefresh(false))
 						}
 						cache, err = NewCache(opts...)
+						require.NoError(t, err)
 						require.NotNil(t, cache)
 					} else {
 						err = updateSpecDirs(t, dir, update.etc, update.run)
