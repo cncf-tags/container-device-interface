@@ -188,9 +188,7 @@ func cdiResolveDevices(ociSpecFiles ...string) error {
 		err        error
 	)
 
-	if cache, err = cdi.NewCache(); err != nil {
-		return fmt.Errorf("failed to create CDI cache instance: %w", err)
-	}
+	cache = cdi.NewCache()
 
 	for _, ociSpecFile := range ociSpecFiles {
 		ociSpec, err = readOCISpec(ociSpecFile)

@@ -124,7 +124,7 @@ var (
 func GetRegistry(options ...Option) Registry {
 	var new bool
 	initOnce.Do(func() {
-		reg, _ = getRegistry(options...)
+		reg = &registry{NewCache(options...)}
 		new = true
 	})
 	if !new && len(options) > 0 {
@@ -143,9 +143,4 @@ func (r *registry) DeviceDB() RegistryDeviceDB {
 // SpecDB returns the registry interface for querying Specs.
 func (r *registry) SpecDB() RegistrySpecDB {
 	return r
-}
-
-func getRegistry(options ...Option) (*registry, error) {
-	c, err := NewCache(options...)
-	return &registry{c}, err
 }
