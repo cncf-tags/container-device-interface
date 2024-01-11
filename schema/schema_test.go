@@ -286,8 +286,8 @@ func readAndValidate(t *testing.T, scm *schema.Schema, path string, shouldLoad, 
 	)
 
 	f, err := os.Open(path)
-	defer f.Close()
 	require.NoError(t, err)
+	defer f.Close()
 
 	if scm != nil {
 		data, err = scm.ReadAndValidate(f)
@@ -308,8 +308,8 @@ func readAndValidate(t *testing.T, scm *schema.Schema, path string, shouldLoad, 
 
 func validateRead(t *testing.T, scm *schema.Schema, path string, shouldLoad, isValid bool) {
 	f, err := os.Open(path)
-	defer f.Close()
 	require.NoError(t, err)
+	defer f.Close()
 
 	buf := &bytes.Buffer{}
 	r := io.TeeReader(f, buf)
