@@ -33,7 +33,7 @@ import (
 )
 
 // Option is an option to change some aspect of default CDI behavior.
-type Option func(*Cache) error
+type Option func(*Cache)
 
 // Cache stores CDI Specs loaded from Spec directories.
 type Cache struct {
@@ -54,9 +54,8 @@ type Cache struct {
 // is detected. This option can be used to disable this behavior when a
 // manually refreshed mode is preferable.
 func WithAutoRefresh(autoRefresh bool) Option {
-	return func(c *Cache) error {
+	return func(c *Cache) {
 		c.autoRefresh = autoRefresh
-		return nil
 	}
 }
 
@@ -92,12 +91,8 @@ func (c *Cache) Configure(options ...Option) error {
 // Configure the Cache. Start/stop CDI Spec directory watch, refresh
 // the Cache if necessary.
 func (c *Cache) configure(options ...Option) error {
-	var err error
-
 	for _, o := range options {
-		if err = o(c); err != nil {
-			return fmt.Errorf("failed to apply cache options: %w", err)
-		}
+		o(c)
 	}
 
 	c.dirErrors = make(map[string]error)
