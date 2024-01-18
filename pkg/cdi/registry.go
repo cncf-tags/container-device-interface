@@ -55,7 +55,7 @@ type Registry interface {
 // GetSpecDirErrors returns any errors related to the configured
 // Spec directories.
 type RegistryRefresher interface {
-	Configure(...Option) error
+	Configure(...Option)
 	Refresh() error
 	GetErrors() map[string][]error
 	GetSpecDirectories() []string
@@ -129,7 +129,7 @@ func GetRegistry(options ...Option) Registry {
 	})
 	if !new && len(options) > 0 {
 		// We don't care about errors here
-		_ = reg.Configure(options...)
+		reg.Configure(options...)
 		_ = reg.Refresh()
 	}
 	return reg
