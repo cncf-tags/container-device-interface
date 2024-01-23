@@ -124,7 +124,7 @@ var (
 func GetRegistry(options ...Option) Registry {
 	var new bool
 	initOnce.Do(func() {
-		reg = &registry{NewCache(options...)}
+		reg = &registry{newCache(options...)}
 		new = true
 	})
 	if !new && len(options) > 0 {

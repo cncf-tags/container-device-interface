@@ -188,7 +188,7 @@ func cdiResolveDevices(ociSpecFiles ...string) error {
 		err        error
 	)
 
-	cache = cdi.NewCache()
+	cache, _ = cdi.NewCache()
 
 	for _, ociSpecFile := range ociSpecFiles {
 		ociSpec, err = readOCISpec(ociSpecFile)

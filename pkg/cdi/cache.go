@@ -62,7 +62,19 @@ func WithAutoRefresh(autoRefresh bool) Option {
 // NewCache creates a new CDI Cache. The cache is populated from a set
 // of CDI Spec directories. These can be specified using a WithSpecDirs
 // option. The default set of directories is exposed in DefaultSpecDirs.
-func NewCache(options ...Option) *Cache {
+//
+// Note:
+//
+//	The error returned by this function is always nil and it is only
+//	returned to maintain API compatibility with consumers.
+func NewCache(options ...Option) (*Cache, error) {
+	return newCache(options...), nil
+}
+
+// newCache creates a CDI cache with the supplied options.
+// This function allows testing without handling the nil error returned by the
+// NewCache function.
+func newCache(options ...Option) *Cache {
 	c := &Cache{
 		autoRefresh: true,
 		watch:       &watch{},
