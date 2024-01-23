@@ -183,7 +183,7 @@ devices:
 				}
 			}
 
-			cache, err = NewCache(WithSpecDirs(
+			cache = NewCache(WithSpecDirs(
 				filepath.Join(dir, "etc"),
 				filepath.Join(dir, "run")),
 			)
@@ -196,9 +196,6 @@ devices:
 				}
 			}
 
-			if len(tc.errors) == 0 {
-				require.Nil(t, err)
-			}
 			require.NotNil(t, cache)
 
 			for name, dev := range cache.devices {
@@ -557,8 +554,7 @@ devices:
 						if !selfRefresh {
 							opts = append(opts, WithAutoRefresh(false))
 						}
-						cache, err = NewCache(opts...)
-						require.NoError(t, err)
+						cache = NewCache(opts...)
 						require.NotNil(t, cache)
 					} else {
 						err = updateSpecDirs(t, dir, update.etc, update.run)
@@ -789,13 +785,12 @@ devices:
 			dir, err = createSpecDirs(t, tc.updates[0].etc, tc.updates[0].run)
 			require.NoError(t, err)
 
-			cache, err = NewCache(
+			cache = NewCache(
 				WithSpecDirs(
 					filepath.Join(dir, "etc"),
 					filepath.Join(dir, "run"),
 				),
 			)
-			require.NoError(t, err)
 			require.NotNil(t, cache)
 
 			go injector()
@@ -1176,13 +1171,12 @@ devices:
 				t.Errorf("failed to create test directory: %v", err)
 				return
 			}
-			cache, err = NewCache(
+			cache = NewCache(
 				WithSpecDirs(
 					filepath.Join(dir, "etc"),
 					filepath.Join(dir, "run"),
 				),
 			)
-			require.Nil(t, err)
 			require.NotNil(t, cache)
 
 			unresolved, err := cache.InjectDevices(tc.ociSpec, tc.devices...)
@@ -1415,13 +1409,12 @@ devices:
 				t.Errorf("failed to create test directory: %v", err)
 				return
 			}
-			cache, err = NewCache(
+			cache = NewCache(
 				WithSpecDirs(
 					filepath.Join(dir, "etc"),
 					filepath.Join(dir, "run"),
 				),
 			)
-			require.Nil(t, err)
 			require.NotNil(t, cache)
 
 			vendors := cache.ListVendors()
@@ -1571,7 +1564,7 @@ containerEdits:
 			if len(tc.invalid) != 0 {
 				dir, err = createSpecDirs(t, nil, nil)
 				require.NoError(t, err)
-				cache, err = NewCache(
+				cache = NewCache(
 					WithSpecDirs(
 						filepath.Join(dir, "etc"),
 						filepath.Join(dir, "run"),
@@ -1579,7 +1572,6 @@ containerEdits:
 					WithAutoRefresh(false),
 				)
 
-				require.NoError(t, err)
 				require.NotNil(t, cache)
 
 				etc = map[string]string{}
@@ -1604,21 +1596,19 @@ containerEdits:
 			dir, err = createSpecDirs(t, etc, nil)
 			require.NoError(t, err)
 
-			cache, err = NewCache(
+			cache = NewCache(
 				WithSpecDirs(
 					filepath.Join(dir, "etc"),
 				),
 			)
-			require.NoError(t, err)
 			require.NotNil(t, cache)
 
-			other, err = NewCache(
+			other = NewCache(
 				WithSpecDirs(
 					filepath.Join(dir, "run"),
 				),
 				WithAutoRefresh(false),
 			)
-			require.NoError(t, err)
 			require.NotNil(t, other)
 
 			cSpecs := map[string]*cdi.Spec{}
@@ -1796,7 +1786,7 @@ devices:
 
 			dir, err = createSpecDirs(t, nil, nil)
 			require.NoError(t, err)
-			cache, err = NewCache(
+			cache = NewCache(
 				WithSpecDirs(
 					filepath.Join(dir, "etc"),
 					filepath.Join(dir, "run"),
@@ -1804,7 +1794,6 @@ devices:
 				WithAutoRefresh(false),
 			)
 
-			require.NoError(t, err)
 			require.NotNil(t, cache)
 
 			for idx, data := range tc.specs {

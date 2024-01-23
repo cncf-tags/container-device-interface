@@ -62,7 +62,7 @@ func WithAutoRefresh(autoRefresh bool) Option {
 // NewCache creates a new CDI Cache. The cache is populated from a set
 // of CDI Spec directories. These can be specified using a WithSpecDirs
 // option. The default set of directories is exposed in DefaultSpecDirs.
-func NewCache(options ...Option) (*Cache, error) {
+func NewCache(options ...Option) *Cache {
 	c := &Cache{
 		autoRefresh: true,
 		watch:       &watch{},
@@ -72,7 +72,8 @@ func NewCache(options ...Option) (*Cache, error) {
 	c.Lock()
 	defer c.Unlock()
 
-	return c, c.configure(options...)
+	c.configure(options...)
+	return c
 }
 
 // Configure applies options to the Cache. Updates and refreshes the
@@ -85,12 +86,14 @@ func (c *Cache) Configure(options ...Option) error {
 	c.Lock()
 	defer c.Unlock()
 
-	return c.configure(options...)
+	c.configure(options...)
+
+	return nil
 }
 
 // Configure the Cache. Start/stop CDI Spec directory watch, refresh
 // the Cache if necessary.
-func (c *Cache) configure(options ...Option) error {
+func (c *Cache) configure(options ...Option) {
 	for _, o := range options {
 		o(c)
 	}
@@ -103,8 +106,6 @@ func (c *Cache) configure(options ...Option) error {
 		c.watch.start(&c.Mutex, c.refresh, c.dirErrors)
 	}
 	c.refresh()
-
-	return nil
 }
 
 // Refresh rescans the CDI Spec directories and refreshes the Cache.
