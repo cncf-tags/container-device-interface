@@ -29,6 +29,14 @@
 // the vast majority of CDI consumers need. The API should be usable both
 // by OCI runtime clients and runtime implementations.
 //
+// # Default CDI Cache
+//
+// There is a default CDI cache instance which is always implicitly
+// available and instantiated the first time it is referenced directly
+// or indirectly. The most frequently used cache functions are available
+// as identically named package level functions which operate on the
+// default cache instance.
+//
 // # CDI Registry
 //
 // The primary interface to interact with CDI devices is the Registry. It
