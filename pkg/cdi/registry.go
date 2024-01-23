@@ -122,15 +122,12 @@ var (
 // GetRegistry returns the CDI registry. If any options are given, those
 // are applied to the registry.
 func GetRegistry(options ...Option) Registry {
-	var new bool
 	initOnce.Do(func() {
-		reg = &registry{newCache(options...)}
-		new = true
+		reg = &registry{GetDefaultCache()}
 	})
-	if !new && len(options) > 0 {
+	if len(options) > 0 {
 		// We don't care about errors here
 		_ = reg.Configure(options...)
-		_ = reg.Refresh()
 	}
 	return reg
 }

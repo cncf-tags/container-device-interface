@@ -35,7 +35,9 @@
 // available and instantiated the first time it is referenced directly
 // or indirectly. The most frequently used cache functions are available
 // as identically named package level functions which operate on the
-// default cache instance.
+// default cache instance. Moreover, the registry also operates on the
+// same default cache. We plan to deprecate the registry and eventually
+// remove it in a future release.
 //
 // # CDI Registry
 //
