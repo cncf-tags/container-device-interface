@@ -142,7 +142,7 @@ func monitorDirectories(dirs ...string) (*fsnotify.Watcher, error) {
 
 	for _, dir := range dirs {
 		if _, err = os.Stat(dir); err != nil {
-			fmt.Printf("WARNING: failed to stat dir %q, NOT watching it...", dir)
+			fmt.Printf("WARNING: failed to stat dir %q, NOT watching it...\n", dir)
 			continue
 		}
 
