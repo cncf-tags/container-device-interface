@@ -90,6 +90,25 @@ file (`/etc/containerd/config.toml` by default):
 ```
 
 Remember to restart containerd for any configuration changes to take effect.
+
+### Docker configuration
+
+To enable and configure CDI support in the [Docker Daemon](https://github.com/moby/moby)
+[Docker 25](https://github.com/moby/moby/releases/tag/v25.0.0) or later is required.
+
+In addition, the CDI feature must be enabled. That means including the following in the daemon
+config (`/etc/docker/daemon.json` by default):
+
+```json
+{
+  "features": {
+    "cdi": true
+  }
+}
+```
+
+Remember to restart to Docker daemon for any configuration changes to take effect.
+
 ### Podman configuration
 
 [podman](https://github.com/containers/podman) does not require any specific
