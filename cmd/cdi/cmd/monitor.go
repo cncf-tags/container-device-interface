@@ -121,7 +121,7 @@ func monitorSpecDirs(args ...string) {
 
 			case _ = <-refresh:
 				refresh = nil
-				cdiPrintRegistry(args...)
+				cdiPrintCache(args...)
 			}
 		}
 	}()

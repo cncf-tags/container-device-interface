@@ -72,7 +72,7 @@ func initSpecDirs() {
 			cdi.WithSpecDirs(specDirs...),
 		)
 		if len(cdi.GetRegistry().GetErrors()) > 0 {
-			cdiPrintRegistryErrors()
+			cdiPrintCacheErrors()
 		}
 	}
 }
