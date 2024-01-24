@@ -183,7 +183,7 @@ devices:
 				}
 			}
 
-			cache = NewCache(WithSpecDirs(
+			cache = newCache(WithSpecDirs(
 				filepath.Join(dir, "etc"),
 				filepath.Join(dir, "run")),
 			)
@@ -554,7 +554,7 @@ devices:
 						if !selfRefresh {
 							opts = append(opts, WithAutoRefresh(false))
 						}
-						cache = NewCache(opts...)
+						cache = newCache(opts...)
 						require.NotNil(t, cache)
 					} else {
 						err = updateSpecDirs(t, dir, update.etc, update.run)
@@ -785,7 +785,7 @@ devices:
 			dir, err = createSpecDirs(t, tc.updates[0].etc, tc.updates[0].run)
 			require.NoError(t, err)
 
-			cache = NewCache(
+			cache = newCache(
 				WithSpecDirs(
 					filepath.Join(dir, "etc"),
 					filepath.Join(dir, "run"),
@@ -1171,7 +1171,7 @@ devices:
 				t.Errorf("failed to create test directory: %v", err)
 				return
 			}
-			cache = NewCache(
+			cache = newCache(
 				WithSpecDirs(
 					filepath.Join(dir, "etc"),
 					filepath.Join(dir, "run"),
@@ -1409,7 +1409,7 @@ devices:
 				t.Errorf("failed to create test directory: %v", err)
 				return
 			}
-			cache = NewCache(
+			cache = newCache(
 				WithSpecDirs(
 					filepath.Join(dir, "etc"),
 					filepath.Join(dir, "run"),
@@ -1564,7 +1564,7 @@ containerEdits:
 			if len(tc.invalid) != 0 {
 				dir, err = createSpecDirs(t, nil, nil)
 				require.NoError(t, err)
-				cache = NewCache(
+				cache = newCache(
 					WithSpecDirs(
 						filepath.Join(dir, "etc"),
 						filepath.Join(dir, "run"),
@@ -1596,14 +1596,14 @@ containerEdits:
 			dir, err = createSpecDirs(t, etc, nil)
 			require.NoError(t, err)
 
-			cache = NewCache(
+			cache = newCache(
 				WithSpecDirs(
 					filepath.Join(dir, "etc"),
 				),
 			)
 			require.NotNil(t, cache)
 
-			other = NewCache(
+			other = newCache(
 				WithSpecDirs(
 					filepath.Join(dir, "run"),
 				),
@@ -1786,7 +1786,7 @@ devices:
 
 			dir, err = createSpecDirs(t, nil, nil)
 			require.NoError(t, err)
-			cache = NewCache(
+			cache = newCache(
 				WithSpecDirs(
 					filepath.Join(dir, "etc"),
 					filepath.Join(dir, "run"),
