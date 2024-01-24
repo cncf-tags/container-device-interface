@@ -90,17 +90,13 @@ func newCache(options ...Option) *Cache {
 
 // Configure applies options to the Cache. Updates and refreshes the
 // Cache if options have changed.
-func (c *Cache) Configure(options ...Option) error {
-	if len(options) == 0 {
-		return nil
+func (c *Cache) Configure(options ...Option) {
+	if len(options) != 0 {
+		c.Lock()
+		defer c.Unlock()
+
+		c.configure(options...)
 	}
-
-	c.Lock()
-	defer c.Unlock()
-
-	c.configure(options...)
-
-	return nil
 }
 
 // Configure the Cache. Start/stop CDI Spec directory watch, refresh
