@@ -28,7 +28,6 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
-	"tags.cncf.io/container-device-interface/internal/multierror"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
@@ -133,11 +132,11 @@ func (c *Cache) Refresh() error {
 	}
 
 	// collect and return cached errors, much like refresh() does it
-	var result error
-	for _, errors := range c.errors {
-		result = multierror.Append(result, errors...)
+	errs := []error{}
+	for _, specErrs := range c.errors {
+		errs = append(errs, errors.Join(specErrs...))
 	}
-	return result
+	return errors.Join(errs...)
 }
 
 // Refresh the Cache by rescanning CDI Spec directories and files.
@@ -147,12 +146,10 @@ func (c *Cache) refresh() error {
 		devices    = map[string]*Device{}
 		conflicts  = map[string]struct{}{}
 		specErrors = map[string][]error{}
-		result     []error
 	)
 
 	// collect errors per spec file path and once globally
 	collectError := func(err error, paths ...string) {
-		result = append(result, err)
 		for _, path := range paths {
 			specErrors[path] = append(specErrors[path], err)
 		}
@@ -205,7 +202,11 @@ func (c *Cache) refresh() error {
 	c.devices = devices
 	c.errors = specErrors
 
-	return multierror.New(result...)
+	errs := []error{}
+	for _, specErrs := range specErrors {
+		errs = append(errs, errors.Join(specErrs...))
+	}
+	return errors.Join(errs...)
 }
 
 // RefreshIfRequired triggers a refresh if necessary.

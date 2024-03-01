@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,7 +31,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	schema "github.com/xeipuuv/gojsonschema"
-	"tags.cncf.io/container-device-interface/internal/multierror"
 	"tags.cncf.io/container-device-interface/internal/validation"
 )
 
@@ -333,11 +333,16 @@ func (e *Error) Error() string {
 		return ""
 	}
 
-	var multi error
+	errs := []error{}
 	for _, err := range e.Result.Errors() {
-		multi = multierror.Append(multi, fmt.Errorf("%v", err))
+		errs = append(errs, fmt.Errorf("%v", err))
 	}
-	return multi.Error()
+
+	if err := errors.Join(errs...); err != nil {
+		return fmt.Sprintf("%v", err)
+	}
+
+	return ""
 }
 
 var (
