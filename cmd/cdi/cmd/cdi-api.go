@@ -29,8 +29,8 @@ import (
 
 func cdiListVendors() {
 	var (
-		registry = cdi.GetRegistry()
-		vendors  = registry.SpecDB().ListVendors()
+		cache   = cdi.GetDefaultCache()
+		vendors = cache.ListVendors()
 	)
 
 	if len(vendors) == 0 {
@@ -41,20 +41,20 @@ func cdiListVendors() {
 	fmt.Printf("CDI vendors found:\n")
 	for idx, vendor := range vendors {
 		fmt.Printf("  %d. %q (%d CDI Spec Files)\n", idx, vendor,
-			len(registry.SpecDB().GetVendorSpecs(vendor)))
+			len(cache.GetVendorSpecs(vendor)))
 	}
 }
 
 func cdiListClasses() {
 	var (
-		registry = cdi.GetRegistry()
-		vendors  = map[string][]string{}
+		cache   = cdi.GetDefaultCache()
+		vendors = map[string][]string{}
 	)
 
-	for _, class := range registry.SpecDB().ListClasses() {
+	for _, class := range cache.ListClasses() {
 		vendors[class] = []string{}
-		for _, vendor := range registry.SpecDB().ListVendors() {
-			for _, spec := range registry.SpecDB().GetVendorSpecs(vendor) {
+		for _, vendor := range cache.ListVendors() {
+			for _, spec := range cache.GetVendorSpecs(vendor) {
 				if spec.GetClass() == class {
 					vendors[class] = append(vendors[class], vendor)
 				}
@@ -68,7 +68,7 @@ func cdiListClasses() {
 	}
 
 	fmt.Printf("CDI device classes found:\n")
-	for idx, class := range registry.SpecDB().ListClasses() {
+	for idx, class := range cache.ListClasses() {
 		sort.Strings(vendors[class])
 		fmt.Printf("  %d. %s (%d vendors: %s)\n", idx, class,
 			len(vendors[class]), strings.Join(vendors[class], ", "))
@@ -77,8 +77,8 @@ func cdiListClasses() {
 
 func cdiListDevices(verbose bool, format string) {
 	var (
-		registry = cdi.GetRegistry()
-		devices  = registry.DeviceDB().ListDevices()
+		cache   = cdi.GetDefaultCache()
+		devices = cache.ListDevices()
 	)
 
 	if len(devices) == 0 {
@@ -88,7 +88,7 @@ func cdiListDevices(verbose bool, format string) {
 
 	fmt.Printf("CDI devices found:\n")
 	for idx, device := range devices {
-		cdiPrintDevice(idx, registry.DeviceDB().GetDevice(device), verbose, format, 2)
+		cdiPrintDevice(idx, cache.GetDevice(device), verbose, format, 2)
 	}
 }
 
@@ -119,9 +119,9 @@ func cdiPrintDevice(idx int, dev *cdi.Device, verbose bool, format string, level
 
 func cdiShowSpecDirs() {
 	var (
-		registry  = cdi.GetRegistry()
-		specDirs  = registry.GetSpecDirectories()
-		cdiErrors = registry.GetErrors()
+		cache     = cdi.GetDefaultCache()
+		specDirs  = cache.GetSpecDirectories()
+		cdiErrors = cache.GetErrors()
 	)
 	fmt.Printf("CDI Spec directories in use:\n")
 	for prio, dir := range specDirs {
@@ -139,12 +139,12 @@ func cdiShowSpecDirs() {
 
 func cdiInjectDevices(format string, ociSpec *oci.Spec, patterns []string) error {
 	var (
-		registry = cdi.GetRegistry()
-		matches  = map[string]struct{}{}
-		devices  = []string{}
+		cache   = cdi.GetDefaultCache()
+		matches = map[string]struct{}{}
+		devices = []string{}
 	)
 
-	for _, device := range registry.DeviceDB().ListDevices() {
+	for _, device := range cache.ListDevices() {
 		for _, glob := range patterns {
 			match, err := filepath.Match(glob, device)
 			if err != nil {
@@ -161,7 +161,7 @@ func cdiInjectDevices(format string, ociSpec *oci.Spec, patterns []string) error
 	}
 	sort.Strings(devices)
 
-	unresolved, err := registry.InjectDevices(ociSpec, devices...)
+	unresolved, err := cache.InjectDevices(ociSpec, devices...)
 
 	if len(unresolved) > 0 {
 		fmt.Printf("Unresolved CDI devices:\n")
@@ -242,18 +242,18 @@ func collectCDIDevicesFromOCISpec(spec *oci.Spec) []string {
 
 func cdiListSpecs(verbose bool, format string, vendors ...string) {
 	var (
-		registry = cdi.GetRegistry()
+		cache = cdi.GetDefaultCache()
 	)
 
 	format = chooseFormat(format, "format-as.yaml")
 
 	if len(vendors) == 0 {
-		vendors = registry.SpecDB().ListVendors()
+		vendors = cache.ListVendors()
 	}
 
 	if len(vendors) == 0 {
 		fmt.Printf("No CDI Specs found.\n")
-		cdiErrors := registry.GetErrors()
+		cdiErrors := cache.GetErrors()
 		if len(cdiErrors) > 0 {
 			for path, specErrors := range cdiErrors {
 				fmt.Printf("%s has errors:\n", path)
@@ -266,9 +266,9 @@ func cdiListSpecs(verbose bool, format string, vendors ...string) {
 	}
 
 	fmt.Printf("CDI Specs found:\n")
-	for _, vendor := range registry.SpecDB().ListVendors() {
+	for _, vendor := range cache.ListVendors() {
 		fmt.Printf("Vendor %s:\n", vendor)
-		for _, spec := range registry.SpecDB().GetVendorSpecs(vendor) {
+		for _, spec := range cache.GetVendorSpecs(vendor) {
 			cdiPrintSpec(spec, verbose, format, 2)
 			cdiPrintSpecErrors(spec, verbose, 2)
 		}
@@ -285,8 +285,8 @@ func cdiPrintSpec(spec *cdi.Spec, verbose bool, format string, level int) {
 
 func cdiPrintSpecErrors(spec *cdi.Spec, verbose bool, level int) {
 	var (
-		registry  = cdi.GetRegistry()
-		cdiErrors = registry.GetErrors()
+		cache     = cdi.GetDefaultCache()
+		cdiErrors = cache.GetErrors()
 	)
 
 	if len(cdiErrors) > 0 {
@@ -302,7 +302,7 @@ func cdiPrintSpecErrors(spec *cdi.Spec, verbose bool, level int) {
 	}
 }
 
-func cdiPrintRegistry(args ...string) {
+func cdiPrintCache(args ...string) {
 	if len(args) == 0 {
 		args = []string{"all"}
 	}
@@ -328,17 +328,17 @@ func cdiPrintRegistry(args ...string) {
 	}
 }
 
-func cdiPrintRegistryErrors() {
+func cdiPrintCacheErrors() {
 	var (
-		registry  = cdi.GetRegistry()
-		cdiErrors = registry.GetErrors()
+		cache     = cdi.GetDefaultCache()
+		cdiErrors = cache.GetErrors()
 	)
 
 	if len(cdiErrors) == 0 {
 		return
 	}
 
-	fmt.Printf("CDI Registry has errors:\n")
+	fmt.Printf("CDI Cache has errors:\n")
 	for path, specErrors := range cdiErrors {
 		fmt.Printf("Spec file %s:\n", path)
 		for idx, err := range specErrors {
