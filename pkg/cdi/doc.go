@@ -41,6 +41,10 @@
 //
 // # CDI Registry
 //
+// Note: the Registry and its related interfaces are deprecated and will
+// be removed in a future version. Please use the default cache and its
+// related package-level function instead.
+//
 // The primary interface to interact with CDI devices is the Registry. It
 // is essentially a cache of all Specs and devices discovered in standard
 // CDI directories on the host. The registry has two main functionality,
