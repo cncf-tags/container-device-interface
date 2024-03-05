@@ -184,15 +184,13 @@ func ValidateDeviceName(name string) error {
 	for _, c := range string(name[1 : len(name)-1]) {
 		switch {
 		case IsAlphaNumeric(c):
-		case c == '_' || c == '-' || c == '.' || c == ':':
+		case c == '_' || c == '-' || c == '.' || c == ':' || c == '=':
 		default:
 			return fmt.Errorf("invalid character '%c' in device name %q",
 				c, name)
 		}
 	}
-	if !IsAlphaNumeric(rune(name[len(name)-1])) {
-		return fmt.Errorf("invalid name %q, should end with a letter or digit", name)
-	}
+
 	return nil
 }
 
