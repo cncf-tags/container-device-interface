@@ -44,12 +44,12 @@ func GetDefaultCache() *Cache {
 
 // Configure applies options to the default CDI cache. Updates and refreshes
 // the default cache if options are not empty.
-func Configure(options ...Option) {
+func Configure(options ...Option) error {
 	cache, created := getOrCreateDefaultCache(options...)
 	if len(options) == 0 || created {
-		return
+		return nil
 	}
-	cache.Configure(options...)
+	return cache.Configure(options...)
 }
 
 // Refresh explicitly refreshes the default CDI cache instance.
