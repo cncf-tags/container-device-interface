@@ -12,6 +12,18 @@ merges the pull request on approval
 * The CNCF [#tag-runtime](https://cloud-native.slack.com/archives/CPBE97SMU)
 Slack channel should be used for discussion
 
+## Community Meetings
+
+We have regular community meetings in place to discuss CDI-related topics.
+The current cadence of the meetings is bi-weekly. You can find the meeting
+details in the [CNCF Community Meetings Calendar](https://www.cncf.io/calendar)
+by looking for `CNCF TAG Runtime Container Device Interface (COD) Working Group`.
+The calendar entry has an up-to-date link to our meeting agenda. The agenda has
+a summary of past meeting topics and discussions and it can be freely edited by
+anyone to propose topics for upcoming meetings.
+
+You can [search the calendar for our community meetings](https://tockify.com/cncf.public.events/monthly?search=Container%20Device%20Interface).
+
 ## Sign your work
 
 The sign-off is a simple line at the end of the explanation for the patch. Your
