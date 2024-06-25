@@ -6,7 +6,7 @@ the section below we ask that the following guidelines be considered when
 opening, reviewing, and merging pull requests.
 
 * No one should merge their own code or code from their own organization
-* Reviewers should included people from an organization that is not your own
+* Reviewers should include people from an organization that is not your own
 * If no changes have been requested by other reviewers the (last) reviewer
 merges the pull request on approval
 * The CNCF [#tag-runtime](https://cloud-native.slack.com/archives/CPBE97SMU)
@@ -76,5 +76,5 @@ Then you just add a line to every git commit message:
 
 Use your real name (sorry, no pseudonyms or anonymous contributions.)
 
-If you set your `user.name` and `user.email` git configs, you can sign your
-commit automatically with `git commit -s`.
+If you set your `user.name` and `user.email` in your git config, you can
+sign your commit automatically with `git commit -s`.
