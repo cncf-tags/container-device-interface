@@ -6,11 +6,23 @@ the section below we ask that the following guidelines be considered when
 opening, reviewing, and merging pull requests.
 
 * No one should merge their own code or code from their own organization
-* Reviewers should included people from an organization that is not your own
+* Reviewers should include people from an organization that is not your own
 * If no changes have been requested by other reviewers the (last) reviewer
 merges the pull request on approval
 * The CNCF [#tag-runtime](https://cloud-native.slack.com/archives/CPBE97SMU)
 Slack channel should be used for discussion
+
+## Community Meetings
+
+We have regular community meetings in place to discuss CDI-related topics.
+The current cadence of the meetings is bi-weekly. You can find the meeting
+details in the [CNCF Community Meetings Calendar](https://www.cncf.io/calendar)
+by looking for `CNCF TAG Runtime Container Device Interface (COD) Working Group`.
+The calendar entry has an up-to-date link to our meeting agenda. The agenda has
+a summary of past meeting topics and discussions and it can be freely edited by
+anyone to propose topics for upcoming meetings.
+
+You can [search the calendar for our community meetings](https://tockify.com/cncf.public.events/monthly?search=Container%20Device%20Interface).
 
 ## Sign your work
 
@@ -64,5 +76,5 @@ Then you just add a line to every git commit message:
 
 Use your real name (sorry, no pseudonyms or anonymous contributions.)
 
-If you set your `user.name` and `user.email` git configs, you can sign your
-commit automatically with `git commit -s`.
+If you set your `user.name` and `user.email` in your git config, you can
+sign your commit automatically with `git commit -s`.
