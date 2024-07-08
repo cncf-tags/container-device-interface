@@ -11,7 +11,7 @@ require (
 	golang.org/x/mod v0.4.2
 	golang.org/x/sys v0.1.0
 	sigs.k8s.io/yaml v1.3.0
-	tags.cncf.io/container-device-interface/specs-go v0.7.0
+	tags.cncf.io/container-device-interface/specs-go v0.8.0
 )
 
 require (

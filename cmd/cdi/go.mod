@@ -22,7 +22,7 @@ require (
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	tags.cncf.io/container-device-interface/specs-go v0.7.0 // indirect
+	tags.cncf.io/container-device-interface/specs-go v0.8.0 // indirect
 )
 
 replace tags.cncf.io/container-device-interface => ../..
