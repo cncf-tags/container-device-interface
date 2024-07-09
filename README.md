@@ -203,6 +203,14 @@ EOF
 ```
 
 
+## Presentations on CDI
+
+See the following presentations for more information on CDI:
+
+* Kubecon EU 2023 - Node Resource Management: The Big Picture - https://sched.co/1HyVB - https://youtu.be/LjhgklNNAtA
+* Kubecon NA 2023 – The hidden heroes behind AI: Making sense of GPUs and TPUs in k8s - https://sched.co/1R2sf - https://youtu.be/H5gN8fHn3fo
+* Kubecon EU 2024 – Sharing is Caring: GPU Sharing and CDI in Device Plugins  – https://sched.co/1YeQ7 – https://youtu.be/Q2GuTUO170w
+
 ## Issues and Contributing
 
 [Check out the Contributing document!](CONTRIBUTING.md)
