@@ -203,15 +203,15 @@ func (s *Spec) edits() *ContainerEdits {
 
 // Validate the Spec.
 func (s *Spec) validate() (map[string]*Device, error) {
-	if err := validateVersion(s.Version); err != nil {
+	if err := cdi.ValidateVersion(s.Version); err != nil {
 		return nil, err
 	}
 
-	minVersion, err := MinimumRequiredVersion(s.Spec)
+	minVersion, err := cdi.MinimumRequiredVersion(s.Spec)
 	if err != nil {
 		return nil, fmt.Errorf("could not determine minimum required version: %v", err)
 	}
-	if newVersion(minVersion).IsGreaterThan(newVersion(s.Version)) {
+	if cdi.NewVersion(minVersion).IsGreaterThan(cdi.NewVersion(s.Version)) {
 		return nil, fmt.Errorf("the spec version must be at least v%v", minVersion)
 	}
 
@@ -241,15 +241,6 @@ func (s *Spec) validate() (map[string]*Device, error) {
 	}
 
 	return devices, nil
-}
-
-// validateVersion checks whether the specified spec version is supported.
-func validateVersion(version string) error {
-	if !validSpecVersions.isValidVersion(version) {
-		return fmt.Errorf("invalid version %q", version)
-	}
-
-	return nil
 }
 
 // ParseSpec parses CDI Spec data into a raw CDI Spec.

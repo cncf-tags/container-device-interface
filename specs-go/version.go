@@ -14,36 +14,34 @@
    limitations under the License.
 */
 
-package cdi
+package specs
 
 import (
+	"fmt"
 	"strings"
 
 	"golang.org/x/mod/semver"
-
-	"tags.cncf.io/container-device-interface/pkg/parser"
-	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
 const (
-	// CurrentVersion is the current version of the CDI Spec.
-	CurrentVersion = cdi.CurrentVersion
+	// CurrentVersion is the current version of the Spec.
+	CurrentVersion = "0.8.0"
 
 	// vCurrent is the current version as a semver-comparable type
-	vCurrent version = "v" + CurrentVersion
+	vCurrent Version = "v" + CurrentVersion
 
 	// These represent the released versions of the CDI specification
-	v010 version = "v0.1.0"
-	v020 version = "v0.2.0"
-	v030 version = "v0.3.0"
-	v040 version = "v0.4.0"
-	v050 version = "v0.5.0"
-	v060 version = "v0.6.0"
-	v070 version = "v0.7.0"
-	v080 version = "v0.8.0"
+	v010 Version = "v0.1.0"
+	v020 Version = "v0.2.0"
+	v030 Version = "v0.3.0"
+	v040 Version = "v0.4.0"
+	v050 Version = "v0.5.0"
+	v060 Version = "v0.6.0"
+	v070 Version = "v0.7.0"
+	v080 Version = "v0.8.0"
 
 	// vEarliest is the earliest supported version of the CDI specification
-	vEarliest version = v030
+	vEarliest Version = v030
 )
 
 // validSpecVersions stores a map of spec versions to functions to check the required versions.
@@ -60,50 +58,58 @@ var validSpecVersions = requiredVersionMap{
 	v080: requiresV080,
 }
 
+// ValidateVersion checks whether the specified spec version is supported.
+func ValidateVersion(version string) error {
+	if !validSpecVersions.isValidVersion(version) {
+		return fmt.Errorf("invalid version %q", version)
+	}
+	return nil
+}
+
 // MinimumRequiredVersion determines the minimum spec version for the input spec.
-func MinimumRequiredVersion(spec *cdi.Spec) (string, error) {
+func MinimumRequiredVersion(spec *Spec) (string, error) {
 	minVersion := validSpecVersions.requiredVersion(spec)
 	return minVersion.String(), nil
 }
 
-// version represents a semantic version string
-type version string
+// Version represents a semantic version string
+type Version string
 
-// newVersion creates a version that can be used for semantic version comparisons.
-func newVersion(v string) version {
-	return version("v" + strings.TrimPrefix(v, "v"))
+// NewVersion creates a version that can be used for semantic version comparisons.
+func NewVersion(v string) Version {
+	return Version("v" + strings.TrimPrefix(v, "v"))
 }
 
 // String returns the string representation of the version.
 // This trims a leading v if present.
-func (v version) String() string {
+func (v Version) String() string {
 	return strings.TrimPrefix(string(v), "v")
 }
 
 // IsGreaterThan checks with a version is greater than the specified version.
-func (v version) IsGreaterThan(o version) bool {
+func (v Version) IsGreaterThan(o Version) bool {
 	return semver.Compare(string(v), string(o)) > 0
 }
 
 // IsLatest checks whether the version is the latest supported version
-func (v version) IsLatest() bool {
+func (v Version) IsLatest() bool {
 	return v == vCurrent
 }
 
-type requiredFunc func(*cdi.Spec) bool
+type requiredFunc func(*Spec) bool
 
-type requiredVersionMap map[version]requiredFunc
+type requiredVersionMap map[Version]requiredFunc
 
 // isValidVersion checks whether the specified version is valid.
 // A version is valid if it is contained in the required version map.
 func (r requiredVersionMap) isValidVersion(specVersion string) bool {
-	_, ok := validSpecVersions[newVersion(specVersion)]
+	_, ok := validSpecVersions[NewVersion(specVersion)]
 
 	return ok
 }
 
 // requiredVersion returns the minimum version required for the given spec
-func (r requiredVersionMap) requiredVersion(spec *cdi.Spec) version {
+func (r requiredVersionMap) requiredVersion(spec *Spec) Version {
 	minVersion := vEarliest
 
 	for v, isRequired := range validSpecVersions {
@@ -125,12 +131,12 @@ func (r requiredVersionMap) requiredVersion(spec *cdi.Spec) version {
 // requiresV080 returns true if the spec uses v0.8.0 features.
 // Since the v0.8.0 spec bump was due to the removed .ToOCI functions on the
 // spec types, there are explicit spec changes.
-func requiresV080(_ *cdi.Spec) bool {
+func requiresV080(_ *Spec) bool {
 	return false
 }
 
 // requiresV070 returns true if the spec uses v0.7.0 features
-func requiresV070(spec *cdi.Spec) bool {
+func requiresV070(spec *Spec) bool {
 	if spec.ContainerEdits.IntelRdt != nil {
 		return true
 	}
@@ -153,7 +159,7 @@ func requiresV070(spec *cdi.Spec) bool {
 }
 
 // requiresV060 returns true if the spec uses v0.6.0 features
-func requiresV060(spec *cdi.Spec) bool {
+func requiresV060(spec *Spec) bool {
 	// The v0.6.0 spec allows annotations to be specified at a spec level
 	for range spec.Annotations {
 		return true
@@ -167,7 +173,7 @@ func requiresV060(spec *cdi.Spec) bool {
 	}
 
 	// The v0.6.0 spec allows dots "." in Kind name label (class)
-	vendor, class := parser.ParseQualifier(spec.Kind)
+	vendor, class := ParseQualifier(spec.Kind)
 	if vendor != "" {
 		if strings.ContainsRune(class, '.') {
 			return true
@@ -178,12 +184,12 @@ func requiresV060(spec *cdi.Spec) bool {
 }
 
 // requiresV050 returns true if the spec uses v0.5.0 features
-func requiresV050(spec *cdi.Spec) bool {
-	var edits []*cdi.ContainerEdits
+func requiresV050(spec *Spec) bool {
+	var edits []*ContainerEdits
 
 	for _, d := range spec.Devices {
 		// The v0.5.0 spec allowed device names to start with a digit instead of requiring a letter
-		if len(d.Name) > 0 && !parser.IsLetter(rune(d.Name[0])) {
+		if len(d.Name) > 0 && !IsLetter(rune(d.Name[0])) {
 			return true
 		}
 		edits = append(edits, &d.ContainerEdits)
@@ -202,8 +208,8 @@ func requiresV050(spec *cdi.Spec) bool {
 }
 
 // requiresV040 returns true if the spec uses v0.4.0 features
-func requiresV040(spec *cdi.Spec) bool {
-	var edits []*cdi.ContainerEdits
+func requiresV040(spec *Spec) bool {
+	var edits []*ContainerEdits
 
 	for _, d := range spec.Devices {
 		edits = append(edits, &d.ContainerEdits)

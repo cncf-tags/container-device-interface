@@ -525,7 +525,7 @@ func specType(content []byte) string {
 }
 
 func TestCurrentVersionIsValid(t *testing.T) {
-	require.NoError(t, validateVersion(cdi.CurrentVersion))
+	require.NoError(t, cdi.ValidateVersion(cdi.CurrentVersion))
 }
 
 func TestRequiredVersion(t *testing.T) {
@@ -723,7 +723,7 @@ func TestRequiredVersion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			v, err := MinimumRequiredVersion(tc.spec)
+			v, err := cdi.MinimumRequiredVersion(tc.spec)
 			require.NoError(t, err)
 
 			require.Equal(t, tc.expectedVersion, v)
