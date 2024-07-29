@@ -28,6 +28,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"tags.cncf.io/container-device-interface/internal/validation"
+	"tags.cncf.io/container-device-interface/pkg/parser"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
@@ -105,7 +106,7 @@ func newSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
 		spec.path += defaultSpecExt
 	}
 
-	spec.vendor, spec.class = ParseQualifier(spec.Kind)
+	spec.vendor, spec.class = parser.ParseQualifier(spec.Kind)
 
 	if spec.devices, err = spec.validate(); err != nil {
 		return nil, fmt.Errorf("invalid CDI Spec: %w", err)
@@ -328,7 +329,7 @@ func GenerateTransientSpecName(vendor, class, transientID string) string {
 // the Spec does not contain a valid vendor or class, it returns
 // an empty name and a non-nil error.
 func GenerateNameForSpec(raw *cdi.Spec) (string, error) {
-	vendor, class := ParseQualifier(raw.Kind)
+	vendor, class := parser.ParseQualifier(raw.Kind)
 	if vendor == "" {
 		return "", fmt.Errorf("invalid vendor/class %q in Spec", raw.Kind)
 	}
@@ -342,7 +343,7 @@ func GenerateNameForSpec(raw *cdi.Spec) (string, error) {
 // If the Spec does not contain a valid vendor or class, it returns an
 // an empty name and a non-nil error.
 func GenerateNameForTransientSpec(raw *cdi.Spec, transientID string) (string, error) {
-	vendor, class := ParseQualifier(raw.Kind)
+	vendor, class := parser.ParseQualifier(raw.Kind)
 	if vendor == "" {
 		return "", fmt.Errorf("invalid vendor/class %q in Spec", raw.Kind)
 	}

@@ -19,6 +19,8 @@ package parser
 import (
 	"fmt"
 	"strings"
+
+	specs "tags.cncf.io/container-device-interface/specs-go"
 )
 
 // QualifiedName returns the qualified name for a device.
@@ -105,11 +107,7 @@ func ParseDevice(device string) (string, string, string) {
 // If parsing fails, an empty vendor and the class set to the
 // verbatim input is returned.
 func ParseQualifier(kind string) (string, string) {
-	parts := strings.SplitN(kind, "/", 2)
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return "", kind
-	}
-	return parts[0], parts[1]
+	return specs.ParseQualifier(kind)
 }
 
 // ValidateVendorName checks the validity of a vendor name.
@@ -198,7 +196,7 @@ func ValidateDeviceName(name string) error {
 
 // IsLetter reports whether the rune is a letter.
 func IsLetter(c rune) bool {
-	return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')
+	return specs.IsLetter(c)
 }
 
 // IsDigit reports whether the rune is a digit.
