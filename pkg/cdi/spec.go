@@ -201,6 +201,12 @@ func (s *Spec) edits() *ContainerEdits {
 	return &ContainerEdits{&s.ContainerEdits}
 }
 
+// MinimumRequiredVersion determines the minimum spec version for the input spec.
+// Deprecated: use cdi.MinimumRequiredVersion instead
+func MinimumRequiredVersion(spec *cdi.Spec) (string, error) {
+	return cdi.MinimumRequiredVersion(spec)
+}
+
 // Validate the Spec.
 func (s *Spec) validate() (map[string]*Device, error) {
 	if err := cdi.ValidateVersion(s.Version); err != nil {
