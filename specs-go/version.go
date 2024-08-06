@@ -28,20 +28,20 @@ const (
 	CurrentVersion = "0.8.0"
 
 	// vCurrent is the current version as a semver-comparable type
-	vCurrent Version = "v" + CurrentVersion
+	vCurrent version = "v" + CurrentVersion
 
 	// These represent the released versions of the CDI specification
-	v010 Version = "v0.1.0"
-	v020 Version = "v0.2.0"
-	v030 Version = "v0.3.0"
-	v040 Version = "v0.4.0"
-	v050 Version = "v0.5.0"
-	v060 Version = "v0.6.0"
-	v070 Version = "v0.7.0"
-	v080 Version = "v0.8.0"
+	v010 version = "v0.1.0"
+	v020 version = "v0.2.0"
+	v030 version = "v0.3.0"
+	v040 version = "v0.4.0"
+	v050 version = "v0.5.0"
+	v060 version = "v0.6.0"
+	v070 version = "v0.7.0"
+	v080 version = "v0.8.0"
 
 	// vEarliest is the earliest supported version of the CDI specification
-	vEarliest Version = v030
+	vEarliest version = v030
 )
 
 // validSpecVersions stores a map of spec versions to functions to check the required versions.
@@ -72,44 +72,44 @@ func MinimumRequiredVersion(spec *Spec) (string, error) {
 	return minVersion.String(), nil
 }
 
-// Version represents a semantic version string
-type Version string
+// version represents a semantic version string
+type version string
 
-// NewVersion creates a version that can be used for semantic version comparisons.
-func NewVersion(v string) Version {
-	return Version("v" + strings.TrimPrefix(v, "v"))
+// newVersion creates a version that can be used for semantic version comparisons.
+func newVersion(v string) version {
+	return version("v" + strings.TrimPrefix(v, "v"))
 }
 
 // String returns the string representation of the version.
 // This trims a leading v if present.
-func (v Version) String() string {
+func (v version) String() string {
 	return strings.TrimPrefix(string(v), "v")
 }
 
 // IsGreaterThan checks with a version is greater than the specified version.
-func (v Version) IsGreaterThan(o Version) bool {
+func (v version) IsGreaterThan(o version) bool {
 	return semver.Compare(string(v), string(o)) > 0
 }
 
 // IsLatest checks whether the version is the latest supported version
-func (v Version) IsLatest() bool {
+func (v version) IsLatest() bool {
 	return v == vCurrent
 }
 
 type requiredFunc func(*Spec) bool
 
-type requiredVersionMap map[Version]requiredFunc
+type requiredVersionMap map[version]requiredFunc
 
 // isValidVersion checks whether the specified version is valid.
 // A version is valid if it is contained in the required version map.
 func (r requiredVersionMap) isValidVersion(specVersion string) bool {
-	_, ok := validSpecVersions[NewVersion(specVersion)]
+	_, ok := validSpecVersions[newVersion(specVersion)]
 
 	return ok
 }
 
 // requiredVersion returns the minimum version required for the given spec
-func (r requiredVersionMap) requiredVersion(spec *Spec) Version {
+func (r requiredVersionMap) requiredVersion(spec *Spec) version {
 	minVersion := vEarliest
 
 	for v, isRequired := range validSpecVersions {
