@@ -525,7 +525,7 @@ func specType(content []byte) string {
 }
 
 func TestCurrentVersionIsValid(t *testing.T) {
-	require.NoError(t, cdi.ValidateVersion(cdi.CurrentVersion))
+	require.NoError(t, cdi.ValidateVersion(&cdi.Spec{Version: cdi.CurrentVersion}))
 }
 
 func TestRequiredVersion(t *testing.T) {

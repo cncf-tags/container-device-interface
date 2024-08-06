@@ -209,18 +209,9 @@ func MinimumRequiredVersion(spec *cdi.Spec) (string, error) {
 
 // Validate the Spec.
 func (s *Spec) validate() (map[string]*Device, error) {
-	if err := cdi.ValidateVersion(s.Version); err != nil {
+	if err := cdi.ValidateVersion(s.Spec); err != nil {
 		return nil, err
 	}
-
-	minVersion, err := cdi.MinimumRequiredVersion(s.Spec)
-	if err != nil {
-		return nil, fmt.Errorf("could not determine minimum required version: %v", err)
-	}
-	if cdi.NewVersion(minVersion).IsGreaterThan(cdi.NewVersion(s.Version)) {
-		return nil, fmt.Errorf("the spec version must be at least v%v", minVersion)
-	}
-
 	if err := ValidateVendorName(s.vendor); err != nil {
 		return nil, err
 	}

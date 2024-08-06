@@ -58,10 +58,20 @@ var validSpecVersions = requiredVersionMap{
 	v080: requiresV080,
 }
 
-// ValidateVersion checks whether the specified spec version is supported.
-func ValidateVersion(version string) error {
-	if !validSpecVersions.isValidVersion(version) {
-		return fmt.Errorf("invalid version %q", version)
+// ValidateVersion checks whether the specified spec version is valid.
+// In addition to checking whether the spec version is in the set of known versions,
+// the spec is inspected to determine whether the features used are available in specified
+// version.
+func ValidateVersion(spec *Spec) error {
+	if !validSpecVersions.isValidVersion(spec.Version) {
+		return fmt.Errorf("invalid version %q", spec.Version)
+	}
+	minVersion, err := MinimumRequiredVersion(spec)
+	if err != nil {
+		return fmt.Errorf("could not determine minimum required version: %w", err)
+	}
+	if newVersion(minVersion).IsGreaterThan(newVersion(spec.Version)) {
+		return fmt.Errorf("the spec version must be at least v%v", minVersion)
 	}
 	return nil
 }
