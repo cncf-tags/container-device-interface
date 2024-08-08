@@ -25,6 +25,7 @@ import (
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	gen "github.com/opencontainers/runtime-tools/generate"
 	"tags.cncf.io/container-device-interface/pkg/cdi"
+	"tags.cncf.io/container-device-interface/pkg/parser"
 )
 
 func cdiListVendors() {
@@ -230,7 +231,7 @@ func collectCDIDevicesFromOCISpec(spec *oci.Spec) []string {
 	g.ClearLinuxDevices()
 
 	for _, d := range devices {
-		if !cdi.IsQualifiedName(d.Path) {
+		if !parser.IsQualifiedName(d.Path) {
 			g.AddDevice(d)
 			continue
 		}
