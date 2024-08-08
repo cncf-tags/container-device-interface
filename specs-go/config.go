@@ -7,6 +7,7 @@ type Spec struct {
 	Version string `json:"cdiVersion"`
 	Kind    string `json:"kind"`
 	// Annotations add meta information per CDI spec. Note these are CDI-specific and do not affect container metadata.
+	// Added in v0.6.0.
 	Annotations    map[string]string `json:"annotations,omitempty"`
 	Devices        []Device          `json:"devices"`
 	ContainerEdits ContainerEdits    `json:"containerEdits,omitempty"`
@@ -16,6 +17,7 @@ type Spec struct {
 type Device struct {
 	Name string `json:"name"`
 	// Annotations add meta information per device. Note these are CDI-specific and do not affect container metadata.
+	// Added in v0.6.0.
 	Annotations    map[string]string `json:"annotations,omitempty"`
 	ContainerEdits ContainerEdits    `json:"containerEdits"`
 }
@@ -26,14 +28,14 @@ type ContainerEdits struct {
 	DeviceNodes    []*DeviceNode `json:"deviceNodes,omitempty"`
 	Hooks          []*Hook       `json:"hooks,omitempty"`
 	Mounts         []*Mount      `json:"mounts,omitempty"`
-	IntelRdt       *IntelRdt     `json:"intelRdt,omitempty"`
-	AdditionalGIDs []uint32      `json:"additionalGids,omitempty"`
+	IntelRdt       *IntelRdt     `json:"intelRdt,omitempty"`       // Added in v0.7.0
+	AdditionalGIDs []uint32      `json:"additionalGids,omitempty"` // Added in v0.7.0
 }
 
 // DeviceNode represents a device node that needs to be added to the OCI spec.
 type DeviceNode struct {
 	Path        string       `json:"path"`
-	HostPath    string       `json:"hostPath,omitempty"`
+	HostPath    string       `json:"hostPath,omitempty"` // Added in v0.5.0
 	Type        string       `json:"type,omitempty"`
 	Major       int64        `json:"major,omitempty"`
 	Minor       int64        `json:"minor,omitempty"`
@@ -48,7 +50,7 @@ type Mount struct {
 	HostPath      string   `json:"hostPath"`
 	ContainerPath string   `json:"containerPath"`
 	Options       []string `json:"options,omitempty"`
-	Type          string   `json:"type,omitempty"`
+	Type          string   `json:"type,omitempty"` // Added in v0.4.0
 }
 
 // Hook represents a hook that needs to be added to the OCI spec.

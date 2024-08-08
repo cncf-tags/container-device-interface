@@ -179,11 +179,13 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
 * `kind` (string, REQUIRED) field specifies a label which uniquely identifies the device vendor.
   It can be used to disambiguate the vendor that matches a device, e.g: `docker/podman run --device vendor.com/device=foo ...`.
     * The `kind` label has two segments: a prefix and a name, separated by a slash (/).
-    * The name segment is required and must be 63 characters or less, beginning and ending with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (\_), dots (.), and alphanumerics between.
+    * The name segment is required and must be 63 characters or less, beginning and ending with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (\_), dots (.), and alphanumerics between. Dots (.) are supported from v0.6.0.
     * The prefix must be a DNS subdomain: a series of DNS labels separated by dots (.), not longer than 253 characters in total, followed by a slash (/).
     * Examples (not an exhaustive list):
       * Valid: `vendor.com/foo`, `foo.bar.baz/foo-bar123.B_az`.
       * Invalid: `foo`, `vendor.com/foo/`, `vendor.com/foo/bar`.
+
+* `Annotations` (string, OPTIONAL) field contains a set of key-value pairs that may be used to provide additional information to a consumer on the spec. Added in v0.6.0.
 
 #### CDI Devices
 
@@ -197,7 +199,7 @@ Note: For a CDI file to be valid, at least one entry must be specified in this a
       * Entries in the array MUST use the same schema as the entry for the `name` field
     * `containerEdits` (object, OPTIONAL) this field is described in the next section.
       * This field should only be merged in the OCI spec if the device has been requested by the container runtime user.
-
+    * `Annotations` (string, OPTIONAL) field contains a set of key-value pairs that may be used to provide additional information to a consumer on the spec. Added in v0.6.0.
 
 #### OCI Edits
 
@@ -212,7 +214,7 @@ The `containerEdits` field has the following definition:
   * `env` (array of strings in the format of "VARNAME=VARVALUE", OPTIONAL) describes the environment variables that should be set. These values are appended to the container environment array.
   * `deviceNodes` (array of objects, OPTIONAL) describes the device nodes that should be mounted:
     * `path` (string, REQUIRED) path of the device within the container.
-    * `hostPath` (string, OPTIONAL) path of the device node on the host. If not specified the value for `path` is used.
+    * `hostPath` (string, OPTIONAL) path of the device node on the host. If not specified the value for `path` is used. Added in v0.5.0.
     * `type` (string, OPTIONAL) Device type: block, char, etc.
     * `major` (int64, OPTIONAL) Device major number.
     * `minor` (int64, OPTIONAL) Device minor number.
@@ -226,7 +228,7 @@ The `containerEdits` field has the following definition:
   * `mounts` (array of objects, OPTIONAL) describes the mounts that should be mounted:
     * `hostPath` (string, REQUIRED) path of the device on the host.
     * `containerPath` (string, REQUIRED) path of the device within the container.
-    * `type` (string, OPTIONAL) the type of the filesystem to be mounted. For bind mounts (when options include either bind or rbind), the type is a dummy, often "none" (not listed in /proc/filesystems).
+    * `type` (string, OPTIONAL) the type of the filesystem to be mounted. For bind mounts (when options include either bind or rbind), the type is a dummy, often "none" (not listed in /proc/filesystems). Added in v0.4.0.
     * `options` (array of strings, OPTIONAL) Mount options of the filesystem to be used.
   * `hooks` (array of objects, OPTIONAL) describes the hooks that should be ran:
     * `hookName` is the name of the hook to invoke, if the runtime is OCI compliant it should be one of {createRuntime, createContainer, startContainer, poststart, poststop}.
@@ -235,13 +237,13 @@ The `containerEdits` field has the following definition:
     * `args` (array of strings, OPTIONAL) with the same semantics as IEEE Std 1003.1-2008 execv's argv.
     * `env` (array of strings, OPTIONAL) with the same semantics as IEEE Std 1003.1-2008's environ.
     * `timeout` (int, OPTIONAL) is the number of seconds before aborting the hook. If set, timeout MUST be greater than zero. If not set container runtime will wait for the hook to return.
-  * `intelRdt` (object, OPTIONAL) describes the Linux [resctrl][resctrl] settings for the container (object, OPTIONAL)
+  * `intelRdt` (object, OPTIONAL) describes the Linux [resctrl][resctrl] settings for the container (object, OPTIONAL). Added in v0.7.0.
     * `closID` (string, OPTIONAL) name of the `CLOS` (Class of Service).
     * `l3CacheSchema` (string, OPTIONAL) L3 cache allocation schema for the `CLOS`.
     * `memBwSchema` (string, OPTIONAL) memory bandwidth allocation schema for the `CLOS`.
     * `enableCMT` (boolean, OPTIONAL) whether to enable cache monitoring
     * `enableMBM` (boolean, OPTIONAL) whether to enable memory bandwidth monitoring
-  * `additionalGids` (array of uint32s, OPTIONAL) A list of additional group IDs to add with the container process. These values are added to the `user.additionalGids` field in the OCI runtime specification. Values of 0 are ignored.
+  * `additionalGids` (array of uint32s, OPTIONAL) A list of additional group IDs to add with the container process. These values are added to the `user.additionalGids` field in the OCI runtime specification. Values of 0 are ignored. Added in v0.7.0.
 
 ## Error Handling
   * Kind requested is not present in any CDI file.
