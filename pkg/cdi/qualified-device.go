@@ -66,6 +66,19 @@ func ParseDevice(device string) (string, string, string) {
 	return parser.ParseDevice(device)
 }
 
+// ParseQualifier splits a device qualifier into vendor and class.
+// The syntax for a device qualifier is
+//
+//	"<vendor>/<class>"
+//
+// If parsing fails, an empty vendor and the class set to the
+// verbatim input is returned.
+//
+// Deprecated: use parser.ParseQualifier instead
+func ParseQualifier(kind string) (string, string) {
+	return parser.ParseQualifier(kind)
+}
+
 // ValidateVendorName checks the validity of a vendor name.
 // A vendor name may contain the following ASCII characters:
 //   - upper- and lowercase letters ('A'-'Z', 'a'-'z')
