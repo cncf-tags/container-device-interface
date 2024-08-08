@@ -51,14 +51,15 @@ to duplication of the functionality in higher-level abstractions (such as
 
 For CDI to work the following needs to be done:
 
-- CDI file containing updates for the OCI spec in JSON format should be present
-  in the CDI spec directory. Default directories are `/etc/cdi` and
-  `/var/run/cdi`
-- Fully qualified device name should be passed to the runtime either using
-  command line parameters for podman or using container annotations for CRI-O
-  and containerd
-- Container runtime should be able to find the CDI file by the device name and
-  update the container config using CDI file content.
+- CDI file containing updates for the OCI spec in JSON or YAML format (with a
+  `.json` or `.yaml` file extension, respectively) should be present in a CDI
+  spec directory. The default directories are `/etc/cdi` and `/var/run/cdi`, but
+  may depend on your runtime configuration
+- One or more fully-qualified device names should be passed to the runtime
+  either using command line parameters for CLI tools such as podman or Docker,
+  or using container annotations or CRI fields for CRI-O and containerd
+- The container runtime should be able to find the CDI file by the device name
+  and update the container config using CDI file content.
 
 ## How to configure CDI?
 
