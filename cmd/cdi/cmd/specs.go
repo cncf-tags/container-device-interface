@@ -34,10 +34,10 @@ var specsCmd = &cobra.Command{
 	Use:   "specs [vendor-list]",
 	Short: "List available CDI Specs",
 	Long: fmt.Sprintf(`
-The 'specs' command lists all CDI Specs present in the registry.
+The 'specs' command lists all CDI Specs present in the cache.
 If a vendor list is given, only CDI Specs by the given vendors are
-listed. The CDI Specs are discovered and loaded to the registry
-from CDI Spec directories. The default CDI Spec directories are:
+listed. The CDI Specs are discovered and loaded to the cache from
+CDI Spec directories. The default CDI Spec directories are:
     %s.`, strings.Join(cdi.DefaultSpecDirs, ", ")),
 	Run: func(cmd *cobra.Command, vendors []string) {
 		cdiListSpecs(specCfg.verbose, specCfg.output, vendors...)

@@ -339,7 +339,7 @@ func cdiPrintCacheErrors() {
 		return
 	}
 
-	fmt.Printf("CDI Cache has errors:\n")
+	fmt.Printf("CDI cache has errors:\n")
 	for path, specErrors := range cdiErrors {
 		fmt.Printf("Spec file %s:\n", path)
 		for idx, err := range specErrors {

@@ -148,12 +148,18 @@ func withCDI(t *testing.T, annotations map[string]string, cdiSpecDirs []string) 
 			return nil
 		}
 
-		registry := GetRegistry(WithSpecDirs(cdiSpecDirs...))
-		if err = registry.Refresh(); err != nil {
-			t.Logf("CDI registry refresh failed: %v", err)
+		cache, err := NewCache(
+			WithSpecDirs(cdiSpecDirs...),
+		)
+		if err != nil {
+			return fmt.Errorf("CDI cache creation failed: %w", err)
 		}
 
-		if _, err := registry.InjectDevices(s, cdiDevices...); err != nil {
+		if err = cache.Refresh(); err != nil {
+			t.Logf("CDI cache refresh failed: %v", err)
+		}
+
+		if _, err = cache.InjectDevices(s, cdiDevices...); err != nil {
 			return fmt.Errorf("CDI device injection failed: %w", err)
 		}
 

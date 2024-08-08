@@ -20,11 +20,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// classesCmd is our command for listing device classes in the registry.
+// classesCmd is our command for listing device classes in the cache.
 var classesCmd = &cobra.Command{
 	Use:   "classes",
 	Short: "List CDI device classes",
-	Long:  `List CDI device classes found in the registry.`,
+	Long:  `List CDI device classes found in the cache.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cdiListClasses()
 	},
