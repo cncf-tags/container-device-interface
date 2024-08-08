@@ -70,7 +70,7 @@ func ValidateVersion(spec *Spec) error {
 	if err != nil {
 		return fmt.Errorf("could not determine minimum required version: %w", err)
 	}
-	if newVersion(minVersion).IsGreaterThan(newVersion(spec.Version)) {
+	if newVersion(minVersion).isGreaterThan(newVersion(spec.Version)) {
 		return fmt.Errorf("the spec version must be at least v%v", minVersion)
 	}
 	return nil
@@ -96,13 +96,13 @@ func (v version) String() string {
 	return strings.TrimPrefix(string(v), "v")
 }
 
-// IsGreaterThan checks with a version is greater than the specified version.
-func (v version) IsGreaterThan(o version) bool {
+// isGreaterThan checks with a version is greater than the specified version.
+func (v version) isGreaterThan(o version) bool {
 	return semver.Compare(string(v), string(o)) > 0
 }
 
-// IsLatest checks whether the version is the latest supported version
-func (v version) IsLatest() bool {
+// isLatest checks whether the version is the latest supported version
+func (v version) isLatest() bool {
 	return v == vCurrent
 }
 
@@ -126,11 +126,11 @@ func (r requiredVersionMap) requiredVersion(spec *Spec) version {
 		if isRequired == nil {
 			continue
 		}
-		if isRequired(spec) && v.IsGreaterThan(minVersion) {
+		if isRequired(spec) && v.isGreaterThan(minVersion) {
 			minVersion = v
 		}
 		// If we have already detected the latest version then no later version could be detected
-		if minVersion.IsLatest() {
+		if minVersion.isLatest() {
 			break
 		}
 	}
@@ -183,7 +183,7 @@ func requiresV060(spec *Spec) bool {
 	}
 
 	// The v0.6.0 spec allows dots "." in Kind name label (class)
-	vendor, class := ParseQualifier(spec.Kind)
+	vendor, class := parseQualifier(spec.Kind)
 	if vendor != "" {
 		if strings.ContainsRune(class, '.') {
 			return true
@@ -199,7 +199,7 @@ func requiresV050(spec *Spec) bool {
 
 	for _, d := range spec.Devices {
 		// The v0.5.0 spec allowed device names to start with a digit instead of requiring a letter
-		if len(d.Name) > 0 && !IsLetter(rune(d.Name[0])) {
+		if len(d.Name) > 0 && !isLetter(rune(d.Name[0])) {
 			return true
 		}
 		edits = append(edits, &d.ContainerEdits)

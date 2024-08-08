@@ -18,14 +18,14 @@ package specs
 
 import "strings"
 
-// ParseQualifier splits a device qualifier into vendor and class.
+// parseQualifier splits a device qualifier into vendor and class.
 // The syntax for a device qualifier is
 //
 //	"<vendor>/<class>"
 //
 // If parsing fails, an empty vendor and the class set to the
 // verbatim input is returned.
-func ParseQualifier(kind string) (string, string) {
+func parseQualifier(kind string) (string, string) {
 	parts := strings.SplitN(kind, "/", 2)
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		return "", kind
@@ -33,7 +33,7 @@ func ParseQualifier(kind string) (string, string) {
 	return parts[0], parts[1]
 }
 
-// IsLetter reports whether the rune is a letter.
-func IsLetter(c rune) bool {
+// isLetter reports whether the rune is an ASCII letter.
+func isLetter(c rune) bool {
 	return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')
 }
