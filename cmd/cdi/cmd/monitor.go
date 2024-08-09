@@ -48,8 +48,8 @@ information to show upon each refresh.`,
 
 func monitorSpecDirs(args ...string) {
 	var (
-		registry = cdi.GetRegistry()
-		specDirs = registry.GetSpecDirectories()
+		cache    = cdi.GetDefaultCache()
+		specDirs = cache.GetSpecDirectories()
 		dirWatch *fsnotify.Watcher
 		err      error
 		done     chan error
