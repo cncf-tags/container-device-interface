@@ -557,7 +557,7 @@ devices:
 						cache = newCache(opts...)
 						require.NotNil(t, cache)
 					} else {
-						err = updateSpecDirs(t, dir, update.etc, update.run)
+						err = updateSpecDirs(dir, update.etc, update.run)
 						if err != nil {
 							t.Errorf("failed to update test directory: %v", err)
 							return
@@ -743,7 +743,7 @@ devices:
 						idx = 0
 					}
 					update := tc.updates[idx]
-					err = updateSpecDirs(t, dir, update.etc, update.run)
+					err = updateSpecDirs(dir, update.etc, update.run)
 					if err != nil {
 						return
 					}
@@ -1851,7 +1851,7 @@ func createSpecDirs(t *testing.T, etc, run map[string]string) (string, error) {
 }
 
 // Update spec directories with new data.
-func updateSpecDirs(t *testing.T, dir string, etc, run map[string]string) error {
+func updateSpecDirs(dir string, etc, run map[string]string) error {
 	updates := map[string]map[string]string{
 		"etc": {},
 		"run": {},
@@ -1869,7 +1869,7 @@ func updateSpecDirs(t *testing.T, dir string, etc, run map[string]string) error 
 			}
 		}
 	}
-	return updateTestDir(t, dir, updates)
+	return updateTestDir(dir, updates)
 }
 
 func int64ptr(v int64) *int64 {

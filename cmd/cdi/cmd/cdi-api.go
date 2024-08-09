@@ -271,7 +271,7 @@ func cdiListSpecs(verbose bool, format string, vendors ...string) {
 		fmt.Printf("Vendor %s:\n", vendor)
 		for _, spec := range cache.GetVendorSpecs(vendor) {
 			cdiPrintSpec(spec, verbose, format, 2)
-			cdiPrintSpecErrors(spec, verbose, 2)
+			cdiPrintSpecErrors(2)
 		}
 	}
 }
@@ -284,7 +284,7 @@ func cdiPrintSpec(spec *cdi.Spec, verbose bool, format string, level int) {
 	}
 }
 
-func cdiPrintSpecErrors(spec *cdi.Spec, verbose bool, level int) {
+func cdiPrintSpecErrors(level int) {
 	var (
 		cache     = cdi.GetDefaultCache()
 		cdiErrors = cache.GetErrors()
