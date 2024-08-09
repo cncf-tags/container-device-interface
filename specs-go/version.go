@@ -183,14 +183,11 @@ func requiresV060(spec *Spec) bool {
 	}
 
 	// The v0.6.0 spec allows dots "." in Kind name label (class)
-	vendor, class := parseQualifier(spec.Kind)
-	if vendor != "" {
-		if strings.ContainsRune(class, '.') {
-			return true
-		}
+	if !strings.Contains(spec.Kind, "/") {
+		return false
 	}
-
-	return false
+	class := strings.SplitN(spec.Kind, "/", 2)[1]
+	return strings.Contains(class, ".")
 }
 
 // requiresV050 returns true if the spec uses v0.5.0 features
@@ -198,8 +195,8 @@ func requiresV050(spec *Spec) bool {
 	var edits []*ContainerEdits
 
 	for _, d := range spec.Devices {
-		// The v0.5.0 spec allowed device names to start with a digit instead of requiring a letter
-		if len(d.Name) > 0 && !isLetter(rune(d.Name[0])) {
+		// The v0.5.0 spec allowed device name to start with a digit
+		if len(d.Name) > 0 && '0' <= d.Name[0] && d.Name[0] <= '9' {
 			return true
 		}
 		edits = append(edits, &d.ContainerEdits)
