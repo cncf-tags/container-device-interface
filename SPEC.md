@@ -26,6 +26,7 @@ Released versions of the spec are available as Git tags.
 | v0.3.0 |   | Initial tagged release of Spec |
 | v0.4.0 |   | Added `type` field to Mount specification |
 | v0.5.0 |   | Add `HostPath` to `DeviceNodes` |
+|        |   | Allow device name to start with a digit |
 | v0.6.0 |   | Add `Annotations` field to `Spec` and `Device` specifications |
 |        |   | Allow dots (`.`)  in name segment of `Kind` field. |
 | v0.7.0 |   | Add `IntelRdt`field. |
@@ -194,8 +195,7 @@ Note: For a CDI file to be valid, at least one entry must be specified in this a
 
   * `devices` (array of objects, REQUIRED) list of devices provided by the vendor.
     * `name` (string, REQUIRED), name of the device, can be used to refer to it when requesting a device.
-      * Beginning and ending with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (\_), dots (.), and alphanumerics between.
-      * e.g: `docker/podman run --device foo ...`
+      * Beginning and ending with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (\_), dots (.), and alphanumerics between. Beginning with digits is supported from v0.5.0.
       * Entries in the array MUST use the same schema as the entry for the `name` field
     * `containerEdits` (object, OPTIONAL) this field is described in the next section.
       * This field should only be merged in the OCI spec if the device has been requested by the container runtime user.
