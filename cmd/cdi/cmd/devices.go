@@ -25,13 +25,13 @@ type devicesFlags struct {
 	output  string
 }
 
-// devicesCmd is our command for listing devices found in the CDI registry.
+// devicesCmd is our command for listing devices found in the CDI cache.
 var devicesCmd = &cobra.Command{
 	Aliases: []string{"devs", "dev"},
 	Use:     "devices",
-	Short:   "List devices in the CDI registry",
+	Short:   "List devices in the CDI cache",
 	Long: `
-The 'devices' command lists devices found in the CDI registry.`,
+The 'devices' command lists devices found in the CDI cache.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cdiListDevices(devicesCfg.verbose, devicesCfg.output)
 	},

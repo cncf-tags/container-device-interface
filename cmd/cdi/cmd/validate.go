@@ -26,22 +26,23 @@ import (
 	"tags.cncf.io/container-device-interface/pkg/cdi"
 )
 
-// validateCmd is our CDI command for validating CDI Spec files in the registry.
+// validateCmd is our CDI command for validating CDI Spec files in the cache.
 var validateCmd = &cobra.Command{
 	Use:   "validate",
-	Short: "List CDI registry errors",
+	Short: "List CDI cache errors",
 	Long: `
 The 'validate' command lists errors encountered during the population
-of the CDI registry. It exits with an exit status of 1 if any errors
-were reported by the registry.`,
+of the CDI cache. It exits with an exit status of 1 if any errors
+were reported by the cache.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cdiErrors := cdi.GetRegistry().GetErrors()
+		cache := cdi.GetDefaultCache()
+		cdiErrors := cache.GetErrors()
 		if len(cdiErrors) == 0 {
-			fmt.Printf("No CDI Registry errors.\n")
+			fmt.Printf("No CDI cache errors.\n")
 			return
 		}
 
-		fmt.Printf("CDI Registry has errors:\n")
+		fmt.Printf("CDI cache has errors:\n")
 		for path, specErrors := range cdiErrors {
 			fmt.Printf("Spec file %s:\n", path)
 			for idx, err := range specErrors {

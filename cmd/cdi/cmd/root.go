@@ -35,13 +35,13 @@ var (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "cdi",
-	Short: "Inspect and interact with the CDI Registry",
+	Short: "Inspect and interact with the CDI cache",
 	Long: `
 The 'cdi' utility allows you to inspect and interact with the
-CDI Registry. Various commands are available for listing CDI
+CDI cache. Various commands are available for listing CDI
 Spec files, vendors, classes, devices, validating the content
-of the registry, injecting devices into OCI Specs, and for
-monitoring changes in the Registry.
+of the cache, injecting devices into OCI Specs, and for
+monitoring changes in the cache.
 
 See cdi --help for a list of available commands. You can get
 additional help about <command> by using 'cdi <command> -h'.`,
@@ -68,11 +68,16 @@ func initSpecDirs() {
 	cdi.SetSpecValidator(validate.WithSchema(s))
 
 	if len(specDirs) > 0 {
-		cdi.GetRegistry(
+		cache, err := cdi.NewCache(
 			cdi.WithSpecDirs(specDirs...),
 		)
-		if len(cdi.GetRegistry().GetErrors()) > 0 {
+		if err != nil {
+			fmt.Printf("failed to create CDI cache: %v\n", err)
+			os.Exit(1)
+		}
+		if len(cache.GetErrors()) > 0 {
 			cdiPrintCacheErrors()
+			os.Exit(1)
 		}
 	}
 }

@@ -24,7 +24,7 @@ import (
 var vendorsCmd = &cobra.Command{
 	Use:   "vendors",
 	Short: "List vendors",
-	Long:  `List vendors with CDI Specs in the registry.`,
+	Long:  `List vendors with CDI Specs in the cache.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cdiListVendors()
 	},

@@ -25,7 +25,7 @@ var dirsCmd = &cobra.Command{
 	Use:   "dirs",
 	Short: "Show CDI Spec directories in use",
 	Long: `
-Show which directories are used by the registry to discover and
+Show which directories are used by the cache to discover and
 load CDI Specs. The later an entry is in the list the higher its
 priority. This priority is inherited by Spec files loaded from
 the directory and is used to resolve device conflicts. If there
