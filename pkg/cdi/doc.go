@@ -97,7 +97,7 @@
 //	)
 //
 //	func injectCDIDevices(spec *specs.Spec, devices []string) error {
-//		cache := cdi.GetDefaultCache()
+//	    cache := cdi.GetDefaultCache()
 //
 //	    if err := cache.Refresh(); err != nil {
 //	        // Note:
@@ -169,14 +169,14 @@
 // Generating a Spec file for a vendor/device class can be done with a
 // code snippet similar to the following:
 //
-//	import (
+// import (
 //
 //	"fmt"
 //	...
 //	"tags.cncf.io/container-device-interface/specs-go"
 //	"tags.cncf.io/container-device-interface/pkg/cdi"
 //
-//	)
+// )
 //
 //	func generateDeviceSpecs() error {
 //	    cache := specs.GetDefaultCache()
@@ -206,14 +206,14 @@
 // They are typically created before the associated container is created
 // and removed once that container is removed.
 //
-//	import (
+// import (
 //
 //	"fmt"
-//
+//	...
 //	"tags.cncf.io/container-device-interface/specs-go"
 //	"tags.cncf.io/container-device-interface/pkg/cdi"
 //
-//	)
+// )
 //
 //	func generateTransientSpec(ctr Container) error {
 //	    cache := specs.GetDefaultCache()
