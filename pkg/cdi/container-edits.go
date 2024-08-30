@@ -26,7 +26,7 @@ import (
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	ocigen "github.com/opencontainers/runtime-tools/generate"
-	"tags.cncf.io/container-device-interface/specs-go"
+	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
 const (
@@ -64,7 +64,7 @@ var (
 // to all OCI Specs where at least one devices from the CDI Spec
 // is injected.
 type ContainerEdits struct {
-	*specs.ContainerEdits
+	*cdi.ContainerEdits
 }
 
 // Apply edits to the given OCI Spec. Updates the OCI Spec in place.
@@ -205,7 +205,7 @@ func (e *ContainerEdits) Append(o *ContainerEdits) *ContainerEdits {
 		e = &ContainerEdits{}
 	}
 	if e.ContainerEdits == nil {
-		e.ContainerEdits = &specs.ContainerEdits{}
+		e.ContainerEdits = &cdi.ContainerEdits{}
 	}
 
 	e.Env = append(e.Env, o.Env...)
@@ -259,7 +259,7 @@ func ValidateEnv(env []string) error {
 
 // DeviceNode is a CDI Spec DeviceNode wrapper, used for validating DeviceNodes.
 type DeviceNode struct {
-	*specs.DeviceNode
+	*cdi.DeviceNode
 }
 
 // Validate a CDI Spec DeviceNode.
@@ -289,7 +289,7 @@ func (d *DeviceNode) Validate() error {
 
 // Hook is a CDI Spec Hook wrapper, used for validating hooks.
 type Hook struct {
-	*specs.Hook
+	*cdi.Hook
 }
 
 // Validate a hook.
@@ -308,7 +308,7 @@ func (h *Hook) Validate() error {
 
 // Mount is a CDI Mount wrapper, used for validating mounts.
 type Mount struct {
-	*specs.Mount
+	*cdi.Mount
 }
 
 // Validate a mount.
@@ -325,13 +325,13 @@ func (m *Mount) Validate() error {
 // IntelRdt is a CDI IntelRdt wrapper.
 // This is used for validation and conversion to OCI specifications.
 type IntelRdt struct {
-	*specs.IntelRdt
+	*cdi.IntelRdt
 }
 
 // ValidateIntelRdt validates the IntelRdt configuration.
 //
 // Deprecated: ValidateIntelRdt is deprecated use IntelRdt.Validate() instead.
-func ValidateIntelRdt(i *specs.IntelRdt) error {
+func ValidateIntelRdt(i *cdi.IntelRdt) error {
 	return (&IntelRdt{i}).Validate()
 }
 
