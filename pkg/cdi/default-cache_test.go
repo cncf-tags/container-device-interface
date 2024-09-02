@@ -263,7 +263,7 @@ devices:
 						}
 						Configure(opts...)
 					} else {
-						err = updateSpecDirs(t, dir, update.etc, update.run)
+						err = updateSpecDirs(dir, update.etc, update.run)
 						if err != nil {
 							t.Errorf("failed to update test directory: %v", err)
 							return

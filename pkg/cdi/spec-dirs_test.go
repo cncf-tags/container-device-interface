@@ -175,9 +175,8 @@ devices:
 				dir, err = mkTestDir(t, map[string]map[string]string{
 					"etc": tc.files,
 				})
-				if err != nil {
-					t.Errorf("failed to populate test directory: %v", err)
-				}
+				require.NoError(t, err, "failed to populate test directory")
+
 				dir = filepath.Join(dir, "etc")
 				success = map[string]struct{}{}
 				failure = map[string]struct{}{}
@@ -186,7 +185,7 @@ devices:
 			}
 
 			dirs := []string{"/no-such-dir", dir}
-			err = scanSpecDirs(dirs, func(path string, prio int, spec *Spec, err error) error {
+			_ = scanSpecDirs(dirs, func(path string, prio int, spec *Spec, err error) error {
 				name := filepath.Base(path)
 				if err != nil {
 					failure[name] = struct{}{}
@@ -220,14 +219,14 @@ func mkTestDir(t *testing.T, dirs map[string]map[string]string) (string, error) 
 		os.RemoveAll(tmp)
 	})
 
-	if err = updateTestDir(t, tmp, dirs); err != nil {
+	if err = updateTestDir(tmp, dirs); err != nil {
 		return "", err
 	}
 
 	return tmp, nil
 }
 
-func updateTestDir(t *testing.T, tmp string, dirs map[string]map[string]string) error {
+func updateTestDir(tmp string, dirs map[string]map[string]string) error {
 	for sub, content := range dirs {
 		dir := filepath.Join(tmp, sub)
 		if err := os.MkdirAll(dir, 0755); err != nil {
