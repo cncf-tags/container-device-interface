@@ -245,6 +245,53 @@ The `containerEdits` field has the following definition:
     * `enableMBM` (boolean, OPTIONAL) whether to enable memory bandwidth monitoring
   * `additionalGids` (array of uint32s, OPTIONAL) A list of additional group IDs to add with the container process. These values are added to the `user.additionalGids` field in the OCI runtime specification. Values of 0 are ignored. Added in v0.7.0.
 
+## Hooks
+
+Hooks allow CDI spec vendors to inject specific logic into various points of the
+container lifecycle. These are typically mapped to [OCI runtime hooks](https://github.com/opencontainers/runtime-spec/blob/main/config.md#posix-platform-hooks) and
+are typically used when behaviour depends on the container contents in some way.
+
+The following named hooks are defined by the CDI specification:
+* `update-ldcache`
+* `create-symlinks`
+
+Note that although their intent is defined as part of the CDI specification, their
+implementation and distribution is left to vendors. Note that these hooks are both
+`createContainer` hooks, meaning that in the context of OCI-compliant runtimes,
+the hook path is resolved in the runtime namespace, while it is executed in the
+container namespace.
+
+### update-ldcache
+
+The `update-ldcache` hook is a `createContainer` hook that is used to ensure that
+the ldcache in a container is updated to include any injected libraries.
+
+Assuming the following hook syntax:
+```shell
+[command-prefix] update-ldcache [--folder folder1] [--folder folder2]
+```
+executing the `update-ldcache` hook will:
+1. ensure that libraries in requested folders (`folder1`, `folder2`) are added to the `ldcache` in the container with the correct priority.
+2. create the relevant `.so.SONAME` symlinks in the container.
+
+Note that if updating the ldcache in the container is not applicable, this is skipped, but the symlinks are still created.
+
+### create-symlinks
+
+The `create-symlinks` hook is a `createContainer` hooks that is used to ensure that
+required symlinks exist in a container. Typically these symlinks point to injected
+libraries or executables.
+
+Assuming the following hook syntax:
+```shell
+[command-prefix] create-symlinks [--link target::link-path]
+```
+executing the `create-symlinks` hook will:
+1. ensure that the parent of `link-path` exists in the container
+2. create a symlink from `link-path` to `target` in the container
+
+Note that `target` need not exist in the container.
+
 ## Error Handling
   * Kind requested is not present in any CDI file.
     Container runtimes should surface an error when a non-existent kind is requested.
