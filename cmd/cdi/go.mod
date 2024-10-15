@@ -22,11 +22,13 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
+	tags.cncf.io/container-device-interface/api/producer v0.8.0 // indirect
 	tags.cncf.io/container-device-interface/specs-go v0.8.0 // indirect
 )
 
 replace (
 	tags.cncf.io/container-device-interface => ../..
+	tags.cncf.io/container-device-interface/api/producer => ../../api/producer
 	tags.cncf.io/container-device-interface/schema => ../../schema
 	tags.cncf.io/container-device-interface/specs-go => ../../specs-go
 )

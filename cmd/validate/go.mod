@@ -17,6 +17,7 @@ require (
 
 replace (
 	tags.cncf.io/container-device-interface => ../..
+	tags.cncf.io/container-device-interface/api/producer => ../../api/producer
 	tags.cncf.io/container-device-interface/schema => ../../schema
 	tags.cncf.io/container-device-interface/specs-go => ../../specs-go
 )

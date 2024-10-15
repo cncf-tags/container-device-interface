@@ -17,7 +17,6 @@
 package cdi
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -25,7 +24,6 @@ import (
 	"sync"
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
-	orderedyaml "gopkg.in/yaml.v2"
 	"sigs.k8s.io/yaml"
 
 	"tags.cncf.io/container-device-interface/internal/validation"
@@ -118,57 +116,6 @@ func newSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
 	}
 
 	return spec, nil
-}
-
-// Write the CDI Spec to the file associated with it during instantiation
-// by newSpec() or ReadSpec().
-func (s *Spec) write(overwrite bool) error {
-	var (
-		data []byte
-		dir  string
-		tmp  *os.File
-		err  error
-	)
-
-	err = validateSpec(s.Spec)
-	if err != nil {
-		return err
-	}
-
-	if filepath.Ext(s.path) == ".yaml" {
-		data, err = orderedyaml.Marshal(s.Spec)
-		data = append([]byte("---\n"), data...)
-	} else {
-		data, err = json.Marshal(s.Spec)
-	}
-	if err != nil {
-		return fmt.Errorf("failed to marshal Spec file: %w", err)
-	}
-
-	dir = filepath.Dir(s.path)
-	err = os.MkdirAll(dir, 0o755)
-	if err != nil {
-		return fmt.Errorf("failed to create Spec dir: %w", err)
-	}
-
-	tmp, err = os.CreateTemp(dir, "spec.*.tmp")
-	if err != nil {
-		return fmt.Errorf("failed to create Spec file: %w", err)
-	}
-	_, err = tmp.Write(data)
-	tmp.Close()
-	if err != nil {
-		return fmt.Errorf("failed to write Spec file: %w", err)
-	}
-
-	err = renameIn(dir, filepath.Base(tmp.Name()), filepath.Base(s.path), overwrite)
-
-	if err != nil {
-		os.Remove(tmp.Name())
-		err = fmt.Errorf("failed to write Spec file: %w", err)
-	}
-
-	return err
 }
 
 // GetVendor returns the vendor of this Spec.

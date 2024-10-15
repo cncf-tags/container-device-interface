@@ -52,7 +52,7 @@ func (d *Device) GetSpec() *Spec {
 
 // GetQualifiedName returns the qualified name for this device.
 func (d *Device) GetQualifiedName() string {
-	return parser.QualifiedName(d.spec.GetVendor(), d.spec.GetClass(), d.Name)
+	return d.spec.Kind + "=" + d.Name
 }
 
 // ApplyEdits applies the device-speific container edits to an OCI Spec.

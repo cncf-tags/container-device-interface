@@ -23,9 +23,11 @@ require (
 	golang.org/x/sys v0.19.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	tags.cncf.io/container-device-interface/api/producer v0.8.0 // indirect
 )
 
 replace (
 	tags.cncf.io/container-device-interface => ../
+	tags.cncf.io/container-device-interface/api/producer => ../api/producer
 	tags.cncf.io/container-device-interface/specs-go => ../specs-go
 )

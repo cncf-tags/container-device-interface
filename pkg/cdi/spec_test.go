@@ -26,6 +26,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/stretchr/testify/require"
+	"tags.cncf.io/container-device-interface/api/producer"
 	"tags.cncf.io/container-device-interface/pkg/parser"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
@@ -372,12 +373,20 @@ devices:
 			require.NoError(t, err)
 			require.NotNil(t, spec)
 
-			err = spec.write(true)
+			overwrite, err := producer.NewSpecWriter(
+				producer.WithOverwrite(true),
+			)
+			require.NoError(t, err)
+			_, err = overwrite.Save(spec.Spec, spec.path)
 			require.NoError(t, err)
 			_, err = os.Stat(spec.GetPath())
 			require.NoError(t, err, "spec.Write destination file")
 
-			err = spec.write(false)
+			nonOverwrite, err := producer.NewSpecWriter(
+				producer.WithOverwrite(false),
+			)
+			require.NoError(t, err)
+			_, err = nonOverwrite.Save(spec.Spec, spec.path)
 			require.Error(t, err)
 
 			chk, err = ReadSpec(spec.GetPath(), spec.GetPriority())
