@@ -115,7 +115,8 @@ devices:
 					filepath.Join(dir, "run"),
 				),
 			}
-			Configure(opts...)
+			err = Configure(opts...)
+			require.NoError(t, err, "unexpected Configure() error")
 
 			devices := cache.ListDevices()
 			if len(tc.devices) == 0 {
@@ -261,7 +262,8 @@ devices:
 								filepath.Join(dir, "run"),
 							),
 						}
-						Configure(opts...)
+						err = Configure(opts...)
+						require.NoError(t, err, "unexpected Configure() error")
 					} else {
 						err = updateSpecDirs(dir, update.etc, update.run)
 						if err != nil {
@@ -395,12 +397,13 @@ devices:
 				return
 			}
 
-			Configure(
+			err = Configure(
 				WithSpecDirs(
 					filepath.Join(dir, "etc"),
 					filepath.Join(dir, "run"),
 				),
 			)
+			require.NoError(t, err, "unexpected Configure() error")
 
 			unresolved, err := InjectDevices(tc.ociSpec, tc.devices...)
 			if len(tc.unresolved) != 0 {
