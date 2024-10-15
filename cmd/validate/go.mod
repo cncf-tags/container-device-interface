@@ -11,12 +11,13 @@ require (
 	golang.org/x/mod v0.19.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
-	tags.cncf.io/container-device-interface/api/validator v0.0.0-00010101000000-000000000000 // indirect
+	tags.cncf.io/container-device-interface/api/validator v0.0.0 // indirect
 	tags.cncf.io/container-device-interface/specs-go v0.8.0 // indirect
 )
 
 replace (
 	tags.cncf.io/container-device-interface => ../..
+	tags.cncf.io/container-device-interface/api/producer => ../../api/producer
 	tags.cncf.io/container-device-interface/api/validator => ../../api/validator
 	tags.cncf.io/container-device-interface/specs-go => ../../specs-go
 )

@@ -17,7 +17,6 @@
 package cdi
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -27,6 +26,7 @@ import (
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"sigs.k8s.io/yaml"
 
+	"tags.cncf.io/container-device-interface/api/producer"
 	"tags.cncf.io/container-device-interface/api/validator"
 	"tags.cncf.io/container-device-interface/pkg/parser"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
@@ -131,53 +131,23 @@ func newSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
 
 // Write the CDI Spec to the file associated with it during instantiation
 // by newSpec() or ReadSpec().
+//
+// Deprecated: Use producer.SpecWriter instead.
 func (s *Spec) write(overwrite bool) error {
-	var (
-		data []byte
-		dir  string
-		tmp  *os.File
-		err  error
+	p, err := producer.NewSpecWriter(
+		producer.WithOverwrite(overwrite),
+		producer.WithSpecValidator(validator.Default),
 	)
-
-	err = validateSpec(s.Spec)
 	if err != nil {
 		return err
 	}
 
-	if filepath.Ext(s.path) == ".yaml" {
-		data, err = yaml.Marshal(s.Spec)
-		data = append([]byte("---\n"), data...)
-	} else {
-		data, err = json.Marshal(s.Spec)
-	}
+	savedPath, err := p.Save(s.Spec, s.path)
 	if err != nil {
-		return fmt.Errorf("failed to marshal Spec file: %w", err)
+		return err
 	}
-
-	dir = filepath.Dir(s.path)
-	err = os.MkdirAll(dir, 0o755)
-	if err != nil {
-		return fmt.Errorf("failed to create Spec dir: %w", err)
-	}
-
-	tmp, err = os.CreateTemp(dir, "spec.*.tmp")
-	if err != nil {
-		return fmt.Errorf("failed to create Spec file: %w", err)
-	}
-	_, err = tmp.Write(data)
-	tmp.Close()
-	if err != nil {
-		return fmt.Errorf("failed to write Spec file: %w", err)
-	}
-
-	err = renameIn(dir, filepath.Base(tmp.Name()), filepath.Base(s.path), overwrite)
-
-	if err != nil {
-		os.Remove(tmp.Name())
-		err = fmt.Errorf("failed to write Spec file: %w", err)
-	}
-
-	return err
+	s.path = savedPath
+	return nil
 }
 
 // GetVendor returns the vendor of this Spec.
@@ -240,7 +210,7 @@ func SetSpecValidator(fn func(*cdi.Spec) error) {
 	specValidator = fn
 }
 
-// validateSpec validates the Spec using the extneral validator.
+// validateSpec validates the Spec using the extneral validation.
 func validateSpec(raw *cdi.Spec) error {
 	validatorLock.RLock()
 	defer validatorLock.RUnlock()

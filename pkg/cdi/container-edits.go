@@ -186,16 +186,6 @@ func (e *ContainerEdits) Append(o *ContainerEdits) *ContainerEdits {
 	return e
 }
 
-// ValidateEnv validates the given environment variables.
-func ValidateEnv(env []string) error {
-	for _, v := range env {
-		if strings.IndexByte(v, byte('=')) <= 0 {
-			return fmt.Errorf("invalid environment variable %q", v)
-		}
-	}
-	return nil
-}
-
 // DeviceNode is a CDI Spec DeviceNode wrapper, used for validating DeviceNodes.
 type DeviceNode struct {
 	*cdi.DeviceNode
@@ -203,27 +193,7 @@ type DeviceNode struct {
 
 // Validate a CDI Spec DeviceNode.
 func (d *DeviceNode) Validate() error {
-	validTypes := map[string]struct{}{
-		"":  {},
-		"b": {},
-		"c": {},
-		"u": {},
-		"p": {},
-	}
-
-	if d.Path == "" {
-		return errors.New("invalid (empty) device path")
-	}
-	if _, ok := validTypes[d.Type]; !ok {
-		return fmt.Errorf("device %q: invalid type %q", d.Path, d.Type)
-	}
-	for _, bit := range d.Permissions {
-		if bit != 'r' && bit != 'w' && bit != 'm' {
-			return fmt.Errorf("device %q: invalid permissions %q",
-				d.Path, d.Permissions)
-		}
-	}
-	return nil
+	return validator.Default.ValidateAny(d.DeviceNode)
 }
 
 // Hook is a CDI Spec Hook wrapper, used for validating hooks.
