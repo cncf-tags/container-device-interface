@@ -116,7 +116,7 @@ func (c *Cache) configure(options ...Option) {
 		c.watch.setup(c.specDirs, c.dirErrors)
 		c.watch.start(&c.Mutex, c.refresh, c.dirErrors)
 	}
-	c.refresh()
+	_ = c.refresh() // we record but ignore errors
 }
 
 // Refresh rescans the CDI Spec directories and refreshes the Cache.
@@ -222,7 +222,8 @@ func (c *Cache) refreshIfRequired(force bool) (bool, error) {
 
 // InjectDevices injects the given qualified devices to an OCI Spec. It
 // returns any unresolvable devices and an error if injection fails for
-// any of the devices.
+// any of the devices. Might trigger a cache refresh, in which case any
+// errors encountered can be obtained using GetErrors().
 func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, error) {
 	var unresolved []string
 
@@ -233,7 +234,7 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 	c.Lock()
 	defer c.Unlock()
 
-	c.refreshIfRequired(false)
+	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
 	edits := &ContainerEdits{}
 	specs := map[*Spec]struct{}{}
@@ -335,24 +336,27 @@ func (c *Cache) RemoveSpec(name string) error {
 	return err
 }
 
-// GetDevice returns the cached device for the given qualified name.
+// GetDevice returns the cached device for the given qualified name. Might trigger
+// a cache refresh, in which case any errors encountered can be obtained using
+// GetErrors().
 func (c *Cache) GetDevice(device string) *Device {
 	c.Lock()
 	defer c.Unlock()
 
-	c.refreshIfRequired(false)
+	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
 	return c.devices[device]
 }
 
-// ListDevices lists all cached devices by qualified name.
+// ListDevices lists all cached devices by qualified name. Might trigger a cache
+// refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListDevices() []string {
 	var devices []string
 
 	c.Lock()
 	defer c.Unlock()
 
-	c.refreshIfRequired(false)
+	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
 	for name := range c.devices {
 		devices = append(devices, name)
@@ -362,14 +366,15 @@ func (c *Cache) ListDevices() []string {
 	return devices
 }
 
-// ListVendors lists all vendors known to the cache.
+// ListVendors lists all vendors known to the cache. Might trigger a cache refresh,
+// in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListVendors() []string {
 	var vendors []string
 
 	c.Lock()
 	defer c.Unlock()
 
-	c.refreshIfRequired(false)
+	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
 	for vendor := range c.specs {
 		vendors = append(vendors, vendor)
@@ -379,7 +384,8 @@ func (c *Cache) ListVendors() []string {
 	return vendors
 }
 
-// ListClasses lists all device classes known to the cache.
+// ListClasses lists all device classes known to the cache. Might trigger a cache
+// refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListClasses() []string {
 	var (
 		cmap    = map[string]struct{}{}
@@ -389,7 +395,7 @@ func (c *Cache) ListClasses() []string {
 	c.Lock()
 	defer c.Unlock()
 
-	c.refreshIfRequired(false)
+	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
 	for _, specs := range c.specs {
 		for _, spec := range specs {
@@ -404,12 +410,13 @@ func (c *Cache) ListClasses() []string {
 	return classes
 }
 
-// GetVendorSpecs returns all specs for the given vendor.
+// GetVendorSpecs returns all specs for the given vendor. Might trigger a cache
+// refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
 	c.Lock()
 	defer c.Unlock()
 
-	c.refreshIfRequired(false)
+	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
 	return c.specs[vendor]
 }
@@ -544,7 +551,7 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m *sync.Mutex, refresh func() error
 			} else {
 				w.update(dirErrors)
 			}
-			refresh()
+			_ = refresh()
 			m.Unlock()
 
 		case _, ok := <-watch.Errors:

@@ -16,6 +16,7 @@ GO_TEST  := $(GO_CMD) test -race -v -cover
 GO_LINT  := golint -set_exit_status
 GO_FMT   := gofmt
 GO_VET   := $(GO_CMD) vet
+CI_LINT  := golangci-lint
 
 CDI_PKG  := $(shell grep ^module go.mod | sed 's/^module *//g')
 
@@ -43,7 +44,7 @@ test: test-gopkgs test-schema
 # validation targets
 #
 
-pre-pr-checks pr-checks: test fmt lint vet
+pre-pr-checks pr-checks: test fmt lint vet ci-lint
 
 fmt format:
 	$(Q)$(GO_FMT) -s -d -w -e .
@@ -52,6 +53,9 @@ lint:
 	$(Q)$(GO_LINT) -set_exit_status ./...
 vet:
 	$(Q)$(GO_VET) ./...
+golangci-lint ci-lint:
+	$(Q)$(CI_LINT) run
+
 
 #
 # build targets
