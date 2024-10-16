@@ -222,7 +222,8 @@ func (c *Cache) refreshIfRequired(force bool) (bool, error) {
 
 // InjectDevices injects the given qualified devices to an OCI Spec. It
 // returns any unresolvable devices and an error if injection fails for
-// any of the devices.
+// any of the devices. Might trigger a cache refresh, in which case any
+// errors encountered can be obtained using GetErrors().
 func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, error) {
 	var unresolved []string
 
@@ -335,7 +336,9 @@ func (c *Cache) RemoveSpec(name string) error {
 	return err
 }
 
-// GetDevice returns the cached device for the given qualified name.
+// GetDevice returns the cached device for the given qualified name. Might trigger
+// a cache refresh, in which case any errors encountered can be obtained using
+// GetErrors().
 func (c *Cache) GetDevice(device string) *Device {
 	c.Lock()
 	defer c.Unlock()
@@ -345,7 +348,8 @@ func (c *Cache) GetDevice(device string) *Device {
 	return c.devices[device]
 }
 
-// ListDevices lists all cached devices by qualified name.
+// ListDevices lists all cached devices by qualified name. Might trigger a cache
+// refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListDevices() []string {
 	var devices []string
 
@@ -362,7 +366,8 @@ func (c *Cache) ListDevices() []string {
 	return devices
 }
 
-// ListVendors lists all vendors known to the cache.
+// ListVendors lists all vendors known to the cache. Might trigger a cache refresh,
+// in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListVendors() []string {
 	var vendors []string
 
@@ -379,7 +384,8 @@ func (c *Cache) ListVendors() []string {
 	return vendors
 }
 
-// ListClasses lists all device classes known to the cache.
+// ListClasses lists all device classes known to the cache. Might trigger a cache
+// refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListClasses() []string {
 	var (
 		cmap    = map[string]struct{}{}
@@ -404,7 +410,8 @@ func (c *Cache) ListClasses() []string {
 	return classes
 }
 
-// GetVendorSpecs returns all specs for the given vendor.
+// GetVendorSpecs returns all specs for the given vendor. Might trigger a cache
+// refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
 	c.Lock()
 	defer c.Unlock()
