@@ -28,6 +28,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
+	"tags.cncf.io/container-device-interface/pkg/cdi/producer"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
@@ -281,30 +282,31 @@ func (c *Cache) highestPrioritySpecDir() (string, int) {
 // priority Spec directory. If name has a "json" or "yaml" extension it
 // choses the encoding. Otherwise the default YAML encoding is used.
 func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
-	var (
-		specDir string
-		path    string
-		prio    int
-		spec    *Spec
-		err     error
-	)
-
-	specDir, prio = c.highestPrioritySpecDir()
+	specDir, _ := c.highestPrioritySpecDir()
 	if specDir == "" {
 		return errors.New("no Spec directories to write to")
 	}
 
-	path = filepath.Join(specDir, name)
-	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
-		path += defaultSpecExt
+	// Ideally we would like to pass the configured spec validator to the
+	// producer, but we would need to handle the synchronisation.
+	// Instead we call `validateSpec` here which is a no-op if no validator is
+	// configured.
+	if err := validateSpec(raw); err != nil {
+		return err
 	}
 
-	spec, err = newSpec(raw, path, prio)
+	p, err := producer.New(
+		producer.WithOverwrite(true),
+	)
 	if err != nil {
 		return err
 	}
 
-	return spec.write(true)
+	path := filepath.Join(specDir, name)
+	if _, err := p.SaveSpec(raw, path); err != nil {
+		return err
+	}
+	return nil
 }
 
 // RemoveSpec removes a Spec with the given name from the highest

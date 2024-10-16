@@ -26,6 +26,8 @@ import (
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	ocigen "github.com/opencontainers/runtime-tools/generate"
+
+	"tags.cncf.io/container-device-interface/pkg/cdi/producer/validator"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
@@ -167,32 +169,7 @@ func (e *ContainerEdits) Validate() error {
 	if e == nil || e.ContainerEdits == nil {
 		return nil
 	}
-
-	if err := ValidateEnv(e.Env); err != nil {
-		return fmt.Errorf("invalid container edits: %w", err)
-	}
-	for _, d := range e.DeviceNodes {
-		if err := (&DeviceNode{d}).Validate(); err != nil {
-			return err
-		}
-	}
-	for _, h := range e.Hooks {
-		if err := (&Hook{h}).Validate(); err != nil {
-			return err
-		}
-	}
-	for _, m := range e.Mounts {
-		if err := (&Mount{m}).Validate(); err != nil {
-			return err
-		}
-	}
-	if e.IntelRdt != nil {
-		if err := (&IntelRdt{e.IntelRdt}).Validate(); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return validator.Default.ValidateAny(e.ContainerEdits)
 }
 
 // Append other edits into this one. If called with a nil receiver,
@@ -220,43 +197,6 @@ func (e *ContainerEdits) Append(o *ContainerEdits) *ContainerEdits {
 	return e
 }
 
-// isEmpty returns true if these edits are empty. This is valid in a
-// global Spec context but invalid in a Device context.
-func (e *ContainerEdits) isEmpty() bool {
-	if e == nil {
-		return false
-	}
-	if len(e.Env) > 0 {
-		return false
-	}
-	if len(e.DeviceNodes) > 0 {
-		return false
-	}
-	if len(e.Hooks) > 0 {
-		return false
-	}
-	if len(e.Mounts) > 0 {
-		return false
-	}
-	if len(e.AdditionalGIDs) > 0 {
-		return false
-	}
-	if e.IntelRdt != nil {
-		return false
-	}
-	return true
-}
-
-// ValidateEnv validates the given environment variables.
-func ValidateEnv(env []string) error {
-	for _, v := range env {
-		if strings.IndexByte(v, byte('=')) <= 0 {
-			return fmt.Errorf("invalid environment variable %q", v)
-		}
-	}
-	return nil
-}
-
 // DeviceNode is a CDI Spec DeviceNode wrapper, used for validating DeviceNodes.
 type DeviceNode struct {
 	*cdi.DeviceNode
@@ -264,27 +204,7 @@ type DeviceNode struct {
 
 // Validate a CDI Spec DeviceNode.
 func (d *DeviceNode) Validate() error {
-	validTypes := map[string]struct{}{
-		"":  {},
-		"b": {},
-		"c": {},
-		"u": {},
-		"p": {},
-	}
-
-	if d.Path == "" {
-		return errors.New("invalid (empty) device path")
-	}
-	if _, ok := validTypes[d.Type]; !ok {
-		return fmt.Errorf("device %q: invalid type %q", d.Path, d.Type)
-	}
-	for _, bit := range d.Permissions {
-		if bit != 'r' && bit != 'w' && bit != 'm' {
-			return fmt.Errorf("device %q: invalid permissions %q",
-				d.Path, d.Permissions)
-		}
-	}
-	return nil
+	return validator.Default.ValidateAny(d.DeviceNode)
 }
 
 // Hook is a CDI Spec Hook wrapper, used for validating hooks.
@@ -294,16 +214,7 @@ type Hook struct {
 
 // Validate a hook.
 func (h *Hook) Validate() error {
-	if _, ok := validHookNames[h.HookName]; !ok {
-		return fmt.Errorf("invalid hook name %q", h.HookName)
-	}
-	if h.Path == "" {
-		return fmt.Errorf("invalid hook %q with empty path", h.HookName)
-	}
-	if err := ValidateEnv(h.Env); err != nil {
-		return fmt.Errorf("invalid hook %q: %w", h.HookName, err)
-	}
-	return nil
+	return validator.Default.ValidateAny(h.Hook)
 }
 
 // Mount is a CDI Mount wrapper, used for validating mounts.
@@ -313,13 +224,7 @@ type Mount struct {
 
 // Validate a mount.
 func (m *Mount) Validate() error {
-	if m.HostPath == "" {
-		return errors.New("invalid mount, empty host path")
-	}
-	if m.ContainerPath == "" {
-		return errors.New("invalid mount, empty container path")
-	}
-	return nil
+	return validator.Default.ValidateAny(m.Mount)
 }
 
 // IntelRdt is a CDI IntelRdt wrapper.
@@ -337,11 +242,7 @@ func ValidateIntelRdt(i *cdi.IntelRdt) error {
 
 // Validate validates the IntelRdt configuration.
 func (i *IntelRdt) Validate() error {
-	// ClosID must be a valid Linux filename
-	if len(i.ClosID) >= 4096 || i.ClosID == "." || i.ClosID == ".." || strings.ContainsAny(i.ClosID, "/\n") {
-		return errors.New("invalid ClosID")
-	}
-	return nil
+	return validator.Default.ValidateAny(i.IntelRdt)
 }
 
 // Ensure OCI Spec hooks are not nil so we can add hooks.
