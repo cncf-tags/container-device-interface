@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"sigs.k8s.io/yaml"
+	orderedyaml "gopkg.in/yaml.v2"
 )
 
 func chooseFormat(format string, path string) string {
@@ -46,7 +46,7 @@ func marshalObject(level int, obj interface{}, format string) string {
 	if format == "json" {
 		raw, err = json.MarshalIndent(obj, "", "  ")
 	} else {
-		raw, err = yaml.Marshal(obj)
+		raw, err = orderedyaml.Marshal(obj)
 	}
 
 	if err != nil {
