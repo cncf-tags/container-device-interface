@@ -29,7 +29,8 @@ import (
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/stretchr/testify/require"
-	"sigs.k8s.io/yaml"
+	"gopkg.in/yaml.v2"
+
 	"tags.cncf.io/container-device-interface/pkg/cdi/validate"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )

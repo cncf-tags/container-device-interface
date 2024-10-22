@@ -28,7 +28,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"sigs.k8s.io/yaml"
+	"gopkg.in/yaml.v2"
 
 	schema "github.com/xeipuuv/gojsonschema"
 	"tags.cncf.io/container-device-interface/internal/validation"
