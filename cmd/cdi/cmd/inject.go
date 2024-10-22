@@ -22,7 +22,7 @@ import (
 	"os"
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
-	"sigs.k8s.io/yaml"
+	"gopkg.in/yaml.v2"
 
 	"github.com/spf13/cobra"
 )

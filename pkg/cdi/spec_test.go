@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"sigs.k8s.io/yaml"
+	"gopkg.in/yaml.v2"
 
 	"github.com/stretchr/testify/require"
 	"tags.cncf.io/container-device-interface/pkg/cdi/validate"

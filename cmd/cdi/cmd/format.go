@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"sigs.k8s.io/yaml"
+	"gopkg.in/yaml.v2"
 )
 
 func chooseFormat(format string, path string) string {
