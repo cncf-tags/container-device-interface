@@ -17,10 +17,9 @@
 package cdi
 
 import (
-	"fmt"
-
 	oci "github.com/opencontainers/runtime-spec/specs-go"
-	"tags.cncf.io/container-device-interface/internal/validation"
+
+	"tags.cncf.io/container-device-interface/api/validator"
 	"tags.cncf.io/container-device-interface/pkg/parser"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
@@ -33,13 +32,16 @@ type Device struct {
 
 // Create a new Device, associate it with the given Spec.
 func newDevice(spec *Spec, d cdi.Device) (*Device, error) {
+	var kind string
+	if spec != nil {
+		kind = spec.Kind
+	}
+	if err := validator.Default.ValidateDevice(kind, &d); err != nil {
+		return nil, err
+	}
 	dev := &Device{
 		Device: &d,
 		spec:   spec,
-	}
-
-	if err := dev.validate(); err != nil {
-		return nil, err
 	}
 
 	return dev, nil
@@ -63,26 +65,4 @@ func (d *Device) ApplyEdits(ociSpec *oci.Spec) error {
 // edits returns the applicable container edits for this spec.
 func (d *Device) edits() *ContainerEdits {
 	return &ContainerEdits{&d.ContainerEdits}
-}
-
-// Validate the device.
-func (d *Device) validate() error {
-	if err := parser.ValidateDeviceName(d.Name); err != nil {
-		return err
-	}
-	name := d.Name
-	if d.spec != nil {
-		name = d.GetQualifiedName()
-	}
-	if err := validation.ValidateSpecAnnotations(name, d.Annotations); err != nil {
-		return err
-	}
-	edits := d.edits()
-	if edits.isEmpty() {
-		return fmt.Errorf("invalid device, empty device edits")
-	}
-	if err := edits.Validate(); err != nil {
-		return fmt.Errorf("invalid device %q: %w", d.Name, err)
-	}
-	return nil
 }

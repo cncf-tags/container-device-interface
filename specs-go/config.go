@@ -1,6 +1,8 @@
 package specs
 
-import "os"
+import (
+	"os"
+)
 
 // Spec is the base configuration for CDI
 type Spec struct {
