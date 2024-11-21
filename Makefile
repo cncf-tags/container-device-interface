@@ -74,7 +74,7 @@ $(BINARIES): bin/%:
 mod-tidy:
 	$(Q)for mod in $$(find . -name go.mod); do \
 	    echo "Tidying $$mod..."; ( \
-	        cd $$(dirname $$mod) && go mod tidy \
+	        cd $$(dirname $$mod) && go mod tidy -go=$$(grep -E "^go\s+[1-9]\.[0-9]+$$" go.mod | sed 's/^go //') \
             ) || exit 1; \
 	done
 
