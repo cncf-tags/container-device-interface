@@ -10,6 +10,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sys v0.19.0
 	sigs.k8s.io/yaml v1.3.0
+	tags.cncf.io/container-device-interface/api/validator v0.0.0-00010101000000-000000000000
 	tags.cncf.io/container-device-interface/specs-go v0.8.0
 )
 
@@ -24,4 +25,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace tags.cncf.io/container-device-interface/specs-go => ./specs-go
+replace (
+	tags.cncf.io/container-device-interface/api/validator => ./api/validator
+	tags.cncf.io/container-device-interface/specs-go => ./specs-go
+)

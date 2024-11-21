@@ -31,7 +31,8 @@ import (
 	"sigs.k8s.io/yaml"
 
 	schema "github.com/xeipuuv/gojsonschema"
-	"tags.cncf.io/container-device-interface/internal/validation"
+
+	"tags.cncf.io/container-device-interface/api/validator"
 )
 
 const (
@@ -305,7 +306,7 @@ func (s *Schema) validateContents(any map[string]interface{}) error {
 	contents := schemaContents(any)
 
 	if specAnnotations, ok := contents.getAnnotations(); ok {
-		if err := validation.ValidateSpecAnnotations("", specAnnotations); err != nil {
+		if err := validator.ValidateSpecAnnotations("", specAnnotations); err != nil {
 			return err
 		}
 	}
@@ -318,7 +319,7 @@ func (s *Schema) validateContents(any map[string]interface{}) error {
 	for _, device := range devices {
 		name, _ := device.getFieldAsString("name")
 		if annotations, ok := device.getAnnotations(); ok {
-			if err := validation.ValidateSpecAnnotations(name, annotations); err != nil {
+			if err := validator.ValidateSpecAnnotations(name, annotations); err != nil {
 				return err
 			}
 		}

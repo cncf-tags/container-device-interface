@@ -26,48 +26,42 @@ import (
 func TestDeviceValidate(t *testing.T) {
 	type testCase struct {
 		name    string
-		device  *Device
+		device  cdi.Device
 		invalid bool
 	}
 	for _, tc := range []*testCase{
 		{
 			name: "valid name, valid edits",
-			device: &Device{
-				Device: &cdi.Device{
-					Name: "dev",
-					ContainerEdits: cdi.ContainerEdits{
-						Env: []string{"FOO=BAR"},
-					},
+			device: cdi.Device{
+				Name: "dev",
+				ContainerEdits: cdi.ContainerEdits{
+					Env: []string{"FOO=BAR"},
 				},
 			},
 		},
 		{
 			name: "valid name, invalid edits",
-			device: &Device{
-				Device: &cdi.Device{
-					Name: "dev",
-					ContainerEdits: cdi.ContainerEdits{
-						Env: []string{"=BAR"},
-					},
+			device: cdi.Device{
+				Name: "dev",
+				ContainerEdits: cdi.ContainerEdits{
+					Env: []string{"=BAR"},
 				},
 			},
 			invalid: true,
 		},
 		{
 			name: "invalid name, valid edits",
-			device: &Device{
-				Device: &cdi.Device{
-					Name: "a dev ice",
-					ContainerEdits: cdi.ContainerEdits{
-						Env: []string{"FOO=BAR"},
-					},
+			device: cdi.Device{
+				Name: "a dev ice",
+				ContainerEdits: cdi.ContainerEdits{
+					Env: []string{"FOO=BAR"},
 				},
 			},
 			invalid: true,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			err := tc.device.validate()
+			_, err := newDevice(nil, tc.device)
 			if tc.invalid {
 				require.Error(t, err)
 			} else {

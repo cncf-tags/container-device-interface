@@ -14,13 +14,13 @@
    limitations under the License.
 */
 
-package validation
+package validator
 
 import (
 	"fmt"
 	"strings"
 
-	"tags.cncf.io/container-device-interface/internal/validation/k8s"
+	"tags.cncf.io/container-device-interface/api/validator/k8s"
 )
 
 // ValidateSpecAnnotations checks whether spec annotations are valid.

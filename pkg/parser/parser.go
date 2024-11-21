@@ -19,6 +19,8 @@ package parser
 import (
 	"fmt"
 	"strings"
+
+	"tags.cncf.io/container-device-interface/api/validator"
 )
 
 // QualifiedName returns the qualified name for a device.
@@ -117,12 +119,10 @@ func ParseQualifier(kind string) (string, string) {
 //   - upper- and lowercase letters ('A'-'Z', 'a'-'z')
 //   - digits ('0'-'9')
 //   - underscore, dash, and dot ('_', '-', and '.')
+//
+// Deprecated: use validator.ValidateVendorName instead
 func ValidateVendorName(vendor string) error {
-	err := validateVendorOrClassName(vendor)
-	if err != nil {
-		err = fmt.Errorf("invalid vendor. %w", err)
-	}
-	return err
+	return validator.ValidateVendorName(vendor)
 }
 
 // ValidateClassName checks the validity of class name.
@@ -130,40 +130,10 @@ func ValidateVendorName(vendor string) error {
 //   - upper- and lowercase letters ('A'-'Z', 'a'-'z')
 //   - digits ('0'-'9')
 //   - underscore, dash, and dot ('_', '-', and '.')
+//
+// Deprecated: use validator.ValidateClassName instead
 func ValidateClassName(class string) error {
-	err := validateVendorOrClassName(class)
-	if err != nil {
-		err = fmt.Errorf("invalid class. %w", err)
-	}
-	return err
-}
-
-// validateVendorOrClassName checks the validity of vendor or class name.
-// A name may contain the following ASCII characters:
-//   - upper- and lowercase letters ('A'-'Z', 'a'-'z')
-//   - digits ('0'-'9')
-//   - underscore, dash, and dot ('_', '-', and '.')
-func validateVendorOrClassName(name string) error {
-	if name == "" {
-		return fmt.Errorf("empty name")
-	}
-	if !IsLetter(rune(name[0])) {
-		return fmt.Errorf("%q, should start with letter", name)
-	}
-	for _, c := range string(name[1 : len(name)-1]) {
-		switch {
-		case IsAlphaNumeric(c):
-		case c == '_' || c == '-' || c == '.':
-		default:
-			return fmt.Errorf("invalid character '%c' in name %q",
-				c, name)
-		}
-	}
-	if !IsAlphaNumeric(rune(name[len(name)-1])) {
-		return fmt.Errorf("%q, should end with a letter or digit", name)
-	}
-
-	return nil
+	return validator.ValidateClassName(class)
 }
 
 // ValidateDeviceName checks the validity of a device name.
@@ -171,42 +141,29 @@ func validateVendorOrClassName(name string) error {
 //   - upper- and lowercase letters ('A'-'Z', 'a'-'z')
 //   - digits ('0'-'9')
 //   - underscore, dash, dot, colon ('_', '-', '.', ':')
+//
+// Deprecated: use validator.ValidateDeviceName instead
 func ValidateDeviceName(name string) error {
-	if name == "" {
-		return fmt.Errorf("invalid (empty) device name")
-	}
-	if !IsAlphaNumeric(rune(name[0])) {
-		return fmt.Errorf("invalid class %q, should start with a letter or digit", name)
-	}
-	if len(name) == 1 {
-		return nil
-	}
-	for _, c := range string(name[1 : len(name)-1]) {
-		switch {
-		case IsAlphaNumeric(c):
-		case c == '_' || c == '-' || c == '.' || c == ':':
-		default:
-			return fmt.Errorf("invalid character '%c' in device name %q",
-				c, name)
-		}
-	}
-	if !IsAlphaNumeric(rune(name[len(name)-1])) {
-		return fmt.Errorf("invalid name %q, should end with a letter or digit", name)
-	}
-	return nil
+	return validator.ValidateDeviceName(name)
 }
 
 // IsLetter reports whether the rune is a letter.
+//
+// Deprecated: use validator.IsLetter instead
 func IsLetter(c rune) bool {
-	return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')
+	return validator.IsLetter(c)
 }
 
 // IsDigit reports whether the rune is a digit.
+//
+// Deprecated: use validator.IsDigit instead
 func IsDigit(c rune) bool {
-	return '0' <= c && c <= '9'
+	return validator.IsDigit(c)
 }
 
 // IsAlphaNumeric reports whether the rune is a letter or digit.
+//
+// Deprecated: use validator.IsAlphaNumeric instead
 func IsAlphaNumeric(c rune) bool {
-	return IsLetter(c) || IsDigit(c)
+	return validator.IsAlphaNumeric(c)
 }
