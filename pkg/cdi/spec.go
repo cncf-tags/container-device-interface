@@ -17,7 +17,6 @@
 package cdi
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -27,7 +26,8 @@ import (
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"sigs.k8s.io/yaml"
 
-	"tags.cncf.io/container-device-interface/internal/validation"
+	"tags.cncf.io/container-device-interface/api/producer"
+	"tags.cncf.io/container-device-interface/api/validator"
 	"tags.cncf.io/container-device-interface/pkg/parser"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
@@ -108,8 +108,22 @@ func newSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
 
 	spec.vendor, spec.class = parser.ParseQualifier(spec.Kind)
 
-	if spec.devices, err = spec.validate(); err != nil {
+	if err := validator.Default.Validate(spec.Spec); err != nil {
 		return nil, fmt.Errorf("invalid CDI Spec: %w", err)
+	}
+
+	// We construct a map of device names to devices to associate with the spec.
+	// At this point we have validated that there are no duplicate devices.
+	spec.devices = make(map[string]*Device)
+	for _, d := range spec.Devices {
+		dev, err := newDevice(spec, d)
+		if err != nil {
+			return nil, fmt.Errorf("failed add device %q: %w", d.Name, err)
+		}
+		if _, conflict := spec.devices[d.Name]; conflict {
+			return nil, fmt.Errorf("invalid spec, multiple device %q", d.Name)
+		}
+		spec.devices[d.Name] = dev
 	}
 
 	return spec, nil
@@ -117,53 +131,23 @@ func newSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
 
 // Write the CDI Spec to the file associated with it during instantiation
 // by newSpec() or ReadSpec().
+//
+// Deprecated: Use producer.SpecWriter instead.
 func (s *Spec) write(overwrite bool) error {
-	var (
-		data []byte
-		dir  string
-		tmp  *os.File
-		err  error
+	p, err := producer.NewSpecWriter(
+		producer.WithOverwrite(overwrite),
+		producer.WithSpecValidator(validator.Default),
 	)
-
-	err = validateSpec(s.Spec)
 	if err != nil {
 		return err
 	}
 
-	if filepath.Ext(s.path) == ".yaml" {
-		data, err = yaml.Marshal(s.Spec)
-		data = append([]byte("---\n"), data...)
-	} else {
-		data, err = json.Marshal(s.Spec)
-	}
+	savedPath, err := p.Save(s.Spec, s.path)
 	if err != nil {
-		return fmt.Errorf("failed to marshal Spec file: %w", err)
+		return err
 	}
-
-	dir = filepath.Dir(s.path)
-	err = os.MkdirAll(dir, 0o755)
-	if err != nil {
-		return fmt.Errorf("failed to create Spec dir: %w", err)
-	}
-
-	tmp, err = os.CreateTemp(dir, "spec.*.tmp")
-	if err != nil {
-		return fmt.Errorf("failed to create Spec file: %w", err)
-	}
-	_, err = tmp.Write(data)
-	tmp.Close()
-	if err != nil {
-		return fmt.Errorf("failed to write Spec file: %w", err)
-	}
-
-	err = renameIn(dir, filepath.Base(tmp.Name()), filepath.Base(s.path), overwrite)
-
-	if err != nil {
-		os.Remove(tmp.Name())
-		err = fmt.Errorf("failed to write Spec file: %w", err)
-	}
-
-	return err
+	s.path = savedPath
+	return nil
 }
 
 // GetVendor returns the vendor of this Spec.
@@ -207,39 +191,6 @@ func MinimumRequiredVersion(spec *cdi.Spec) (string, error) {
 	return cdi.MinimumRequiredVersion(spec)
 }
 
-// Validate the Spec.
-func (s *Spec) validate() (map[string]*Device, error) {
-	if err := cdi.ValidateVersion(s.Spec); err != nil {
-		return nil, err
-	}
-	if err := parser.ValidateVendorName(s.vendor); err != nil {
-		return nil, err
-	}
-	if err := parser.ValidateClassName(s.class); err != nil {
-		return nil, err
-	}
-	if err := validation.ValidateSpecAnnotations(s.Kind, s.Annotations); err != nil {
-		return nil, err
-	}
-	if err := s.edits().Validate(); err != nil {
-		return nil, err
-	}
-
-	devices := make(map[string]*Device)
-	for _, d := range s.Devices {
-		dev, err := newDevice(s, d)
-		if err != nil {
-			return nil, fmt.Errorf("failed add device %q: %w", d.Name, err)
-		}
-		if _, conflict := devices[d.Name]; conflict {
-			return nil, fmt.Errorf("invalid spec, multiple device %q", d.Name)
-		}
-		devices[d.Name] = dev
-	}
-
-	return devices, nil
-}
-
 // ParseSpec parses CDI Spec data into a raw CDI Spec.
 func ParseSpec(data []byte) (*cdi.Spec, error) {
 	var raw *cdi.Spec
@@ -259,7 +210,7 @@ func SetSpecValidator(fn func(*cdi.Spec) error) {
 	specValidator = fn
 }
 
-// validateSpec validates the Spec using the extneral validator.
+// validateSpec validates the Spec using the extneral validation.
 func validateSpec(raw *cdi.Spec) error {
 	validatorLock.RLock()
 	defer validatorLock.RUnlock()

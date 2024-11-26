@@ -7,7 +7,7 @@ require (
 	github.com/opencontainers/runtime-spec v1.1.0
 	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
 	github.com/spf13/cobra v1.6.0
-	sigs.k8s.io/yaml v1.3.0
+	sigs.k8s.io/yaml v1.4.0
 	tags.cncf.io/container-device-interface v0.0.0
 )
 
@@ -21,10 +21,14 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	tags.cncf.io/container-device-interface/api/producer v0.0.0 // indirect
+	tags.cncf.io/container-device-interface/api/validator v0.0.0 // indirect
 	tags.cncf.io/container-device-interface/specs-go v0.8.0 // indirect
 )
 
-replace tags.cncf.io/container-device-interface => ../..
-
-replace tags.cncf.io/container-device-interface/specs-go => ../../specs-go
+replace (
+	tags.cncf.io/container-device-interface => ../..
+	tags.cncf.io/container-device-interface/api/producer => ../../api/producer
+	tags.cncf.io/container-device-interface/api/validator => ../../api/validator
+	tags.cncf.io/container-device-interface/specs-go => ../../specs-go
+)

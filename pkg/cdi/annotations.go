@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strings"
 
+	"tags.cncf.io/container-device-interface/api/validator"
 	"tags.cncf.io/container-device-interface/pkg/parser"
 )
 
@@ -103,14 +104,14 @@ func AnnotationKey(pluginName, deviceID string) (string, error) {
 		return "", fmt.Errorf("invalid plugin+deviceID %q, too long", name)
 	}
 
-	if c := rune(name[0]); !parser.IsAlphaNumeric(c) {
+	if c := rune(name[0]); !validator.IsAlphaNumeric(c) {
 		return "", fmt.Errorf("invalid name %q, first '%c' should be alphanumeric",
 			name, c)
 	}
 	if len(name) > 2 {
 		for _, c := range name[1 : len(name)-1] {
 			switch {
-			case parser.IsAlphaNumeric(c):
+			case validator.IsAlphaNumeric(c):
 			case c == '_' || c == '-' || c == '.':
 			default:
 				return "", fmt.Errorf("invalid name %q, invalid character '%c'",
@@ -118,7 +119,7 @@ func AnnotationKey(pluginName, deviceID string) (string, error) {
 			}
 		}
 	}
-	if c := rune(name[len(name)-1]); !parser.IsAlphaNumeric(c) {
+	if c := rune(name[len(name)-1]); !validator.IsAlphaNumeric(c) {
 		return "", fmt.Errorf("invalid name %q, last '%c' should be alphanumeric",
 			name, c)
 	}

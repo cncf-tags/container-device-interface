@@ -1,8 +1,5 @@
-//go:build !linux
-// +build !linux
-
 /*
-   Copyright © 2022 The CDI Authors
+   Copyright © 2024 The CDI Authors
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,23 +14,21 @@
    limitations under the License.
 */
 
-package cdi
+package producer
 
-import (
-	"os"
-	"path/filepath"
+import cdi "tags.cncf.io/container-device-interface/specs-go"
+
+const (
+	// DefaultSpecFormat defines the default encoding used to write CDI specs.
+	DefaultSpecFormat = SpecFormatYAML
+
+	// SpecFormatJSON defines a CDI spec formatted as JSON.
+	SpecFormatJSON = SpecFormat(".json")
+	// SpecFormatYAML defines a CDI spec formatted as YAML.
+	SpecFormatYAML = SpecFormat(".yaml")
 )
 
-// Rename src to dst, both relative to the directory dir. If dst already exists
-// refuse renaming with an error unless overwrite is explicitly asked for.
-func renameIn(dir, src, dst string, overwrite bool) error {
-	src = filepath.Join(dir, src)
-	dst = filepath.Join(dir, dst)
-
-	_, err := os.Stat(dst)
-	if err == nil && !overwrite {
-		return os.ErrExist
-	}
-
-	return os.Rename(src, dst)
+// A SpecValidator is used to validate a CDI spec.
+type SpecValidator interface {
+	Validate(*cdi.Spec) error
 }
