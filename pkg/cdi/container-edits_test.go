@@ -599,6 +599,84 @@ func TestApplyContainerEdits(t *testing.T) {
 			},
 			result: &oci.Spec{},
 		},
+		{
+			name: "apply mount edits do not change the order of original mounts",
+			spec: &oci.Spec{
+				Mounts: []oci.Mount{
+					{
+						Source:      "/some/host/path1",
+						Destination: "/dest/path/b",
+					},
+					{
+						Source:      "/some/host/path2",
+						Destination: "/dest/path/a",
+					},
+				},
+			},
+			edits: &cdi.ContainerEdits{
+				Mounts: []*cdi.Mount{
+					{
+						HostPath:      "/some/host/path3",
+						ContainerPath: "/dest/edit",
+					},
+				},
+			},
+			result: &oci.Spec{
+				Mounts: []oci.Mount{
+					{
+						Source:      "/some/host/path3",
+						Destination: "/dest/edit",
+					},
+					{
+						Source:      "/some/host/path1",
+						Destination: "/dest/path/b",
+					},
+					{
+						Source:      "/some/host/path2",
+						Destination: "/dest/path/a",
+					},
+				},
+			},
+		},
+		{
+			name: "mount added by edit comes after existing ones of same number of path parts",
+			spec: &oci.Spec{
+				Mounts: []oci.Mount{
+					{
+						Source:      "/some/host/path1",
+						Destination: "/dest/path/c",
+					},
+					{
+						Source:      "/some/host/path2",
+						Destination: "/dest/path/b",
+					},
+				},
+			},
+			edits: &cdi.ContainerEdits{
+				Mounts: []*cdi.Mount{
+					{
+						HostPath:      "/some/host/path3",
+						ContainerPath: "/dest/path/a",
+					},
+				},
+			},
+			result: &oci.Spec{
+				Mounts: []oci.Mount{
+					{
+						Source:      "/some/host/path1",
+						Destination: "/dest/path/c",
+					},
+					{
+						Source:      "/some/host/path2",
+						Destination: "/dest/path/b",
+					},
+					{
+						Source:      "/some/host/path3",
+						Destination: "/dest/path/a",
+					},
+				},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			edits := ContainerEdits{tc.edits}
