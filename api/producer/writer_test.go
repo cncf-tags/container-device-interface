@@ -150,6 +150,39 @@ devices:
 kind: example.com/class
 `,
 		},
+		{
+			description: "minimum version is detected",
+			spec: cdi.Spec{
+				Version: cdi.CurrentVersion,
+				Kind:    "example.com/class",
+				Devices: []cdi.Device{
+					{
+						Name: "dev1",
+						ContainerEdits: cdi.ContainerEdits{
+							DeviceNodes: []*cdi.DeviceNode{
+								{
+									Path: "/dev/foo",
+								},
+							},
+						},
+					},
+				},
+			},
+			options:             []Option{WithDetectMinimumVersion(true)},
+			filename:            "foo",
+			expectedFilename:    "foo.yaml",
+			expectedPermissions: 0600,
+			expectedOutput: `---
+cdiVersion: 0.3.0
+containerEdits: {}
+devices:
+- containerEdits:
+    deviceNodes:
+    - path: /dev/foo
+  name: dev1
+kind: example.com/class
+`,
+		},
 	}
 
 	for _, tc := range testCases {

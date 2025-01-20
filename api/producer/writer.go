@@ -36,8 +36,9 @@ func NewSpecWriter(opts ...Option) (*SpecWriter, error) {
 		options: options{
 			overwrite: true,
 			// TODO: This could be updated to 0644 to be world-readable.
-			permissions: 0600,
-			specFormat:  DefaultSpecFormat,
+			permissions:          0600,
+			specFormat:           DefaultSpecFormat,
+			detectMinimumVersion: false,
 		},
 	}
 	for _, opt := range opts {

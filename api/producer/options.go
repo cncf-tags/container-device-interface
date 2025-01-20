@@ -25,9 +25,18 @@ import (
 type Option func(*options) error
 
 type options struct {
-	specFormat  SpecFormat
-	overwrite   bool
-	permissions fs.FileMode
+	specFormat           SpecFormat
+	overwrite            bool
+	permissions          fs.FileMode
+	detectMinimumVersion bool
+}
+
+// WithDetectMinimumVersion toggles whether a minimum version should be detected for a CDI specification.
+func WithDetectMinimumVersion(detectMinimumVersion bool) Option {
+	return func(o *options) error {
+		o.detectMinimumVersion = detectMinimumVersion
+		return nil
+	}
 }
 
 // WithSpecFormat sets the output format of a CDI specification.

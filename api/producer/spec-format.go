@@ -85,9 +85,22 @@ func (p *specFormatter) validate() error {
 	return nil
 }
 
+// transform applies a transform to the spec associated with the CDI spec formatter.
+// This is currently limited to detecting (and updating) the spec so that the minimum
+// CDI spec version is used, but could be extended to apply other transformations.
+func (p *specFormatter) transform() error {
+	if !p.detectMinimumVersion {
+		return nil
+	}
+	return (&setMinimumRequiredVersion{}).transform(p.Spec)
+}
+
 // contents returns the raw contents of a CDI specification.
 // Validation is performed before marshalling the contentent based on the spec format.
 func (p *specFormatter) contents() ([]byte, error) {
+	if err := p.transform(); err != nil {
+		return nil, fmt.Errorf("spec transform failed: %w", err)
+	}
 	if err := p.validate(); err != nil {
 		return nil, fmt.Errorf("spec validation failed: %w", err)
 	}
