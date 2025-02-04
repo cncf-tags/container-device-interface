@@ -17,8 +17,9 @@
 package parser
 
 import (
-	"fmt"
 	"strings"
+
+	"tags.cncf.io/container-device-interface/api/producer"
 )
 
 // QualifiedName returns the qualified name for a device.
@@ -39,7 +40,7 @@ func QualifiedName(vendor, class, name string) string {
 
 // IsQualifiedName tests if a device name is qualified.
 func IsQualifiedName(device string) bool {
-	_, _, _, err := ParseQualifiedName(device)
+	err := producer.ValidateQualifiedName(device)
 	return err == nil
 }
 
@@ -49,35 +50,15 @@ func IsQualifiedName(device string) bool {
 // class are returned as empty, together with the verbatim input as the
 // name and an error describing the reason for failure.
 func ParseQualifiedName(device string) (string, string, string, error) {
-	vendor, class, name := ParseDevice(device)
-
-	if vendor == "" {
-		return "", "", device, fmt.Errorf("unqualified device %q, missing vendor", device)
-	}
-	if class == "" {
-		return "", "", device, fmt.Errorf("unqualified device %q, missing class", device)
-	}
-	if name == "" {
-		return "", "", device, fmt.Errorf("unqualified device %q, missing device name", device)
-	}
-
-	if err := ValidateVendorName(vendor); err != nil {
-		return "", "", device, fmt.Errorf("invalid device %q: %w", device, err)
-	}
-	if err := ValidateClassName(class); err != nil {
-		return "", "", device, fmt.Errorf("invalid device %q: %w", device, err)
-	}
-	if err := ValidateDeviceName(name); err != nil {
-		return "", "", device, fmt.Errorf("invalid device %q: %w", device, err)
-	}
-
-	return vendor, class, name, nil
+	return producer.ParseFullyQualifiedName(device)
 }
 
 // ParseDevice tries to split a device name into vendor, class, and name.
 // If this fails, for instance in the case of unqualified device names,
 // ParseDevice returns an empty vendor and class together with name set
 // to the verbatim input.
+//
+// Deprecated: This function will be removed. Use producer.ParseQualifiedName instead.
 func ParseDevice(device string) (string, string, string) {
 	if device == "" || device[0] == '/' {
 		return "", "", device
@@ -118,11 +99,7 @@ func ParseQualifier(kind string) (string, string) {
 //   - digits ('0'-'9')
 //   - underscore, dash, and dot ('_', '-', and '.')
 func ValidateVendorName(vendor string) error {
-	err := validateVendorOrClassName(vendor)
-	if err != nil {
-		err = fmt.Errorf("invalid vendor. %w", err)
-	}
-	return err
+	return producer.ValidateVendorName(vendor)
 }
 
 // ValidateClassName checks the validity of class name.
@@ -131,39 +108,7 @@ func ValidateVendorName(vendor string) error {
 //   - digits ('0'-'9')
 //   - underscore, dash, and dot ('_', '-', and '.')
 func ValidateClassName(class string) error {
-	err := validateVendorOrClassName(class)
-	if err != nil {
-		err = fmt.Errorf("invalid class. %w", err)
-	}
-	return err
-}
-
-// validateVendorOrClassName checks the validity of vendor or class name.
-// A name may contain the following ASCII characters:
-//   - upper- and lowercase letters ('A'-'Z', 'a'-'z')
-//   - digits ('0'-'9')
-//   - underscore, dash, and dot ('_', '-', and '.')
-func validateVendorOrClassName(name string) error {
-	if name == "" {
-		return fmt.Errorf("empty name")
-	}
-	if !IsLetter(rune(name[0])) {
-		return fmt.Errorf("%q, should start with letter", name)
-	}
-	for _, c := range string(name[1 : len(name)-1]) {
-		switch {
-		case IsAlphaNumeric(c):
-		case c == '_' || c == '-' || c == '.':
-		default:
-			return fmt.Errorf("invalid character '%c' in name %q",
-				c, name)
-		}
-	}
-	if !IsAlphaNumeric(rune(name[len(name)-1])) {
-		return fmt.Errorf("%q, should end with a letter or digit", name)
-	}
-
-	return nil
+	return producer.ValidateClassName(class)
 }
 
 // ValidateDeviceName checks the validity of a device name.
@@ -172,28 +117,7 @@ func validateVendorOrClassName(name string) error {
 //   - digits ('0'-'9')
 //   - underscore, dash, dot, colon ('_', '-', '.', ':')
 func ValidateDeviceName(name string) error {
-	if name == "" {
-		return fmt.Errorf("invalid (empty) device name")
-	}
-	if !IsAlphaNumeric(rune(name[0])) {
-		return fmt.Errorf("invalid class %q, should start with a letter or digit", name)
-	}
-	if len(name) == 1 {
-		return nil
-	}
-	for _, c := range string(name[1 : len(name)-1]) {
-		switch {
-		case IsAlphaNumeric(c):
-		case c == '_' || c == '-' || c == '.' || c == ':':
-		default:
-			return fmt.Errorf("invalid character '%c' in device name %q",
-				c, name)
-		}
-	}
-	if !IsAlphaNumeric(rune(name[len(name)-1])) {
-		return fmt.Errorf("invalid name %q, should end with a letter or digit", name)
-	}
-	return nil
+	return producer.ValidateDeviceName(name)
 }
 
 // IsLetter reports whether the rune is a letter.
