@@ -17,6 +17,7 @@
 package cdi
 
 import (
+	"runtime"
 	"testing"
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
@@ -303,6 +304,13 @@ func TestValidateContainerEdits(t *testing.T) {
 }
 
 func TestApplyContainerEdits(t *testing.T) {
+	nullDeviceMajor := int64(1)
+	nullDeviceMinor := int64(3)
+	if runtime.GOOS == "darwin" {
+		nullDeviceMajor = 3
+		nullDeviceMinor = 2
+	}
+
 	type testCase struct {
 		name   string
 		spec   *oci.Spec
@@ -346,8 +354,8 @@ func TestApplyContainerEdits(t *testing.T) {
 						{
 							Path:  "/dev/null",
 							Type:  "c",
-							Major: 1,
-							Minor: 3,
+							Major: nullDeviceMajor,
+							Minor: nullDeviceMinor,
 						},
 					},
 					Resources: &oci.LinuxResources{
@@ -355,8 +363,8 @@ func TestApplyContainerEdits(t *testing.T) {
 							{
 								Allow:  true,
 								Type:   "c",
-								Major:  int64ptr(1),
-								Minor:  int64ptr(3),
+								Major:  &nullDeviceMajor,
+								Minor:  &nullDeviceMinor,
 								Access: "rwm",
 							},
 						},
@@ -389,8 +397,8 @@ func TestApplyContainerEdits(t *testing.T) {
 						{
 							Path:  "/dev/null",
 							Type:  "c",
-							Major: 1,
-							Minor: 3,
+							Major: nullDeviceMajor,
+							Minor: nullDeviceMinor,
 						},
 					},
 					Resources: &oci.LinuxResources{
@@ -398,8 +406,8 @@ func TestApplyContainerEdits(t *testing.T) {
 							{
 								Allow:  true,
 								Type:   "c",
-								Major:  int64ptr(1),
-								Minor:  int64ptr(3),
+								Major:  &nullDeviceMajor,
+								Minor:  &nullDeviceMinor,
 								Access: "rwm",
 							},
 						},
