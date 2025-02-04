@@ -7,6 +7,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	sigs.k8s.io/yaml v1.3.0
 	tags.cncf.io/container-device-interface v0.0.0
+	tags.cncf.io/container-device-interface/api/producer v0.8.0
 	tags.cncf.io/container-device-interface/specs-go v0.8.0
 )
 
@@ -23,7 +24,6 @@ require (
 	golang.org/x/sys v0.19.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	tags.cncf.io/container-device-interface/api/producer v0.8.0 // indirect
 )
 
 replace (
