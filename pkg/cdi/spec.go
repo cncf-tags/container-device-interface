@@ -26,7 +26,7 @@ import (
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"sigs.k8s.io/yaml"
 
-	"tags.cncf.io/container-device-interface/internal/validation"
+	"tags.cncf.io/container-device-interface/api/producer"
 	"tags.cncf.io/container-device-interface/pkg/parser"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
@@ -161,22 +161,11 @@ func MinimumRequiredVersion(spec *cdi.Spec) (string, error) {
 
 // Validate the Spec.
 func (s *Spec) validate() (map[string]*Device, error) {
-	if err := cdi.ValidateVersion(s.Spec); err != nil {
-		return nil, err
-	}
-	if err := parser.ValidateVendorName(s.vendor); err != nil {
-		return nil, err
-	}
-	if err := parser.ValidateClassName(s.class); err != nil {
-		return nil, err
-	}
-	if err := validation.ValidateSpecAnnotations(s.Kind, s.Annotations); err != nil {
-		return nil, err
-	}
-	if err := s.edits().Validate(); err != nil {
+	if err := producer.DefaultValidator.Validate(s.Spec); err != nil {
 		return nil, err
 	}
 
+	// We construct a list of devices associated with the spec.
 	devices := make(map[string]*Device)
 	for _, d := range s.Devices {
 		dev, err := newDevice(s, d)

@@ -17,11 +17,8 @@
 package cdi
 
 import (
-	"fmt"
-
 	oci "github.com/opencontainers/runtime-spec/specs-go"
-	"tags.cncf.io/container-device-interface/internal/validation"
-	"tags.cncf.io/container-device-interface/pkg/parser"
+	"tags.cncf.io/container-device-interface/api/producer"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
@@ -52,6 +49,9 @@ func (d *Device) GetSpec() *Spec {
 
 // GetQualifiedName returns the qualified name for this device.
 func (d *Device) GetQualifiedName() string {
+	if d.spec == nil {
+		return d.Name
+	}
 	return d.spec.Kind + "=" + d.Name
 }
 
@@ -67,22 +67,9 @@ func (d *Device) edits() *ContainerEdits {
 
 // Validate the device.
 func (d *Device) validate() error {
-	if err := parser.ValidateDeviceName(d.Name); err != nil {
-		return err
-	}
-	name := d.Name
+	var kind string
 	if d.spec != nil {
-		name = d.GetQualifiedName()
+		kind = d.spec.Kind
 	}
-	if err := validation.ValidateSpecAnnotations(name, d.Annotations); err != nil {
-		return err
-	}
-	edits := d.edits()
-	if edits.isEmpty() {
-		return fmt.Errorf("invalid device, empty device edits")
-	}
-	if err := edits.Validate(); err != nil {
-		return fmt.Errorf("invalid device %q: %w", d.Name, err)
-	}
-	return nil
+	return producer.DefaultValidator.ValidateDevice(d.Device, kind)
 }

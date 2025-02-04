@@ -282,35 +282,31 @@ func (c *Cache) highestPrioritySpecDir() (string, int) {
 // WriteSpec writes a Spec file with the given content into the highest
 // priority Spec directory. If name has a "json" or "yaml" extension it
 // choses the encoding. Otherwise the default YAML encoding is used.
+//
+// Deprecated: use producer.NewSpecWriter instead.
 func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
 	var (
 		specDir string
-		prio    int
-		spec    *Spec
 		err     error
 	)
-	specDir, prio = c.highestPrioritySpecDir()
+	specDir, _ = c.highestPrioritySpecDir()
 	if specDir == "" {
 		return errors.New("no Spec directories to write to")
 	}
 
 	path := filepath.Join(specDir, name)
-
-	// We call newSpec to perform the required validation.
-	// This also sets the extension of the path.
-	spec, err = newSpec(raw, path, prio)
-	if err != nil {
-		return err
+	if ext := filepath.Ext(path); ext != ".yaml" && ext != ".json" {
+		path += defaultSpecExt
 	}
+	path = filepath.Clean(path)
 
 	p, err := producer.NewSpecWriter(
-		producer.WithSpecFormat(producer.SpecFormatYAML),
 		producer.WithOverwrite(true),
 	)
 	if err != nil {
 		return err
 	}
-	if _, err := p.Save(spec.Spec, spec.path); err != nil {
+	if _, err := p.Save(raw, path); err != nil {
 		return err
 	}
 	return nil
