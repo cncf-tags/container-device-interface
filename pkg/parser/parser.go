@@ -121,16 +121,22 @@ func ValidateDeviceName(name string) error {
 }
 
 // IsLetter reports whether the rune is a letter.
+//
+// Deprecated: This check is internal and should not be part of the public API.
 func IsLetter(c rune) bool {
 	return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')
 }
 
 // IsDigit reports whether the rune is a digit.
+//
+// Deprecated: This check is internal and should not be part of the public API.
 func IsDigit(c rune) bool {
 	return '0' <= c && c <= '9'
 }
 
 // IsAlphaNumeric reports whether the rune is a letter or digit.
+//
+// Deprecated: This check is internal and should not be part of the public API.
 func IsAlphaNumeric(c rune) bool {
 	return IsLetter(c) || IsDigit(c)
 }
