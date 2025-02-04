@@ -220,33 +220,6 @@ func (e *ContainerEdits) Append(o *ContainerEdits) *ContainerEdits {
 	return e
 }
 
-// isEmpty returns true if these edits are empty. This is valid in a
-// global Spec context but invalid in a Device context.
-func (e *ContainerEdits) isEmpty() bool {
-	if e == nil {
-		return false
-	}
-	if len(e.Env) > 0 {
-		return false
-	}
-	if len(e.DeviceNodes) > 0 {
-		return false
-	}
-	if len(e.Hooks) > 0 {
-		return false
-	}
-	if len(e.Mounts) > 0 {
-		return false
-	}
-	if len(e.AdditionalGIDs) > 0 {
-		return false
-	}
-	if e.IntelRdt != nil {
-		return false
-	}
-	return true
-}
-
 // ValidateEnv validates the given environment variables.
 func ValidateEnv(env []string) error {
 	for _, v := range env {
