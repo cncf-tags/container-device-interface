@@ -82,7 +82,10 @@ func (p SpecFormat) normalizeFilename(filename string) (string, SpecFormat) {
 // This is currently a placeholder for validation that should be performed when
 // saving a spec.
 func (p *specFormatter) validate() error {
-	return nil
+	if p.validator == nil {
+		return nil
+	}
+	return p.validator.Validate(p.Spec)
 }
 
 // transform applies a transform to the spec associated with the CDI spec formatter.

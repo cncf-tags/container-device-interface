@@ -17,6 +17,7 @@
 package producer
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,6 +27,9 @@ import (
 )
 
 func TestSave(t *testing.T) {
+
+	errValidation := errors.New("test error")
+
 	testCases := []struct {
 		description         string
 		spec                cdi.Spec
@@ -183,6 +187,54 @@ devices:
 kind: example.com/class
 `,
 		},
+		{
+			description: "validation can be disabled",
+			spec: cdi.Spec{
+				Version: "INVALID",
+				Kind:    "example.com/class",
+				ContainerEdits: cdi.ContainerEdits{
+					DeviceNodes: []*cdi.DeviceNode{
+						{
+							Path: "/dev/foo",
+						},
+					},
+				},
+			},
+			options:             []Option{WithSpecValidator(nil)},
+			filename:            "foo",
+			expectedFilename:    "foo.yaml",
+			expectedPermissions: 0600,
+			expectedOutput: `---
+cdiVersion: INVALID
+containerEdits:
+  deviceNodes:
+  - path: /dev/foo
+devices: null
+kind: example.com/class
+`,
+		},
+		{
+			description: "validation error is returned",
+			spec: cdi.Spec{
+				Version: cdi.CurrentVersion,
+				Kind:    "example.com/class",
+				Devices: []cdi.Device{
+					{
+						Name: "dev1",
+						ContainerEdits: cdi.ContainerEdits{
+							DeviceNodes: []*cdi.DeviceNode{
+								{
+									Path: "/dev/foo",
+								},
+							},
+						},
+					},
+				},
+			},
+			options:       []Option{WithSpecValidator(&validatorWithError{errValidation})},
+			filename:      "foo",
+			expectedError: errValidation,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -211,6 +263,7 @@ kind: example.com/class
 	}
 }
 
+// A validatorWithError always returns the specified error on validation.
 type validatorWithError struct {
 	err error
 }

@@ -39,6 +39,7 @@ func NewSpecWriter(opts ...Option) (*SpecWriter, error) {
 			permissions:          0600,
 			specFormat:           DefaultSpecFormat,
 			detectMinimumVersion: false,
+			validator:            DefaultValidator,
 		},
 	}
 	for _, opt := range opts {

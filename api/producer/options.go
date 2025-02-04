@@ -29,6 +29,7 @@ type options struct {
 	overwrite            bool
 	permissions          fs.FileMode
 	detectMinimumVersion bool
+	validator            SpecValidator
 }
 
 // WithDetectMinimumVersion toggles whether a minimum version should be detected for a CDI specification.
@@ -65,6 +66,14 @@ func WithOverwrite(overwrite bool) Option {
 func WithPermissions(permissions fs.FileMode) Option {
 	return func(o *options) error {
 		o.permissions = permissions
+		return nil
+	}
+}
+
+// WithSpecValidator sets a validator for the CDO spec.
+func WithSpecValidator(validator SpecValidator) Option {
+	return func(o *options) error {
+		o.validator = validator
 		return nil
 	}
 }
