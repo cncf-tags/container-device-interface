@@ -16,31 +16,20 @@
 
 package schema
 
-import (
-	cdi "tags.cncf.io/container-device-interface/specs-go"
-)
-
 const (
 	// DefaultExternalSchema is the default JSON schema to load for validation.
 	DefaultExternalSchema = "/etc/cdi/schema/schema.json"
 )
 
 // WithSchema returns a CDI Spec validator that uses the given Schema.
-func WithSchema(s *Schema) func(*cdi.Spec) error {
-	if s == nil {
-		return func(*cdi.Spec) error {
-			return nil
-		}
-	}
-	return func(spec *cdi.Spec) error {
-		return s.ValidateType(spec)
-	}
+func WithSchema(s *Schema) *Schema {
+	return s
 }
 
 // WithNamedSchema loads the named JSON schema and returns a CDI Spec
 // validator for it. If loading the schema fails a dummy validator is
 // returned.
-func WithNamedSchema(name string) func(*cdi.Spec) error {
+func WithNamedSchema(name string) *Schema {
 	s, _ := Load(name)
 	return WithSchema(s)
 }
@@ -48,10 +37,10 @@ func WithNamedSchema(name string) func(*cdi.Spec) error {
 // WithDefaultSchema returns a CDI Spec validator that uses the default
 // external JSON schema, or the default builtin one if the external one
 // fails to load.
-func WithDefaultSchema() func(*cdi.Spec) error {
+func WithDefaultSchema() *Schema {
 	s, err := Load(DefaultExternalSchema)
 	if err == nil {
 		return WithSchema(s)
 	}
-	return WithSchema(BuiltinSchema())
+	return BuiltinSchema()
 }

@@ -37,9 +37,13 @@ const (
 	defaultSpecExt = ".yaml"
 )
 
+type validator interface {
+	Validate(*cdi.Spec) error
+}
+
 var (
 	// Externally set CDI Spec validation function.
-	specValidator func(*cdi.Spec) error
+	specValidator validator
 	validatorLock sync.RWMutex
 )
 
@@ -256,10 +260,10 @@ func ParseSpec(data []byte) (*cdi.Spec, error) {
 // SetSpecValidator sets a CDI Spec validator function. This function
 // is used for extra CDI Spec content validation whenever a Spec file
 // loaded (using ReadSpec() or written (using WriteSpec()).
-func SetSpecValidator(fn func(*cdi.Spec) error) {
+func SetSpecValidator(v validator) {
 	validatorLock.Lock()
 	defer validatorLock.Unlock()
-	specValidator = fn
+	specValidator = v
 }
 
 // validateSpec validates the Spec using the extneral validator.
@@ -270,7 +274,7 @@ func validateSpec(raw *cdi.Spec) error {
 	if specValidator == nil {
 		return nil
 	}
-	err := specValidator(raw)
+	err := specValidator.Validate(raw)
 	if err != nil {
 		return fmt.Errorf("Spec validation failed: %w", err)
 	}
