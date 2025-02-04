@@ -236,6 +236,9 @@ func (s *Spec) validate() (map[string]*Device, error) {
 		}
 		devices[d.Name] = dev
 	}
+	if len(devices) == 0 {
+		return nil, fmt.Errorf("invalid spec, no devices")
+	}
 
 	return devices, nil
 }
