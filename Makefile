@@ -103,7 +103,13 @@ clean-schema:
 
 # tests for go packages
 test-gopkgs:
-	$(Q)$(GO_TEST) ./...
+	$(Q)failures_in=""; \
+	for mod in $$(find . -name go.mod); do \
+	    echo "Testing $$(dirname $$mod)..."; ( \
+	        cd $$(dirname $$mod) && $(GO_TEST) ./... \
+            ) || failures_in="$$failures_in\ntags.cncf.io/container-device-interface/$$(dirname $$mod)"; \
+	done; \
+	if [ "$$failures_in" != "" ]; then echo "\nTests failed in:$$failures_in\n"; exit 1; fi
 
 # tests for CDI Spec JSON schema
 test-schema: bin/validate

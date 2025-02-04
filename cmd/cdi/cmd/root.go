@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"tags.cncf.io/container-device-interface/pkg/cdi"
-	"tags.cncf.io/container-device-interface/pkg/cdi/validate"
 	"tags.cncf.io/container-device-interface/schema"
 )
 
@@ -65,7 +64,7 @@ func initSpecDirs() {
 		fmt.Printf("failed to load JSON schema %s: %v\n", schemaName, err)
 		os.Exit(1)
 	}
-	cdi.SetSpecValidator(validate.WithSchema(s))
+	cdi.SetSpecValidator(schema.WithSchema(s))
 
 	if len(specDirs) > 0 {
 		cache, err := cdi.NewCache(

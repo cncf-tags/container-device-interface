@@ -9,6 +9,7 @@ require (
 	github.com/spf13/cobra v1.6.0
 	sigs.k8s.io/yaml v1.3.0
 	tags.cncf.io/container-device-interface v0.0.0
+	tags.cncf.io/container-device-interface/schema v0.0.0
 )
 
 require (
@@ -25,6 +26,8 @@ require (
 	tags.cncf.io/container-device-interface/specs-go v0.8.0 // indirect
 )
 
-replace tags.cncf.io/container-device-interface => ../..
-
-replace tags.cncf.io/container-device-interface/specs-go => ../../specs-go
+replace (
+	tags.cncf.io/container-device-interface => ../..
+	tags.cncf.io/container-device-interface/schema => ../../schema
+	tags.cncf.io/container-device-interface/specs-go => ../../specs-go
+)
