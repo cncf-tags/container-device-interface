@@ -22,6 +22,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -529,6 +530,13 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m *sync.Mutex, refresh func() error
 	if watch == nil {
 		return
 	}
+
+	eventMask := fsnotify.Rename | fsnotify.Remove | fsnotify.Write
+	// On macOS, we also need to watch for Create events.
+	if runtime.GOOS == "darwin" {
+		eventMask |= fsnotify.Create
+	}
+
 	for {
 		select {
 		case event, ok := <-watch.Events:
@@ -536,10 +544,10 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m *sync.Mutex, refresh func() error
 				return
 			}
 
-			if (event.Op & (fsnotify.Rename | fsnotify.Remove | fsnotify.Write)) == 0 {
+			if (event.Op & eventMask) == 0 {
 				continue
 			}
-			if event.Op == fsnotify.Write {
+			if event.Op == fsnotify.Write || event.Op == fsnotify.Create {
 				if ext := filepath.Ext(event.Name); ext != ".json" && ext != ".yaml" {
 					continue
 				}

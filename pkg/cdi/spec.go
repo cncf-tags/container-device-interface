@@ -259,7 +259,7 @@ func SetSpecValidator(fn func(*cdi.Spec) error) {
 	specValidator = fn
 }
 
-// validateSpec validates the Spec using the extneral validator.
+// validateSpec validates the Spec using the external validator.
 func validateSpec(raw *cdi.Spec) error {
 	validatorLock.RLock()
 	defer validatorLock.RUnlock()
