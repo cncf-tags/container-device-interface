@@ -298,9 +298,9 @@ func readAndValidate(t *testing.T, scm *schema.Schema, path string, shouldLoad, 
 	verifyResult(t, scm, err, shouldLoad, isValid)
 
 	if scm != nil {
-		err = scm.Validate(bytes.NewReader(data))
+		err = scm.ValidateReader(bytes.NewReader(data))
 	} else {
-		err = schema.Validate(bytes.NewReader(data))
+		err = schema.ValidateReader(bytes.NewReader(data))
 	}
 
 	verifyResult(t, scm, err, shouldLoad, isValid)
@@ -315,17 +315,17 @@ func validateRead(t *testing.T, scm *schema.Schema, path string, shouldLoad, isV
 	r := io.TeeReader(f, buf)
 
 	if scm != nil {
-		err = scm.Validate(r)
+		err = scm.ValidateReader(r)
 	} else {
-		err = schema.Validate(r)
+		err = schema.ValidateReader(r)
 	}
 
 	verifyResult(t, scm, err, shouldLoad, isValid)
 
 	if scm != nil {
-		err = scm.Validate(bytes.NewReader(buf.Bytes()))
+		err = scm.ValidateReader(bytes.NewReader(buf.Bytes()))
 	} else {
-		err = schema.Validate(bytes.NewReader(buf.Bytes()))
+		err = schema.ValidateReader(bytes.NewReader(buf.Bytes()))
 	}
 
 	verifyResult(t, scm, err, shouldLoad, isValid)

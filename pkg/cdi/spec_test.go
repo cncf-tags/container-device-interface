@@ -26,9 +26,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/stretchr/testify/require"
-	"tags.cncf.io/container-device-interface/pkg/cdi/validate"
 	"tags.cncf.io/container-device-interface/pkg/parser"
-	"tags.cncf.io/container-device-interface/schema"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
@@ -352,9 +350,6 @@ devices:
 	} {
 		dir, err := mkTestDir(t, nil)
 		require.NoError(t, err)
-
-		SetSpecValidator(validate.WithDefaultSchema())
-		defer SetSpecValidator(validate.WithSchema(schema.NopSchema()))
 
 		t.Run(tc.name, func(t *testing.T) {
 			var (

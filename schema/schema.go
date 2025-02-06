@@ -32,6 +32,7 @@ import (
 
 	schema "github.com/xeipuuv/gojsonschema"
 	"tags.cncf.io/container-device-interface/internal/validation"
+	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
 const (
@@ -46,6 +47,15 @@ const (
 // Schema is a JSON validation schema.
 type Schema struct {
 	schema *schema.Schema
+}
+
+// Validate applies a schema validation on the supplied CDI specification.
+// If the Schema is nil, no validation is performed.
+func (s *Schema) Validate(spec *cdi.Spec) error {
+	if s == nil {
+		return nil
+	}
+	return s.ValidateType(spec)
 }
 
 // Error wraps a JSON validation result.
@@ -96,9 +106,9 @@ func ReadAndValidate(r io.Reader) ([]byte, error) {
 	return current.ReadAndValidate(r)
 }
 
-// Validate validates the data read from an io.Reader against the active schema.
-func Validate(r io.Reader) error {
-	return current.Validate(r)
+// ValidateReader validates the data read from an io.Reader against the active schema.
+func ValidateReader(r io.Reader) error {
+	return current.ValidateReader(r)
 }
 
 // ValidateData validates the given JSON document against the active schema.
@@ -165,8 +175,8 @@ func (s *Schema) ReadAndValidate(r io.Reader) ([]byte, error) {
 	return data, s.validate(loader)
 }
 
-// Validate validates the data read from an io.Reader against the schema.
-func (s *Schema) Validate(r io.Reader) error {
+// ValidateReader validates the data read from an io.Reader against the schema.
+func (s *Schema) ValidateReader(r io.Reader) error {
 	_, err := s.ReadAndValidate(r)
 	return err
 }
