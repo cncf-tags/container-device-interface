@@ -32,6 +32,7 @@ Released versions of the spec are available as Git tags.
 | v0.7.0 |   | Add `IntelRdt`field. |
 |        |   | Add `AdditionalGIDs` to `ContainerEdits` |
 | v0.8.0 |   | Remove .ToOCI() functions from specs-go package. |
+| v0.9.0 |   | Move minimum version logic to specs-go package. |
 
 *Note*: spec loading fails on unknown fields and when the minimum required version is higher than the version specified in the spec. The minimum required version is determined based on the usage of fields mentioned in the table above. For example the minimum required version is v0.6.0 if the `Annotations` field is used in the spec, but `IntelRdt` is not.
 `MinimumRequiredVersion` API can be used to get the minimum required version.
