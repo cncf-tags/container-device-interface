@@ -7,6 +7,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	sigs.k8s.io/yaml v1.3.0
 	tags.cncf.io/container-device-interface v0.0.0
+	tags.cncf.io/container-device-interface/api/producer v0.8.0
 	tags.cncf.io/container-device-interface/specs-go v0.8.0
 )
 
@@ -27,5 +28,6 @@ require (
 
 replace (
 	tags.cncf.io/container-device-interface => ../
+	tags.cncf.io/container-device-interface/api/producer => ../api/producer
 	tags.cncf.io/container-device-interface/specs-go => ../specs-go
 )

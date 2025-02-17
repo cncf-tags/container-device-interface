@@ -17,18 +17,15 @@
 package cdi
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
-	orderedyaml "gopkg.in/yaml.v2"
 	"sigs.k8s.io/yaml"
 
-	"tags.cncf.io/container-device-interface/internal/validation"
+	"tags.cncf.io/container-device-interface/api/producer"
 	"tags.cncf.io/container-device-interface/pkg/parser"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
@@ -120,57 +117,6 @@ func newSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
 	return spec, nil
 }
 
-// Write the CDI Spec to the file associated with it during instantiation
-// by newSpec() or ReadSpec().
-func (s *Spec) write(overwrite bool) error {
-	var (
-		data []byte
-		dir  string
-		tmp  *os.File
-		err  error
-	)
-
-	err = validateSpec(s.Spec)
-	if err != nil {
-		return err
-	}
-
-	if filepath.Ext(s.path) == ".yaml" {
-		data, err = orderedyaml.Marshal(s.Spec)
-		data = append([]byte("---\n"), data...)
-	} else {
-		data, err = json.Marshal(s.Spec)
-	}
-	if err != nil {
-		return fmt.Errorf("failed to marshal Spec file: %w", err)
-	}
-
-	dir = filepath.Dir(s.path)
-	err = os.MkdirAll(dir, 0o755)
-	if err != nil {
-		return fmt.Errorf("failed to create Spec dir: %w", err)
-	}
-
-	tmp, err = os.CreateTemp(dir, "spec.*.tmp")
-	if err != nil {
-		return fmt.Errorf("failed to create Spec file: %w", err)
-	}
-	_, err = tmp.Write(data)
-	tmp.Close()
-	if err != nil {
-		return fmt.Errorf("failed to write Spec file: %w", err)
-	}
-
-	err = renameIn(dir, filepath.Base(tmp.Name()), filepath.Base(s.path), overwrite)
-
-	if err != nil {
-		os.Remove(tmp.Name())
-		err = fmt.Errorf("failed to write Spec file: %w", err)
-	}
-
-	return err
-}
-
 // GetVendor returns the vendor of this Spec.
 func (s *Spec) GetVendor() string {
 	return s.vendor
@@ -214,22 +160,11 @@ func MinimumRequiredVersion(spec *cdi.Spec) (string, error) {
 
 // Validate the Spec.
 func (s *Spec) validate() (map[string]*Device, error) {
-	if err := cdi.ValidateVersion(s.Spec); err != nil {
-		return nil, err
-	}
-	if err := parser.ValidateVendorName(s.vendor); err != nil {
-		return nil, err
-	}
-	if err := parser.ValidateClassName(s.class); err != nil {
-		return nil, err
-	}
-	if err := validation.ValidateSpecAnnotations(s.Kind, s.Annotations); err != nil {
-		return nil, err
-	}
-	if err := s.edits().Validate(); err != nil {
+	if err := producer.DefaultValidator.Validate(s.Spec); err != nil {
 		return nil, err
 	}
 
+	// We construct a list of devices associated with the spec.
 	devices := make(map[string]*Device)
 	for _, d := range s.Devices {
 		dev, err := newDevice(s, d)
@@ -294,8 +229,10 @@ func validateSpec(raw *cdi.Spec) error {
 // This function always returns the same name for the same vendor/class
 // combination. Therefore it cannot be used as such to generate multiple
 // Spec file names for a single vendor and class.
+//
+// Deprecated: Use producer.GenerateSpecName instead
 func GenerateSpecName(vendor, class string) string {
-	return vendor + "-" + class
+	return producer.GenerateSpecName(vendor, class)
 }
 
 // GenerateTransientSpecName generates a vendor+class scoped transient
@@ -314,9 +251,10 @@ func GenerateSpecName(vendor, class string) string {
 // The file name is generated without a ".json" or ".yaml" extension.
 // The caller can append the desired extension to choose a particular
 // encoding. Otherwise WriteSpec() will use its default encoding.
+//
+// Deprecated: Use producer.GenerateTransientSpecName instead
 func GenerateTransientSpecName(vendor, class, transientID string) string {
-	transientID = strings.ReplaceAll(transientID, "/", "_")
-	return GenerateSpecName(vendor, class) + "_" + transientID
+	return producer.GenerateTransientSpecName(vendor, class, transientID)
 }
 
 // GenerateNameForSpec generates a name for the given Spec using
@@ -324,13 +262,10 @@ func GenerateTransientSpecName(vendor, class, transientID string) string {
 // On success it returns the generated name and a nil error. If
 // the Spec does not contain a valid vendor or class, it returns
 // an empty name and a non-nil error.
+//
+// Deprecated: Use producer.GenerateNameForSpec instead
 func GenerateNameForSpec(raw *cdi.Spec) (string, error) {
-	vendor, class := parser.ParseQualifier(raw.Kind)
-	if vendor == "" {
-		return "", fmt.Errorf("invalid vendor/class %q in Spec", raw.Kind)
-	}
-
-	return GenerateSpecName(vendor, class), nil
+	return producer.GenerateNameForSpec(raw)
 }
 
 // GenerateNameForTransientSpec generates a name for the given transient
@@ -338,11 +273,8 @@ func GenerateNameForSpec(raw *cdi.Spec) (string, error) {
 // from the Spec. On success it returns the generated name and a nil error.
 // If the Spec does not contain a valid vendor or class, it returns an
 // an empty name and a non-nil error.
+//
+// Deprecated: Use producer.GenerateNameForTransientSpec instead
 func GenerateNameForTransientSpec(raw *cdi.Spec, transientID string) (string, error) {
-	vendor, class := parser.ParseQualifier(raw.Kind)
-	if vendor == "" {
-		return "", fmt.Errorf("invalid vendor/class %q in Spec", raw.Kind)
-	}
-
-	return GenerateTransientSpecName(vendor, class, transientID), nil
+	return producer.GenerateNameForTransientSpec(raw, transientID)
 }
