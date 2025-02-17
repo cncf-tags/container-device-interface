@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
+	orderedyaml "gopkg.in/yaml.v2"
 	"sigs.k8s.io/yaml"
 
 	"tags.cncf.io/container-device-interface/internal/validation"
@@ -135,7 +136,7 @@ func (s *Spec) write(overwrite bool) error {
 	}
 
 	if filepath.Ext(s.path) == ".yaml" {
-		data, err = yaml.Marshal(s.Spec)
+		data, err = orderedyaml.Marshal(s.Spec)
 		data = append([]byte("---\n"), data...)
 	} else {
 		data, err = json.Marshal(s.Spec)
