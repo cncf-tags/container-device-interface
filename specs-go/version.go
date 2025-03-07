@@ -25,7 +25,7 @@ import (
 
 const (
 	// CurrentVersion is the current version of the Spec.
-	CurrentVersion = "0.8.0"
+	CurrentVersion = "1.0.0"
 
 	// vCurrent is the current version as a semver-comparable type
 	vCurrent version = "v" + CurrentVersion
@@ -39,6 +39,7 @@ const (
 	v060 version = "v0.6.0"
 	v070 version = "v0.7.0"
 	v080 version = "v0.8.0"
+	v100 version = "v1.0.0"
 
 	// vEarliest is the earliest supported version of the CDI specification
 	vEarliest version = v030
@@ -56,6 +57,7 @@ var validSpecVersions = requiredVersionMap{
 	v060: requiresV060,
 	v070: requiresV070,
 	v080: requiresV080,
+	v100: requiresV100,
 }
 
 // ValidateVersion checks whether the specified spec version is valid.
@@ -138,9 +140,16 @@ func (r requiredVersionMap) requiredVersion(spec *Spec) version {
 	return minVersion
 }
 
+// requiresV100 returns true if the spec uses v1.0.0 features.
+// Since the v1.0.0 spec bump was due to moving the minimum version checks to
+// the spec package, there are no explicit spec changes.
+func requiresV100(_ *Spec) bool {
+	return false
+}
+
 // requiresV080 returns true if the spec uses v0.8.0 features.
 // Since the v0.8.0 spec bump was due to the removed .ToOCI functions on the
-// spec types, there are explicit spec changes.
+// spec types, there are no explicit spec changes.
 func requiresV080(_ *Spec) bool {
 	return false
 }

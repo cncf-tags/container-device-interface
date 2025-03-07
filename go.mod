@@ -10,7 +10,7 @@ require (
 	golang.org/x/sys v0.19.0
 	gopkg.in/yaml.v2 v2.4.0
 	sigs.k8s.io/yaml v1.3.0
-	tags.cncf.io/container-device-interface/specs-go v0.8.0
+	tags.cncf.io/container-device-interface/specs-go v1.0.0
 )
 
 require (
