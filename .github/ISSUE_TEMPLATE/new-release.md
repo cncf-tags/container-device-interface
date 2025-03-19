@@ -16,8 +16,8 @@ it accordingly for future releases.
 
 - [ ] Create a PR titled `Bump version to vX.Y.Z` including the following changes:
     - [ ] Change the following to the target version `vX.Y.Z`:
-        - [ ] the `CurrentVersion` in `specs-go/versions.go`,
         - [ ] the `tags.cncf.io/container-device-interface` version in `schema/go.mod`,
+        - [ ] (*for specification changes only*) the `CurrentVersion` in `specs-go/versions.go`,
         - [ ] (*for specification changes only*) the `tags.cncf.io/container-device-interface/specs-go` version in go.mod,
         - [ ] (*for specification changes only*) the `tags.cncf.io/container-device-interface/specs-go` version in `schema/go.mod`.
     - [ ] Run `make mod-tidy` to update versions in `cmd/**/go.mod`.
