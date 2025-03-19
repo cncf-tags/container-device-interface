@@ -7,7 +7,7 @@ require (
 	github.com/opencontainers/runtime-spec v1.1.0
 	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
 	github.com/spf13/cobra v1.6.0
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/yaml v1.4.0
 	tags.cncf.io/container-device-interface v1.0.0
 	tags.cncf.io/container-device-interface/schema v0.0.0
