@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/stretchr/testify v1.7.0
 	github.com/xeipuuv/gojsonschema v1.2.0
-	sigs.k8s.io/yaml v1.3.0
+	sigs.k8s.io/yaml v1.4.0
 	tags.cncf.io/container-device-interface v1.0.0
 	tags.cncf.io/container-device-interface/specs-go v1.0.0
 )
