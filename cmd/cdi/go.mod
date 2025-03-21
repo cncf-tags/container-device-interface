@@ -9,7 +9,7 @@ require (
 	github.com/spf13/cobra v1.6.0
 	gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/yaml v1.4.0
-	tags.cncf.io/container-device-interface v1.0.0
+	tags.cncf.io/container-device-interface v1.0.1
 	tags.cncf.io/container-device-interface/schema v0.0.0
 )
 
