@@ -111,7 +111,9 @@ containerEdits:
 
 			cdiDir, err := writeFilesToTempDir("containerd-test-CDI-injections-", test.cdiSpecFiles)
 			if cdiDir != "" {
-				defer os.RemoveAll(cdiDir)
+				defer func() {
+					_ = os.RemoveAll(cdiDir)
+				}()
 			}
 			require.NoError(t, err)
 

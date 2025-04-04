@@ -1860,7 +1860,7 @@ func updateSpecDirs(dir string, etc, run map[string]string) error {
 		path := filepath.Join(dir, sub)
 		for name, data := range entries {
 			if data == "remove" {
-				os.Remove(filepath.Join(path, name))
+				_ = os.Remove(filepath.Join(path, name))
 			} else {
 				updates[sub][name] = data
 			}

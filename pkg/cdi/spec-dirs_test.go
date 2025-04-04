@@ -216,7 +216,7 @@ func mkTestDir(t *testing.T, dirs map[string]map[string]string) (string, error) 
 	}
 
 	t.Cleanup(func() {
-		os.RemoveAll(tmp)
+		_ = os.RemoveAll(tmp)
 	})
 
 	if err = updateTestDir(tmp, dirs); err != nil {
