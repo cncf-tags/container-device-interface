@@ -229,7 +229,7 @@ func (em *emfile) undo() error {
 		return err
 	}
 	for _, fd := range em.fds {
-		syscall.Close(fd)
+		_ = syscall.Close(fd)
 	}
 	em.undone = true
 
