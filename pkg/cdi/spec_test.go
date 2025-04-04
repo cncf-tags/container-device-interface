@@ -504,10 +504,10 @@ func mkTestSpec(t *testing.T, data []byte) (string, error) {
 
 	file := tmp.Name()
 	t.Cleanup(func() {
-		os.Remove(file)
+		_ = os.Remove(file)
 	})
 
-	tmp.Close()
+	_ = tmp.Close()
 	return file, nil
 }
 
