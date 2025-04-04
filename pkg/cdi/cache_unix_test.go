@@ -1,5 +1,4 @@
-//go:build windows
-// +build windows
+//go:build !windows && !darwin
 
 /*
    Copyright © 2021 The CDI Authors
@@ -19,4 +18,8 @@
 
 package cdi
 
-func osSync() {}
+import "syscall"
+
+func osSync() {
+	syscall.Sync()
+}
