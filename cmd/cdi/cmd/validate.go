@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"tags.cncf.io/container-device-interface/pkg/cdi"
+	"tags.cncf.io/container-device-interface/specs-go"
 )
 
 // validateCmd is our CDI command for validating CDI Spec files in the cache.
@@ -49,6 +50,15 @@ were reported by the cache.`,
 				fmt.Printf("  %2d: %v\n", idx, strings.TrimSpace(err.Error()))
 			}
 		}
+
+		for _, v := range cache.ListVendors() {
+			for _, s := range cache.GetVendorSpecs(v) {
+				if err := specs.ValidateVersion(s.Spec); err != nil {
+					fmt.Printf("Spec file %s failed version validation: %v\n", s.GetPath(), err)
+				}
+			}
+		}
+
 		os.Exit(1)
 	},
 }
