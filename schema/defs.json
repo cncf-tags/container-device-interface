@@ -26,6 +26,9 @@
         "Env": {
             "$ref": "#/definitions/ArrayOfStrings"
         },
+        "InterfaceName": {
+            "type": "string"
+        },
         "mapStringString": {
             "type": "object",
             "patternProperties": {
@@ -111,6 +114,17 @@
                 "path"
             ]
         },
+        "LinuxNetDevice": {
+            "type": "object",
+            "properties": {
+                "hostIf": {
+                    "$ref": "#/definitions/InterfaceName"
+                },
+                "name": {
+                    "$ref": "#/definitions/InterfaceName"
+                }
+            }
+        },
         "containerEdits": {
             "type": "object",
             "properties": {
@@ -124,6 +138,12 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/DeviceNode"
+                    }
+                },
+                "netDevices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/LinuxNetDevice"
                     }
                 },
                 "mounts": {
