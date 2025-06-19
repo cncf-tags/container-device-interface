@@ -17,6 +17,7 @@
 package cdi
 
 import (
+	"os"
 	"runtime"
 	"testing"
 
@@ -306,6 +307,9 @@ func TestValidateContainerEdits(t *testing.T) {
 func TestApplyContainerEdits(t *testing.T) {
 	nullDeviceMajor := int64(1)
 	nullDeviceMinor := int64(3)
+
+	mode := uint32(0666)
+	nullDeviceFileMode := (*os.FileMode)(&mode)
 	if runtime.GOOS == "darwin" {
 		nullDeviceMajor = 3
 		nullDeviceMinor = 2
@@ -352,10 +356,11 @@ func TestApplyContainerEdits(t *testing.T) {
 				Linux: &oci.Linux{
 					Devices: []oci.LinuxDevice{
 						{
-							Path:  "/dev/null",
-							Type:  "c",
-							Major: nullDeviceMajor,
-							Minor: nullDeviceMinor,
+							Path:     "/dev/null",
+							Type:     "c",
+							Major:    nullDeviceMajor,
+							Minor:    nullDeviceMinor,
+							FileMode: nullDeviceFileMode,
 						},
 					},
 					Resources: &oci.LinuxResources{
@@ -395,10 +400,11 @@ func TestApplyContainerEdits(t *testing.T) {
 				Linux: &oci.Linux{
 					Devices: []oci.LinuxDevice{
 						{
-							Path:  "/dev/null",
-							Type:  "c",
-							Major: nullDeviceMajor,
-							Minor: nullDeviceMinor,
+							Path:     "/dev/null",
+							Type:     "c",
+							Major:    nullDeviceMajor,
+							Minor:    nullDeviceMinor,
+							FileMode: nullDeviceFileMode,
 						},
 					},
 					Resources: &oci.LinuxResources{
