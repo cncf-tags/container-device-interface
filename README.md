@@ -159,8 +159,8 @@ $ cat > /etc/cdi/vendor.json <<EOF
       {"hostPath": "tmpfs", "containerPath": "/tmp/data", "type": "tmpfs", "options": ["nosuid","strictatime","mode=755","size=65536k"]}
     ],
     "hooks": [
-      {"createContainer": {"path": "/bin/vendor-hook"} },
-      {"startContainer": {"path": "/usr/bin/ldconfig"} }
+      {"hookName": "createContainer", "path": "/bin/vendor-hook" },
+      {"hookName": "startContainer", "path": "/usr/bin/ldconfig" }
     ]
   }
 }
