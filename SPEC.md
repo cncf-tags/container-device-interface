@@ -254,7 +254,7 @@ The `containerEdits` field has the following definition:
 ## Error Handling
   * Kind requested is not present in any CDI file.
     Container runtimes should surface an error when a non-existent kind is requested.
-  * Device (not device node) Requested does not exist.
+  * Device (not device node) Requested device does not exist.
     Container runtimes should surface this error when a non existent device is requested.
   * "Resource" does not exist (e.g: Mount, Hook, ...).
     Container runtimes should surface this error when a non-existent "resource" is requested (e.g: at "run" time).
