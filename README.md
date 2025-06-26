@@ -92,13 +92,24 @@ file (`/etc/containerd/config.toml` by default):
 
 Remember to restart containerd for any configuration changes to take effect.
 
-### Docker configuration
+### Docker and Podman Configuration
 
-To enable and configure CDI support in the [Docker Daemon](https://github.com/moby/moby)
-[Docker 25](https://github.com/moby/moby/releases/tag/v25.0.0) or later is required.
+Both [Docker Daemon](https://github.com/moby/moby) and
+[podman](https://github.com/containers/podman) support CDI and process specified
+`--device` flags directly. If fully-qualified device selectors
+(e.g., `vendor.com/device=myDevice`) are included, the CDI specifications at the
+default location (`/etc/cdi` and `/var/run/cdi`) are checked for matching
+devices.
 
-In addition, the CDI feature must be enabled. That means including the following in the daemon
-config (`/etc/docker/daemon.json` by default):
+Podman does not require any specific configuration to enable CDI support.
+
+Docker has CDI enabled by default beginning with version **28.2.0**.
+
+#### Docker older than 28.2.0
+
+Docker supports CDI since version **25.0.0**.
+
+For Docker versions between **25.0.0** and **28.1.1**, you'll need to enable the CDI feature by including the following in the daemon configuration file (`/etc/docker/daemon.json` by default):
 
 ```json
 {
@@ -107,23 +118,11 @@ config (`/etc/docker/daemon.json` by default):
   }
 }
 ```
+Remember to restart the Docker daemon for any configuration changes to take effect.
 
-Remember to restart to Docker daemon for any configuration changes to take effect.
+#### Podman
 
-### Podman configuration
-
-[podman](https://github.com/containers/podman) does not require any specific
-configuration to enable CDI support and processes specified `--device` flags
-directly. If fully-qualified device selectors (e.g.
-`vendor.com/device=myDevice`) are included the CDI specifications at the default
-location (`/etc/cdi` and `/var/run/cdi`) are checked for matching devices.
-
-*Note:* Although initial support was added in
-[`v3.2.0`](https://github.com/containers/podman/releases/tag/v3.2.0) this was
-updated for the tagged `v0.3.0` CDI spec in
-[`v4.1.0-rc.1`](https://github.com/containers/podman/releases/tag/v4.1.0-rc1)
-with [commit
-a234e4e](https://github.com/containers/podman/commit/a234e4e19662e172472877ce69523f4afea5c12e).
+Although initial support was added in [`v3.2.0`](https://github.com/containers/podman/releases/tag/v3.2.0), this was updated for the tagged `v0.3.0` CDI spec in [`v4.1.0-rc.1`](https://github.com/containers/podman/releases/tag/v4.1.0-rc1) with [commit a234e4e](https://github.com/containers/podman/commit/a234e4e19662e172472877ce69523f4afea5c12e).
 
 ## Examples
 ### Full-blown CDI specification
