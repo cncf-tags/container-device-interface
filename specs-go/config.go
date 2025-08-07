@@ -67,6 +67,4 @@ type IntelRdt struct {
 	ClosID        string `json:"closID,omitempty"        yaml:"closID,omitempty"`
 	L3CacheSchema string `json:"l3CacheSchema,omitempty" yaml:"l3CacheSchema,omitempty"`
 	MemBwSchema   string `json:"memBwSchema,omitempty"   yaml:"memBwSchema,omitempty"`
-	EnableCMT     bool   `json:"enableCMT,omitempty"     yaml:"enableCMT,omitempty"`
-	EnableMBM     bool   `json:"enableMBM,omitempty"     yaml:"enableMBM,omitempty"`
 }
