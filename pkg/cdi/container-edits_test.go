@@ -255,6 +255,14 @@ func TestValidateContainerEdits(t *testing.T) {
 			},
 		},
 		{
+			name: "valid rdt config, root clos",
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID: "/",
+				},
+			},
+		},
+		{
 			name: "invalid rdt config, invalid closID (slash)",
 			edits: &cdi.ContainerEdits{
 				IntelRdt: &cdi.IntelRdt{
