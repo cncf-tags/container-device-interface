@@ -24,12 +24,13 @@ type Device struct {
 
 // ContainerEdits are edits a container runtime must make to the OCI spec to expose the device.
 type ContainerEdits struct {
-	Env            []string      `json:"env,omitempty"            yaml:"env,omitempty"`
-	DeviceNodes    []*DeviceNode `json:"deviceNodes,omitempty"    yaml:"deviceNodes,omitempty"`
-	Hooks          []*Hook       `json:"hooks,omitempty"          yaml:"hooks,omitempty"`
-	Mounts         []*Mount      `json:"mounts,omitempty"         yaml:"mounts,omitempty"`
-	IntelRdt       *IntelRdt     `json:"intelRdt,omitempty"       yaml:"intelRdt,omitempty"`       // Added in v0.7.0
-	AdditionalGIDs []uint32      `json:"additionalGids,omitempty" yaml:"additionalGids,omitempty"` // Added in v0.7.0
+	Env            []string          `json:"env,omitempty"            yaml:"env,omitempty"`
+	DeviceNodes    []*DeviceNode     `json:"deviceNodes,omitempty"    yaml:"deviceNodes,omitempty"`
+	NetDevices     []*LinuxNetDevice `json:"netDevices,omitempty"     yaml:"netDevices,omitempty"` // Added in v1.1.0
+	Hooks          []*Hook           `json:"hooks,omitempty"          yaml:"hooks,omitempty"`
+	Mounts         []*Mount          `json:"mounts,omitempty"         yaml:"mounts,omitempty"`
+	IntelRdt       *IntelRdt         `json:"intelRdt,omitempty"       yaml:"intelRdt,omitempty"`       // Added in v0.7.0
+	AdditionalGIDs []uint32          `json:"additionalGids,omitempty" yaml:"additionalGids,omitempty"` // Added in v0.7.0
 }
 
 // DeviceNode represents a device node that needs to be added to the OCI spec.
@@ -67,4 +68,10 @@ type IntelRdt struct {
 	ClosID        string `json:"closID,omitempty"        yaml:"closID,omitempty"`
 	L3CacheSchema string `json:"l3CacheSchema,omitempty" yaml:"l3CacheSchema,omitempty"`
 	MemBwSchema   string `json:"memBwSchema,omitempty"   yaml:"memBwSchema,omitempty"`
+}
+
+// LinuxNetDevice represents an OCI LinuxNetDevice to be added to the OCI Spec.
+type LinuxNetDevice struct {
+	HostIf string `json:"hostIf" yaml:"hostIf"`
+	Name   string `json:"name"   yaml:"name"`
 }
