@@ -1,6 +1,6 @@
 module tags.cncf.io/container-device-interface/cmd/validate
 
-go 1.20
+go 1.21
 
 require tags.cncf.io/container-device-interface/schema v0.0.0
 
