@@ -56,8 +56,10 @@ func (d *DeviceNode) toOCI() spec.LinuxDevice {
 // toOCI returns the opencontainers runtime Spec LinuxIntelRdt for this IntelRdt config.
 func (i *IntelRdt) toOCI() *spec.LinuxIntelRdt {
 	return &spec.LinuxIntelRdt{
-		ClosID:        i.ClosID,
-		L3CacheSchema: i.L3CacheSchema,
-		MemBwSchema:   i.MemBwSchema,
+		ClosID:           i.ClosID,
+		L3CacheSchema:    i.L3CacheSchema,
+		MemBwSchema:      i.MemBwSchema,
+		Schemata:         i.Schemata,
+		EnableMonitoring: i.EnableMonitoring,
 	}
 }

@@ -532,17 +532,21 @@ func TestApplyContainerEdits(t *testing.T) {
 			spec: &oci.Spec{},
 			edits: &cdi.ContainerEdits{
 				IntelRdt: &cdi.IntelRdt{
-					ClosID:        "clos-1",
-					L3CacheSchema: "L3:0=ff;1=ff",
-					MemBwSchema:   "MB:0=50;1=50",
+					ClosID:           "clos-1",
+					L3CacheSchema:    "L3:0=ff;1=ff",
+					MemBwSchema:      "MB:0=50;1=50",
+					Schemata:         []string{"L2:0=ffff"},
+					EnableMonitoring: true,
 				},
 			},
 			result: &oci.Spec{
 				Linux: &oci.Linux{
 					IntelRdt: &oci.LinuxIntelRdt{
-						ClosID:        "clos-1",
-						L3CacheSchema: "L3:0=ff;1=ff",
-						MemBwSchema:   "MB:0=50;1=50",
+						ClosID:           "clos-1",
+						L3CacheSchema:    "L3:0=ff;1=ff",
+						MemBwSchema:      "MB:0=50;1=50",
+						Schemata:         []string{"L2:0=ffff"},
+						EnableMonitoring: true,
 					},
 				},
 			},
@@ -552,23 +556,27 @@ func TestApplyContainerEdits(t *testing.T) {
 			spec: &oci.Spec{
 				Linux: &oci.Linux{
 					IntelRdt: &oci.LinuxIntelRdt{
-						ClosID:        "clos-1",
-						L3CacheSchema: "L3:0=ff",
-						MemBwSchema:   "MB:0=100",
+						ClosID:           "clos-1",
+						L3CacheSchema:    "L3:0=ff",
+						MemBwSchema:      "MB:0=100",
+						Schemata:         []string{"L2:0=ffff"},
+						EnableMonitoring: true,
 					},
 				},
 			},
 			edits: &cdi.ContainerEdits{
 				IntelRdt: &cdi.IntelRdt{
-					ClosID:        "clos-2",
-					L3CacheSchema: "L3:0=f",
+					ClosID:           "clos-2",
+					L3CacheSchema:    "L3:0=f",
+					EnableMonitoring: false,
 				},
 			},
 			result: &oci.Spec{
 				Linux: &oci.Linux{
 					IntelRdt: &oci.LinuxIntelRdt{
-						ClosID:        "clos-2",
-						L3CacheSchema: "L3:0=f",
+						ClosID:           "clos-2",
+						L3CacheSchema:    "L3:0=f",
+						EnableMonitoring: false,
 					},
 				},
 			},
@@ -778,6 +786,7 @@ func TestAppend(t *testing.T) {
 						IntelRdt: &cdi.IntelRdt{
 							ClosID:        "clos-1",
 							L3CacheSchema: "L3:0=ff",
+							Schemata:      []string{"L2: 0xFFFF"},
 						},
 					},
 				},
