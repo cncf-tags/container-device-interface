@@ -47,40 +47,6 @@ resolves any CDI Devices present in the Spec and dumps the result.`,
 	},
 }
 
-/*
-func resolveDevices(ociSpecFiles ...string) error {
-	for _, ociSpecFile := range ociSpecFiles {
-		ociSpec, err := readOCISpec(ociSpecFile)
-		if err != nil {
-			return err
-		}
-
-		resolved, err := cdi.ResolveDevices(ociSpec)
-		if err != nil {
-			return errors.Wrapf(err, "CDI device resolution failed in %q",
-				ociSpecFile)
-		}
-
-		output := injectCfg.output
-		if output == "" {
-			if filepath.Ext(ociSpecFile) == ".json" {
-				output = "json"
-			} else {
-				output = "yaml"
-			}
-		}
-
-		if resolved != nil {
-			fmt.Printf("OCI Spec %q: resolved devices %q\n", ociSpecFile,
-				strings.Join(resolved, ", "))
-			fmt.Printf("%s", marshalObject(2, ociSpec, output))
-		}
-	}
-
-	return nil
-}
-*/
-
 var (
 	resolveCfg resolveFlags
 )
