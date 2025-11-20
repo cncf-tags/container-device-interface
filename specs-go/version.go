@@ -149,6 +149,15 @@ func requiresV110(spec *Spec) bool {
 			return true
 		}
 	}
+
+	for _, dev := range spec.Devices {
+		if i := dev.ContainerEdits.IntelRdt; i != nil {
+			if i.Schemata != nil || i.EnableMonitoring {
+				return true
+			}
+		}
+	}
+
 	return false
 }
 

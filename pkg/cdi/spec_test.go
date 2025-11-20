@@ -714,6 +714,63 @@ func TestRequiredVersion(t *testing.T) {
 			},
 			expectedVersion: "0.7.0",
 		},
+		{
+
+			description: "global edit RDT schemata requires v1.1.0",
+			spec: &cdi.Spec{
+				ContainerEdits: cdi.ContainerEdits{
+					IntelRdt: &cdi.IntelRdt{
+						Schemata: []string{"foo"},
+					},
+				},
+			},
+			expectedVersion: "1.1.0",
+		},
+		{
+
+			description: "global edit RDT monitoring requires v1.1.0",
+			spec: &cdi.Spec{
+				ContainerEdits: cdi.ContainerEdits{
+					IntelRdt: &cdi.IntelRdt{
+						EnableMonitoring: true,
+					},
+				},
+			},
+			expectedVersion: "1.1.0",
+		},
+		{
+			description: "device edit RDT schemata requires v1.1.0",
+			spec: &cdi.Spec{
+				Devices: []cdi.Device{
+					{
+						Name: "device0",
+						ContainerEdits: cdi.ContainerEdits{
+							IntelRdt: &cdi.IntelRdt{
+								Schemata: []string{"foo"},
+							},
+						},
+					},
+				},
+			},
+			expectedVersion: "1.1.0",
+		},
+		{
+
+			description: "device edit RDT monitoring requires v1.1.0",
+			spec: &cdi.Spec{
+				Devices: []cdi.Device{
+					{
+						Name: "device0",
+						ContainerEdits: cdi.ContainerEdits{
+							IntelRdt: &cdi.IntelRdt{
+								EnableMonitoring: true,
+							},
+						},
+					},
+				},
+			},
+			expectedVersion: "1.1.0",
+		},
 	}
 
 	for _, tc := range testCases {
