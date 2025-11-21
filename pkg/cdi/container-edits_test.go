@@ -298,6 +298,41 @@ func TestValidateContainerEdits(t *testing.T) {
 			},
 			invalid: true,
 		},
+		{
+			name: "valid Linux net device",
+			edits: &cdi.ContainerEdits{
+				NetDevices: []*cdi.LinuxNetDevice{
+					{
+						HostIf: "eno1",
+						Name:   "netdev0",
+					},
+				},
+			},
+		},
+		{
+			name: "invalid Linux net device, empty host interface name",
+			edits: &cdi.ContainerEdits{
+				NetDevices: []*cdi.LinuxNetDevice{
+					{
+						HostIf: "",
+						Name:   "netdev0",
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid Linux net device, empty container interface name",
+			edits: &cdi.ContainerEdits{
+				NetDevices: []*cdi.LinuxNetDevice{
+					{
+						HostIf: "eno1",
+						Name:   "",
+					},
+				},
+			},
+			invalid: true,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			edits := ContainerEdits{tc.edits}
@@ -577,6 +612,70 @@ func TestApplyContainerEdits(t *testing.T) {
 						ClosID:           "clos-2",
 						L3CacheSchema:    "L3:0=f",
 						EnableMonitoring: false,
+					},
+				},
+			},
+		},
+		{
+			name: "empty spec, Linux net devices",
+			spec: &oci.Spec{},
+			edits: &cdi.ContainerEdits{
+				NetDevices: []*cdi.LinuxNetDevice{
+					{
+						HostIf: "eno1",
+						Name:   "netdev0",
+					},
+					{
+						HostIf: "eno2",
+						Name:   "netdev1",
+					},
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					NetDevices: map[string]oci.LinuxNetDevice{
+						"eno1": {
+							Name: "netdev0",
+						},
+						"eno2": {
+							Name: "netdev1",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "non-empty spec, overriding Linux net devices",
+			spec: &oci.Spec{
+				Linux: &oci.Linux{
+					NetDevices: map[string]oci.LinuxNetDevice{
+						"eno1": {
+							Name: "netdev1",
+						},
+					},
+				},
+			},
+			edits: &cdi.ContainerEdits{
+				NetDevices: []*cdi.LinuxNetDevice{
+					{
+						HostIf: "eno1",
+						Name:   "netdev2",
+					},
+					{
+						HostIf: "eno2",
+						Name:   "netdev1",
+					},
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					NetDevices: map[string]oci.LinuxNetDevice{
+						"eno1": {
+							Name: "netdev2",
+						},
+						"eno2": {
+							Name: "netdev1",
+						},
 					},
 				},
 			},
