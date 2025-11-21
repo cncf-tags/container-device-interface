@@ -114,9 +114,18 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 	}
 
 	if len(e.Mounts) > 0 {
+		var (
+			uids []oci.LinuxIDMapping
+			gids []oci.LinuxIDMapping
+		)
+
+		if specHasUserNamespace(spec) {
+			uids = cloneIDMappings(spec.Linux.UIDMappings)
+			gids = cloneIDMappings(spec.Linux.GIDMappings)
+		}
 		for _, m := range e.Mounts {
 			specgen.RemoveMount(m.ContainerPath)
-			specgen.AddMount((&Mount{m}).toOCI())
+			specgen.AddMount((&Mount{m}).toOCI(withMountIDMappings(uids, gids)))
 		}
 		sortMounts(&specgen)
 	}
@@ -388,4 +397,27 @@ func (m orderedMounts) Swap(i, j int) {
 // parts returns the number of parts in the destination of a mount. Used in sorting.
 func (m orderedMounts) parts(i int) int {
 	return strings.Count(filepath.Clean(m[i].Destination), string(os.PathSeparator))
+}
+
+// specHasUserNamespace returns true if the OCI Spec has a Linux UserNamespace.
+func specHasUserNamespace(spec *oci.Spec) bool {
+	if spec == nil || spec.Linux == nil {
+		return false
+	}
+	for _, ns := range spec.Linux.Namespaces {
+		if ns.Type == oci.UserNamespace {
+			return true
+		}
+	}
+	return false
+}
+
+// cloneIDMappings clones a slice of OCI LinuxIDMappings.
+func cloneIDMappings(mappings []oci.LinuxIDMapping) []oci.LinuxIDMapping {
+	if mappings == nil {
+		return nil
+	}
+	clone := make([]oci.LinuxIDMapping, len(mappings))
+	copy(clone, mappings)
+	return clone
 }

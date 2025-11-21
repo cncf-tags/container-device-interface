@@ -695,6 +695,103 @@ func TestApplyContainerEdits(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "mount added to container with Linux user namespace and uid/gid mappings",
+			spec: &oci.Spec{
+				Linux: &oci.Linux{
+					UIDMappings: []oci.LinuxIDMapping{
+						{
+							ContainerID: 0,
+							HostID:      1000,
+							Size:        999,
+						},
+					},
+					GIDMappings: []oci.LinuxIDMapping{
+						{
+							ContainerID: 0,
+							HostID:      2000,
+							Size:        777,
+						},
+					},
+					Namespaces: []oci.LinuxNamespace{
+						{
+							Type: oci.UserNamespace,
+							Path: "/foo/bar",
+						},
+					},
+				},
+				Mounts: []oci.Mount{
+					{
+						Source:      "/some/host/path1",
+						Destination: "/dest/path/c",
+					},
+					{
+						Source:      "/some/host/path2",
+						Destination: "/dest/path/b",
+					},
+				},
+			},
+			edits: &cdi.ContainerEdits{
+				Mounts: []*cdi.Mount{
+					{
+						HostPath:      "/some/host/path3",
+						ContainerPath: "/dest/path/a",
+					},
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					UIDMappings: []oci.LinuxIDMapping{
+						{
+							ContainerID: 0,
+							HostID:      1000,
+							Size:        999,
+						},
+					},
+					GIDMappings: []oci.LinuxIDMapping{
+						{
+							ContainerID: 0,
+							HostID:      2000,
+							Size:        777,
+						},
+					},
+					Namespaces: []oci.LinuxNamespace{
+						{
+							Type: oci.UserNamespace,
+							Path: "/foo/bar",
+						},
+					},
+				},
+				Mounts: []oci.Mount{
+					{
+						Source:      "/some/host/path1",
+						Destination: "/dest/path/c",
+					},
+					{
+						Source:      "/some/host/path2",
+						Destination: "/dest/path/b",
+					},
+					{
+						Source:      "/some/host/path3",
+						Destination: "/dest/path/a",
+						UIDMappings: []oci.LinuxIDMapping{
+							{
+								ContainerID: 0,
+								HostID:      1000,
+								Size:        999,
+							},
+						},
+						GIDMappings: []oci.LinuxIDMapping{
+							{
+								ContainerID: 0,
+								HostID:      2000,
+								Size:        777,
+							},
+						},
+					},
+				},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			edits := ContainerEdits{tc.edits}
