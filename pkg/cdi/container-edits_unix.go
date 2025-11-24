@@ -61,7 +61,7 @@ func (d *DeviceNode) fillMissingInfo() error {
 		d.HostPath = d.Path
 	}
 
-	if d.Type != "" && (d.Major != 0 || d.Type == "p") {
+	if d.Type != "" && (d.Major != 0 || d.Type == fifoDevice) {
 		return nil
 	}
 
@@ -78,7 +78,7 @@ func (d *DeviceNode) fillMissingInfo() error {
 				d.Path, d.HostPath, d.Type, deviceType)
 		}
 	}
-	if d.Major == 0 && d.Type != "p" {
+	if d.Major == 0 && d.Type != fifoDevice {
 		d.Major = major
 		d.Minor = minor
 	}
