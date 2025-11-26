@@ -8,7 +8,7 @@
 
 ## Version
 
-This is CDI **spec** version **0.8.0**.
+This is CDI **spec** version **1.0.0**.
 
 ### Update policy
 
