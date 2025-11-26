@@ -30,14 +30,33 @@ func (h *Hook) toOCI() spec.Hook {
 	}
 }
 
+// Additional OCI mount option to apply to injected mounts.
+type ociMountOption func(*spec.Mount)
+
+// withMountIDMappings adds UID and GID mappings for the given mount.
+func withMountIDMappings(uid, gid []spec.LinuxIDMapping) ociMountOption {
+	return func(m *spec.Mount) {
+		if uid != nil {
+			m.UIDMappings = uid
+		}
+		if gid != nil {
+			m.GIDMappings = gid
+		}
+	}
+}
+
 // toOCI returns the opencontainers runtime Spec Mount for this Mount.
-func (m *Mount) toOCI() spec.Mount {
-	return spec.Mount{
+func (m *Mount) toOCI(options ...ociMountOption) spec.Mount {
+	om := spec.Mount{
 		Source:      m.HostPath,
 		Destination: m.ContainerPath,
 		Options:     m.Options,
 		Type:        m.Type,
 	}
+	for _, o := range options {
+		o(&om)
+	}
+	return om
 }
 
 // toOCI returns the opencontainers runtime Spec LinuxDevice for this DeviceNode.
