@@ -26,6 +26,9 @@
         "Env": {
             "$ref": "#/definitions/ArrayOfStrings"
         },
+        "InterfaceName": {
+            "type": "string"
+        },
         "mapStringString": {
             "type": "object",
             "patternProperties": {
@@ -111,6 +114,21 @@
                 "path"
             ]
         },
+        "LinuxNetDevice": {
+            "type": "object",
+            "properties": {
+                "hostInterfaceName": {
+                    "$ref": "#/definitions/InterfaceName"
+                },
+                "name": {
+                    "$ref": "#/definitions/InterfaceName"
+                }
+            },
+            "required": [
+                "hostInterfaceName",
+                "name"
+            ]
+        },
         "containerEdits": {
             "type": "object",
             "properties": {
@@ -124,6 +142,12 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/DeviceNode"
+                    }
+                },
+                "netDevices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/LinuxNetDevice"
                     }
                 },
                 "mounts": {
@@ -150,10 +174,10 @@
                         "memBwSchema": {
                             "type": "string"
                         },
-                        "enableCMT": {
-                            "type": "boolean"
+                        "schemata": {
+                            "$ref": "#/definitions/ArrayOfStrings"
                         },
-                        "enableMBM": {
+                        "enableMonitoring": {
                             "type": "boolean"
                         }
                     }

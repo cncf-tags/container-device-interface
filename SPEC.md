@@ -33,6 +33,7 @@ Released versions of the spec are available as Git tags.
 |        |   | Add `AdditionalGIDs` to `ContainerEdits` |
 | v0.8.0 |   | Remove .ToOCI() functions from specs-go package. |
 | v1.0.0 |   | Move minimum version logic to specs-go package. |
+| v1.1.0 |   | Add `NetDevices` to `ContainerEdits`, `Schemata` and `EnableMonitoring` to `IntelRdt`. Dropped `EnableCMT` and `EnableMBM` fields from `IntelRdt`. |
 
 *Note*: spec loading fails on unknown fields and when the minimum required version is higher than the version specified in the spec. The minimum required version is determined based on the usage of fields mentioned in the table above. For example the minimum required version is v0.6.0 if the `Annotations` field is used in the spec, but `IntelRdt` is not.
 `MinimumRequiredVersion` API can be used to get the minimum required version.
@@ -164,14 +165,22 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
             // Note that a value of 0 is ignored.
             additionalGIDs: [ (optional)
               <uint32>
-            ]
+            ],
             "intelRdt": { (optional)
                 "closID": "<name>", (optional)
                 "l3CacheSchema": "string" (optional)
                 "memBwSchema": "string" (optional)
-                "enableCMT": "<boolean>" (optional)
-                "enableMBM": "<boolean>" (optional)
-            }
+                "schema": [ "string" ] (optional)
+                "enableMonitoring": <boolean> (optional)
+            },
+            // This field contains network interfaces that should be moved
+            // from the host to the container.
+            "netDevices": [ (optional)
+                {
+                    "hostInterfaceName": "<interface name on the host>",
+                    "name": "<interface name in the container>"
+                }
+            ]
         }
     ]
 }
@@ -247,8 +256,8 @@ The `containerEdits` field has the following definition:
     * `closID` (string, OPTIONAL) name of the `CLOS` (Class of Service).
     * `l3CacheSchema` (string, OPTIONAL) L3 cache allocation schema for the `CLOS`.
     * `memBwSchema` (string, OPTIONAL) memory bandwidth allocation schema for the `CLOS`.
-    * `enableCMT` (boolean, OPTIONAL) whether to enable cache monitoring
-    * `enableMBM` (boolean, OPTIONAL) whether to enable memory bandwidth monitoring
+    * `schemata` (array of strings, OPTIONAL) RDT schema for the CLOS.
+    * `enableMonitoring` (boolean, OPTIONAL) whether to enable memory bandwidth monitoring for the CLOS.
   * `additionalGids` (array of uint32s, OPTIONAL) A list of additional group IDs to add with the container process. These values are added to the `user.additionalGids` field in the OCI runtime specification. Values of 0 are ignored. Added in v0.7.0.
 
 ## Error Handling
