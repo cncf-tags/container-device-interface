@@ -150,7 +150,7 @@ func requiresV110(spec *Spec) bool {
 		}
 	}
 
-	if len(spec.ContainerEdits.NetDevices) != 0 {
+	if len(spec.ContainerEdits.NetDevices) > 0 {
 		return true
 	}
 
@@ -161,7 +161,7 @@ func requiresV110(spec *Spec) bool {
 			}
 		}
 
-		if len(dev.ContainerEdits.NetDevices) != 0 {
+		if len(dev.ContainerEdits.NetDevices) > 0 {
 			return true
 		}
 	}
