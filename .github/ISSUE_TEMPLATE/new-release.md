@@ -22,7 +22,7 @@ it accordingly for future releases.
         - [ ] (*for specification changes only*) the `tags.cncf.io/container-device-interface/specs-go` version in `schema/go.mod`.
     - [ ] Run `make mod-tidy` to update versions in `cmd/**/go.mod`.
     - [ ] Run `make mod-verify` to ensure modules are up to date.
-    - [ ] (*for specification changes only*) Add a description to the specification changes in `SPEC.md`.
+    - [ ] (*for specification changes only*) Add a description to the specification changes and update the version in `SPEC.md`.
     - [ ] (*for specification changes only*) Implement a `requiresV*` function for the target version in `specs-go/versions.go`.
 - [ ] Merge the PR on sufficient approval.
 - [ ] Create a `vX.Y.Z` tag.
