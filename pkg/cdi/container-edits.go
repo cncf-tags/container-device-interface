@@ -123,8 +123,15 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 
 	if len(e.Mounts) > 0 {
 		for _, m := range e.Mounts {
+			mnt := &Mount{m}
+
 			specgen.RemoveMount(m.ContainerPath)
-			specgen.AddMount((&Mount{m}).toOCI())
+
+			if !specHasUserNamespace(spec) {
+				specgen.AddMount(mnt.toOCI())
+			} else {
+				specgen.AddMount(mnt.toOCI(withIDMapForBindMount()))
+			}
 		}
 		sortMounts(&specgen)
 	}
@@ -464,4 +471,17 @@ func (m orderedMounts) Swap(i, j int) {
 // parts returns the number of parts in the destination of a mount. Used in sorting.
 func (m orderedMounts) parts(i int) int {
 	return strings.Count(filepath.Clean(m[i].Destination), string(os.PathSeparator))
+}
+
+// specHasUserNamespace returns true if the OCI Spec has a Linux UserNamespace.
+func specHasUserNamespace(spec *oci.Spec) bool {
+	if spec == nil || spec.Linux == nil {
+		return false
+	}
+	for _, ns := range spec.Linux.Namespaces {
+		if ns.Type == oci.UserNamespace {
+			return true
+		}
+	}
+	return false
 }
