@@ -174,10 +174,10 @@
                         "memBwSchema": {
                             "type": "string"
                         },
-                        "enableCMT": {
-                            "type": "boolean"
+                        "schemata": {
+                            "$ref": "#/definitions/ArrayOfStrings"
                         },
-                        "enableMBM": {
+                        "enableMonitoring": {
                             "type": "boolean"
                         }
                     }
