@@ -68,8 +68,8 @@ type IntelRdt struct {
 	ClosID           string   `json:"closID,omitempty"           yaml:"closID,omitempty"`
 	L3CacheSchema    string   `json:"l3CacheSchema,omitempty"    yaml:"l3CacheSchema,omitempty"`
 	MemBwSchema      string   `json:"memBwSchema,omitempty"      yaml:"memBwSchema,omitempty"`
-	Schemata         []string `json:"schemata,omitempty"         yaml:"schemata,omitempty"`
-	EnableMonitoring bool     `json:"enableMonitoring,omitempty" yaml:"enableMonitoring,omitempty"`
+	Schemata         []string `json:"schemata,omitempty"         yaml:"schemata,omitempty"`         // Added in v1.1.0.
+	EnableMonitoring bool     `json:"enableMonitoring,omitempty" yaml:"enableMonitoring,omitempty"` // Added in v1.1.0.
 }
 
 // LinuxNetDevice represents an OCI LinuxNetDevice to be added to the OCI Spec.
