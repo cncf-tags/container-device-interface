@@ -139,6 +139,7 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
                     // * r - allows container to read from the specified device.
                     // * w - allows container to write to the specified device.
                     // * m - allows container to create device files that do not yet exist.
+                    // Omitted or empty permissions default to 'rwm'. 'none' requests empty permissions.
                     "permissions": "<permissions>" (optional),
                     "uid": <int> (optional),
                     "gid": <int> (optional)
