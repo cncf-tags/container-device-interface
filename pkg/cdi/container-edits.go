@@ -42,6 +42,9 @@ const (
 	PoststartHook = "poststart"
 	// PoststopHook is the name of the OCI "poststop" hook.
 	PoststopHook = "poststop"
+
+	// NoPermissions requests empty cgroup permissions for a device.
+	NoPermissions = "none"
 )
 
 var (
@@ -106,8 +109,11 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 
 		if dev.Type == "b" || dev.Type == "c" {
 			access := d.Permissions
-			if access == "" {
+			switch access {
+			case "":
 				access = "rwm"
+			case NoPermissions:
+				access = ""
 			}
 			specgen.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, access)
 		}
@@ -361,12 +367,14 @@ func (d *DeviceNode) Validate() error {
 	if _, ok := validTypes[d.Type]; !ok {
 		return fmt.Errorf("device %q: invalid type %q", d.Path, d.Type)
 	}
-	for _, bit := range d.Permissions {
-		if bit != 'r' && bit != 'w' && bit != 'm' {
-			return fmt.Errorf("device %q: invalid permissions %q",
-				d.Path, d.Permissions)
-		}
+	switch {
+	case d.Permissions == "":
+	case d.Permissions == NoPermissions:
+	case strings.Trim(d.Permissions, "rwm") != "":
+		return fmt.Errorf("device %q: invalid permissions %q",
+			d.Path, d.Permissions)
 	}
+
 	return nil
 }
 
