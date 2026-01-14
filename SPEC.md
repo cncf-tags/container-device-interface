@@ -112,7 +112,7 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
               "key": "value"
             },
 
-            // Same as the below containerSpec field.
+            // Same as the below containerEdits field.
             // This field should only be applied to the Container's OCI spec
             // if that specific device is requested.
             "containerEdits": { ... }
