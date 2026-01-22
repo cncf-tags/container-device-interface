@@ -134,6 +134,18 @@ func TestValidateContainerEdits(t *testing.T) {
 			invalid: true,
 		},
 		{
+			name: "valid device, with NoPermissions",
+			edits: &cdi.ContainerEdits{
+				DeviceNodes: []*cdi.DeviceNode{
+					{
+						Path:        "/dev/vendorctl",
+						Type:        "b",
+						Permissions: NoPermissions,
+					},
+				},
+			},
+		},
+		{
 			name: "valid mount",
 			edits: &cdi.ContainerEdits{
 				Mounts: []*cdi.Mount{
@@ -404,6 +416,82 @@ func TestApplyContainerEdits(t *testing.T) {
 							Major:    nullDeviceMajor,
 							Minor:    nullDeviceMinor,
 							FileMode: nullDeviceFileMode,
+						},
+					},
+					Resources: &oci.LinuxResources{
+						Devices: []oci.LinuxDeviceCgroup{
+							{
+								Allow:  true,
+								Type:   "c",
+								Major:  &nullDeviceMajor,
+								Minor:  &nullDeviceMinor,
+								Access: "rwm",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "empty spec, device with explicitly empty permissions",
+			spec: &oci.Spec{},
+			edits: &cdi.ContainerEdits{
+				DeviceNodes: []*cdi.DeviceNode{
+					{
+						Path:        "/dev/nil",
+						Type:        "c",
+						Major:       1,
+						Minor:       3,
+						Permissions: NoPermissions,
+					},
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					Devices: []oci.LinuxDevice{
+						{
+							Path:  "/dev/nil",
+							Type:  "c",
+							Major: nullDeviceMajor,
+							Minor: nullDeviceMinor,
+						},
+					},
+					Resources: &oci.LinuxResources{
+						Devices: []oci.LinuxDeviceCgroup{
+							{
+								Allow:  true,
+								Type:   "c",
+								Major:  &nullDeviceMajor,
+								Minor:  &nullDeviceMinor,
+								Access: "",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "empty spec, device with omitted permissions",
+			spec: &oci.Spec{},
+			edits: &cdi.ContainerEdits{
+				DeviceNodes: []*cdi.DeviceNode{
+					{
+						Path:        "/dev/nil",
+						Type:        "c",
+						Major:       1,
+						Minor:       3,
+						Permissions: "",
+					},
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					Devices: []oci.LinuxDevice{
+						{
+							Path:  "/dev/nil",
+							Type:  "c",
+							Major: nullDeviceMajor,
+							Minor: nullDeviceMinor,
 						},
 					},
 					Resources: &oci.LinuxResources{
