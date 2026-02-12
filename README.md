@@ -61,6 +61,77 @@ For CDI to work the following needs to be done:
 - The container runtime should be able to find the CDI file by the device name
   and update the container config using CDI file content.
 
+## How to build and install CDI CLI?
+
+### What is the CDI CLI?
+
+The `cdi` command-line tool is a utility for inspecting and interacting with the CDI (Container Device Interface) cache.
+It allows developers and system administrators to:
+
+- **List CDI Spec files**: View all available CDI specification files in the configured directories
+- **List vendors**: Display registered device vendors in the CDI cache
+- **List device classes**: Show available device classes from CDI Specs
+- **List devices**: Enumerate all CDI devices available in the system
+- **Validate specs**: Verify CDI specification files against the JSON schema
+- **Inject devices**: Inject CDI device configurations into OCI runtime specifications
+- **Monitor cache**: Watch for changes in the CDI cache and Spec directories
+- **Resolve devices**: Resolve fully-qualified device names to their configurations
+
+The CLI tool is particularly useful for debugging CDI configurations, validating spec files, and testing device assignments before deploying them in production environments.
+
+### Building the CDI CLI
+
+To build the CDI command-line tool from source:
+
+```bash
+# Clone the repository (if not already done)
+git clone https://github.com/cncf-tags/container-device-interface.git
+cd container-device-interface
+
+# Build the binary
+make
+```
+
+This will compile the `cdi` binary and place it in the `bin/` directory along with other utilities like `validate`.
+
+### Install the CDI CLI
+
+After building, install the binary to your system:
+
+```bash
+# Install to /usr/local/bin (requires sudo)
+sudo install -m 0755 bin/cdi /usr/local/bin/cdi
+
+# Verify installation
+cdi --help
+```
+
+### Basic Usage
+
+Once installed, you can use the `cdi` command to interact with CDI devices:
+
+```bash
+# List all CDI Spec files
+cdi specs
+
+# List all available CDI devices
+cdi devices
+
+# List all vendors
+cdi vendors
+
+# List all device classes
+cdi classes
+
+# Validate CDI Spec files
+cdi validate
+
+# Monitor CDI cache for changes
+cdi monitor
+```
+
+Use `cdi --help` or `cdi <command> --help` for detailed information about each command and its options.
+
 ## How to configure CDI?
 
 ### CRI-O configuration
