@@ -438,10 +438,10 @@ func TestApplyContainerEdits(t *testing.T) {
 			edits: &cdi.ContainerEdits{
 				DeviceNodes: []*cdi.DeviceNode{
 					{
-						Path:        "/dev/nil",
+						Path:        "/dev/null",
 						Type:        "c",
-						Major:       1,
-						Minor:       3,
+						Major:       nullDeviceMajor,
+						Minor:       nullDeviceMinor,
 						Permissions: NoPermissions,
 					},
 				},
@@ -450,10 +450,11 @@ func TestApplyContainerEdits(t *testing.T) {
 				Linux: &oci.Linux{
 					Devices: []oci.LinuxDevice{
 						{
-							Path:  "/dev/nil",
-							Type:  "c",
-							Major: nullDeviceMajor,
-							Minor: nullDeviceMinor,
+							Path:     "/dev/null",
+							Type:     "c",
+							Major:    nullDeviceMajor,
+							Minor:    nullDeviceMinor,
+							FileMode: nullDeviceFileMode,
 						},
 					},
 					Resources: &oci.LinuxResources{
@@ -476,10 +477,10 @@ func TestApplyContainerEdits(t *testing.T) {
 			edits: &cdi.ContainerEdits{
 				DeviceNodes: []*cdi.DeviceNode{
 					{
-						Path:        "/dev/nil",
+						Path:        "/dev/null",
 						Type:        "c",
-						Major:       1,
-						Minor:       3,
+						Major:       nullDeviceMajor,
+						Minor:       nullDeviceMinor,
 						Permissions: "",
 					},
 				},
@@ -488,10 +489,11 @@ func TestApplyContainerEdits(t *testing.T) {
 				Linux: &oci.Linux{
 					Devices: []oci.LinuxDevice{
 						{
-							Path:  "/dev/nil",
-							Type:  "c",
-							Major: nullDeviceMajor,
-							Minor: nullDeviceMinor,
+							Path:     "/dev/null",
+							Type:     "c",
+							Major:    nullDeviceMajor,
+							Minor:    nullDeviceMinor,
+							FileMode: nullDeviceFileMode,
 						},
 					},
 					Resources: &oci.LinuxResources{
