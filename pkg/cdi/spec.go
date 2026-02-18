@@ -119,7 +119,7 @@ func (s *Spec) write(overwrite bool) error {
 		producer.WithOutputFormat("json"),
 		producer.WithOverwrite(overwrite),
 		producer.WithPermissions(0),
-		producer.WithValidatorFunction(validateSpec),
+		producer.WithValidator(getSpecValidator()),
 	)
 }
 
@@ -219,6 +219,13 @@ func SetSpecValidator(v validator) {
 	specValidator = v
 }
 
+// getSpecValidator returns a reference to the current validator.
+func getSpecValidator() validator {
+	validatorLock.Lock()
+	defer validatorLock.Unlock()
+	return specValidator
+}
+
 // validateSpec validates the Spec using the external validator.
 func validateSpec(raw *cdi.Spec) error {
 	validatorLock.RLock()
@@ -297,4 +304,24 @@ func GenerateNameForTransientSpec(raw *cdi.Spec, transientID string) (string, er
 	}
 
 	return GenerateTransientSpecName(vendor, class, transientID), nil
+}
+
+type contentSpecValidator string
+
+const (
+	// SpecContentValidator validates the CDI spec based on the content and
+	// not the JSON schema.
+	SpecContentValidator = contentSpecValidator("default")
+)
+
+func (v contentSpecValidator) Validate(raw *cdi.Spec) error {
+	spec := &Spec{
+		Spec: raw,
+	}
+	spec.vendor, spec.class = parser.ParseQualifier(spec.Kind)
+	_, err := spec.validate()
+	if err != nil {
+		return fmt.Errorf("invalid CDI Spec: %w", err)
+	}
+	return nil
 }
