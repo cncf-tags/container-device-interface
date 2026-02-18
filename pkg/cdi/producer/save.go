@@ -30,6 +30,10 @@ import (
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
+type validator interface {
+	Validate(*cdi.Spec) error
+}
+
 type options struct {
 	outputFormat string
 	validator    validator
@@ -105,6 +109,10 @@ func Save(raw *cdi.Spec, path string, opts ...Option) error {
 // before writing.
 func WriteTo(raw *cdi.Spec, w io.Writer, opts ...Option) (int64, error) {
 	o := populateOptions(opts...)
+
+	if err := o.Validate(raw); err != nil {
+		return 0, fmt.Errorf("spec validation failed: %w", err)
+	}
 
 	data, err := o.marshal(raw)
 	if err != nil {
@@ -242,4 +250,22 @@ func (o *options) marshal(v any) ([]byte, error) {
 	default:
 		return nil, fmt.Errorf("invalid output format: %q", o.outputFormat)
 	}
+}
+
+// Validate a CDI specification using the supplied options.
+// If no validator is specified, validation always succeeds.
+func (o *options) Validate(raw *cdi.Spec) error {
+	if o == nil || o.validator == nil {
+		return nil
+	}
+	return o.validator.Validate(raw)
+}
+
+type validatorFunction func(*cdi.Spec) error
+
+func (v validatorFunction) Validate(raw *cdi.Spec) error {
+	if v == nil {
+		return nil
+	}
+	return v(raw)
 }

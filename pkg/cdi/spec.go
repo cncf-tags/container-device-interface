@@ -113,21 +113,13 @@ func newSpec(raw *cdi.Spec, path string, priority int) (*Spec, error) {
 // Write the CDI Spec to the file associated with it during instantiation
 // by newSpec() or ReadSpec().
 func (s *Spec) write(overwrite bool) error {
-	var (
-		err error
-	)
-
-	err = validateSpec(s.Spec)
-	if err != nil {
-		return err
-	}
-
 	return producer.Save(s.Spec, s.path,
 		// If we cannot determine the file format as yaml from the extension,
 		// we assume a json format.
 		producer.WithOutputFormat("json"),
 		producer.WithOverwrite(overwrite),
 		producer.WithPermissions(0),
+		producer.WithValidatorFunction(validateSpec),
 	)
 }
 

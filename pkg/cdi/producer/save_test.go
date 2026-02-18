@@ -17,6 +17,7 @@
 package producer
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -139,6 +140,21 @@ kind: ""
 devices: []
 `
 				require.EqualValues(t, expectedContents, string(contents))
+			},
+		},
+		{
+			description: "validator is called before save",
+			spec: &cdi.Spec{
+				Version: "v1.1.0",
+			},
+			filename: "test.yaml",
+			options: []Option{
+				WithValidator(validatorFunction(func(s *cdi.Spec) error { return fmt.Errorf("invalid spec") })),
+				WithPermissions(os.FileMode(0666)),
+			},
+			expectedError: "failed to write Spec file: spec validation failed: invalid spec",
+			assert: func(t *testing.T, fullpath string) {
+				require.NoFileExists(t, fullpath)
 			},
 		},
 	}
