@@ -196,6 +196,7 @@ Remember to restart the Docker daemon for any configuration changes to take effe
 Although initial support was added in [`v3.2.0`](https://github.com/containers/podman/releases/tag/v3.2.0), this was updated for the tagged `v0.3.0` CDI spec in [`v4.1.0-rc.1`](https://github.com/containers/podman/releases/tag/v4.1.0-rc1) with [commit a234e4e](https://github.com/containers/podman/commit/a234e4e19662e172472877ce69523f4afea5c12e).
 
 ## Examples
+
 ### Full-blown CDI specification
 
 ```bash
@@ -273,6 +274,9 @@ $ cat > /etc/cdi/vendor-annotations.json <<EOF
 EOF
 ```
 
+### Tutorial
+
+For a step-by-step guide on creating and using CDI specifications, see the [tutorial](TUTORIAL.md).
 
 ## Issues and Contributing
 
