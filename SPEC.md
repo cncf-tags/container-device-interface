@@ -264,12 +264,12 @@ The `containerEdits` field has the following definition:
 ## Error Handling
   * Kind requested is not present in any CDI file.
     Container runtimes should surface an error when a non-existent kind is requested.
-  * Device (not device node) Requested device does not exist.
+  * Requested device does not exist (CDI device, IOW a named instance of a Kind, not a host device node).
     Container runtimes should surface this error when a non existent device is requested.
   * "Resource" does not exist (e.g: Mount, Hook, ...).
     Container runtimes should surface this error when a non-existent "resource" is requested (e.g: at "run" time).
     This is because a resource does not need to exist when the spec is written, but it needs to exist when the container is created.
   * Hook fails to execute.
-    Container runtimes should surface an error when hooks fails to execute.
+    Container runtimes should surface an error when hooks fail to execute.
 
 [resctrl]: https://docs.kernel.org/arch/x86/resctrl.html
