@@ -321,7 +321,7 @@ func (c *Cache) RemoveSpec(name string) error {
 
 	specDir, _ = c.highestPrioritySpecDir()
 	if specDir == "" {
-		return errors.New("no Spec directories to remove from")
+		return fmt.Errorf("no Spec directories defined: %w", fs.ErrNotExist)
 	}
 
 	path = filepath.Join(specDir, name)
