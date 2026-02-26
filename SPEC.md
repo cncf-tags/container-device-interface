@@ -261,6 +261,106 @@ The `containerEdits` field has the following definition:
     * `enableMonitoring` (boolean, OPTIONAL) whether to enable memory bandwidth monitoring for the CLOS.
   * `additionalGids` (array of uint32s, OPTIONAL) A list of additional group IDs to add with the container process. These values are added to the `user.additionalGids` field in the OCI runtime specification. Values of 0 are ignored. Added in v0.7.0.
 
+## Container Lifecycle Hooks
+
+The `hooks` specified in a set of container edits, allow vendor-specific logic
+to be executed at various points in the container lifecycle. These are typically
+used for behaviour that depends on the container contents in some way.
+
+In the case of OCI-compliant runtimes, these hooks are mapped directly to
+[OCI runtime hooks](https://github.com/opencontainers/runtime-spec/blob/main/config.md#posix-platform-hooks). For
+other use cases, it is the responsibility of the runtime developer to determine:
+
+* If a hook is applicable for the specific use case
+* Which operations are equivalent to a hook in their runtime
+
+In order to simplify onboarding new use cases and provide more clarity on the
+*intent* of the hooks present in a generated CDI specification, the following
+hooks specifically called out in the spec:
+
+### create-symlinks
+
+The `create-symlinks` hook is a `createContainer` hook that is used to ensure that
+required symlinks exist in a container. Typically these symlinks point to injected
+libraries or executables.
+
+The hooks will have the following YAML definition:
+```yaml
+  hooks:
+  - path: <comnand-prefix>
+    hookName: createContainer
+    args:
+    - <command-prefix-basename>
+    - create-symlinks
+    - --link=<target>::<link-path-in-container>
+```
+This hook will result in the following command being executed:
+```shell
+<command-prefix> create-symlinks --link=<target>::<link-path-in-container>
+```
+
+And will:
+1. ensure that the parents of `<link-path-in-container>` exist in the container.
+2. create a symlink from `<link-path-in-container>` to `<target>` in the container.
+
+which is equivalent to running:
+```shell
+mkdir -p $(dirname <link-path-in-container>)
+ln -s -f <target> <link-path-in-container>
+```
+in the container root.
+
+The following should be noted:
+* `<command-prefix>` is a CLI that implements the `create-symlinks` command.
+* `<command-prefix>` is an absolute path on the *host*.
+* The `<command-prefix-basename>` argument is the basename of the `<command-prefix>` path or the full `<command-prefix>` path.
+* The `--link=<target>::<link-path-in-container>` arguments can be repeated for multiple links.
+* The hook is run from the host, and as such care should be taken to ensure that `<link-path-in-container>` does not resolve outside of the container root.
+* The hook is run in the mount namespace of the container.
+* The `<target>` need not exist in the container.
+
+### update-ldcache
+
+The `update-ldcache` hook is a `createContainer` hook that is used to ensure that
+the ldcache in a container is updated to include any injected libraries. This
+ensures that a user does not have to update environment variables such as `LD_LIBRARY_PATH`
+themselves. The hook also creates `SONAME` symlinks for any injected libraries.
+
+The hooks will have the following YAML definition:
+```yaml
+  hooks:
+  - path: <comnand-prefix>
+    hookName: createContainer
+    args:
+    - <command-prefix-basename>
+    - update-ldcache
+    - --folder=<container-folder1>
+```
+This hook will result in the following command being executed:
+```shell
+<command-prefix> update-ldcache --folder=<container-folder>
+```
+
+And will:
+1. Ensure that shared libraries in the requested container folder(s) (`<container-folder>`) in the container are added to `/etc/ld.so.cache` in the container with the correct priority.
+2. Create the relevant `SONAME` symlinks in the container.
+
+which is equivalent to running:
+```shell
+echo <container-folder> > /etc/ld.so.conf.f/00-mounted-libraries.conf
+ldconfig -C /etc/ld.so.cache -f /etc/ld.so.conf
+```
+in the container root.
+
+The following should be noted:
+* `<command-prefix>` is a CLI that implements the `update-ldcache` command.
+* `<command-prefix>` is an absolute path on the *host*.
+* If `/etc/ld.so.cache` does not exit in a container, updating the LDCache is skipped, but the `SONAME` symlinks are still created.
+* The `<command-prefix-basename>` argument is the basename of the `<command-prefix>` path or the full `<command-prefix>` path.
+* The `--folder=<container-folder>` arguments can be repeated for multiple folder. These are added to the generated `.conf` file in the order specified.
+* The hook is run from the host, and as such care should be taken to ensure that `<container-folder>` does not resolve outside of the container root.
+* The hook is run in the mount namespace of the container.
+
 ## Error Handling
   * Kind requested is not present in any CDI file.
     Container runtimes should surface an error when a non-existent kind is requested.
