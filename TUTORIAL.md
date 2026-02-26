@@ -13,6 +13,15 @@ By the end, users will understand how CDI specs are authored, validated, and con
 - Support both Docker (≥ 25.0) and Podman (≥ 4.1) as container runtimes
 - Keep prerequisites minimal: Linux host + a CDI-enabled container runtime
 
+## Key Concept: CDI Specs and OCI Specs
+
+A CDI Spec is simply a formal way to describe a **limited set of changes to an [OCI Spec](https://github.com/opencontainers/runtime-spec)**, to be applied during container creation.
+Only a limited subset of the OCI Spec can be modified through CDI - specifically device nodes, mounts, hooks, and environment variables.
+If something is not part of the OCI Spec, it is definitely not part of CDI either.
+
+Keep this in mind throughout the tutorial: every CDI feature you see below (`deviceNodes`, `env`, `mounts`, `hooks`) maps directly to a field in the OCI runtime specification.
+CDI does not invent new container primitives - it reuses existing OCI ones and provides a vendor-driven way to inject them.
+
 ## Tutorial
 
 ### Overview
@@ -21,12 +30,12 @@ By the end, users will understand how CDI specs are authored, validated, and con
 graph TB
     subgraph Host["Host System"]
         DevNode["/dev/cdi-tutorial-sensor<br/>Device Node<br/>(c 10:200)"]
-        Hook["/usr/local/bin/<br/>cdi-tutorial-hook.sh<br/>Hook Script"]
+        Hook["/usr/local/bin/<br/>cdi-tutorial-hook.sh<br/>OCI Hook Script"]
         HostFile["/opt/cdi-tutorial/<br/>device-info.txt<br/>Metadata File"]
         CDISpec["/etc/cdi/tutorial.yaml<br/>CDI Spec<br/>kind: tutorial.cdi.cncf.io/sensor"]
     end
     
-    subgraph Runtime["Container Runtime<br/>(Docker/Podman)"]
+    subgraph Runtime["Container Runtime<br/>(containerd/CRI-O)"]
         CDICache["CDI Cache"]
         OCI["OCI Spec<br/>Generator"]
     end
@@ -81,15 +90,15 @@ graph TB
 
 - Create a Hook Script
 
-  CDI hooks run at container creation time and can perform device-specific setup.
-  We'll create a simple hook that logs the injection event and optionally adjusts device permissions.
+  CDI allows injecting [OCI lifecycle hooks](https://github.com/opencontainers/runtime-spec/blob/main/config.md#posix-platform-hooks) into the OCI Spec. These hooks run at container creation time and can perform device-specific setup.
+  We'll create a simple hook script that logs the injection event and optionally adjusts device permissions.
 
   ```bash
   $ sudo mkdir -p /usr/local/bin
   $ sudo tee /usr/local/bin/cdi-tutorial-hook.sh << 'HOOKEOF'
   #!/bin/bash
-  # CDI Tutorial Hook — runs during container creation
-  # This hook receives the OCI bundle path via stdin (as JSON)
+  # CDI Tutorial — OCI hook that runs during container creation
+  # This OCI hook receives the OCI bundle path via stdin (as JSON)
   LOGFILE="/var/log/cdi-tutorial-hook.log"
   TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   echo "${TIMESTAMP} CDI tutorial hook invoked with args: $@" >> "${LOGFILE}"
@@ -177,11 +186,11 @@ graph TB
 
   **Key things to note about this spec:**
 
-  - **`kind`**: `tutorial.cdi.cncf.io/sensor` - follows the `vendor.com/class` naming convention
+  - **`kind`**: `tutorial.cdi.cncf.io/sensor` - must follow the `vendor.com/class` naming convention, which is a CDI Spec requirement enforced syntactically during spec validation
   - **Two devices**: `temp0` (read-write) and `temp1` (read-only) show how the same physical device can be exposed with different permissions
   - **`containerEdits` at the top level**: Applied whenever *any* device from this spec is requested - sets environment variables, mounts device metadata, and runs the hook
   - **`containerEdits` at the device level**: Device-specific edits (the device node itself)
-  - **`hooks`**: The `createContainer` hook runs our script during container creation
+  - **`hooks`**: Injects a `createContainer` OCI hook that runs our script during container creation
 
 - Validate the CDI Spec with the `cdi` CLI
 
@@ -222,7 +231,7 @@ graph TB
   $ exit
   ```
 
-  Back on the host, verify the hook ran:
+  Back on the host, verify the OCI hook ran:
 
   ```console
   $ cat /var/log/cdi-tutorial-hook.log
@@ -250,27 +259,3 @@ graph TB
   $ sudo rm -rf /opt/cdi-tutorial
   $ sudo rm -f /var/log/cdi-tutorial-hook.log
   ```
-
-## Appendix: What Happens Under the Hood
-
-```
-User runs: docker run --device tutorial.cdi.cncf.io/sensor=temp0 ...
-  │
-  ├─ Runtime detects fully-qualified CDI device name
-  ├─ Runtime searches /etc/cdi and /var/run/cdi for matching spec
-  ├─ Runtime finds /etc/cdi/tutorial.yaml with kind=tutorial.cdi.cncf.io/sensor
-  ├─ Runtime matches device name "temp0"
-  │
-  ├─ Runtime applies DEVICE-LEVEL containerEdits for "temp0":
-  │   └─ Adds /dev/cdi-tutorial-sensor device node (rw)
-  │
-  ├─ Runtime applies TOP-LEVEL containerEdits:
-  │   ├─ Sets CDI_TUTORIAL, SENSOR_VENDOR, SENSOR_VERSION env vars
-  │   ├─ Bind-mounts /opt/cdi-tutorial/device-info.txt → /etc/sensor/device-info.txt
-  │   └─ Registers createContainer hook
-  │
-  ├─ Runtime generates OCI spec with all edits merged
-  ├─ Runtime creates container
-  ├─ createContainer hook fires → cdi-tutorial-hook.sh runs
-  └─ Container starts with device access
-```
