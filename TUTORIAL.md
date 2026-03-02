@@ -15,8 +15,8 @@ By the end, users will understand how CDI specs are authored, validated, and con
 
 ## Key Concept: CDI Specs and OCI Specs
 
-A CDI Spec is simply a formal way to describe a **limited set of changes to an [OCI Spec](https://github.com/opencontainers/runtime-spec)**, to be applied during container creation.
-Only a limited subset of the OCI Spec can be modified through CDI - specifically device nodes, mounts, hooks, and environment variables.
+A CDI Spec is simply a formal way to describe a **limited set of changes to an [OCI Runtime Spec](https://github.com/opencontainers/runtime-spec)**, to be applied during container creation.
+Only a limited subset of the OCI Spec can be modified through CDI - including device nodes, mounts, hooks, and environment variables.
 If something is not part of the OCI Spec, it is definitely not part of CDI either.
 
 Keep this in mind throughout the tutorial: every CDI feature you see below (`deviceNodes`, `env`, `mounts`, `hooks`) maps directly to a field in the OCI runtime specification.
@@ -141,7 +141,7 @@ graph TB
   cdiVersion: "1.1.0"
   kind: "tutorial.cdi.cncf.io/sensor"
   devices:
-    - name: "temp0"
+    - name: "read-write"
       containerEdits:
         deviceNodes:
           - path: "/dev/cdi-tutorial-sensor"
@@ -151,7 +151,7 @@ graph TB
             minor: 200
             fileMode: 432  # 0660 in decimal
             permissions: "rw"
-    - name: "temp1"
+    - name: "read-only"
       containerEdits:
         deviceNodes:
           - path: "/dev/cdi-tutorial-sensor"
@@ -175,7 +175,7 @@ graph TB
           - "nodev"
           - "bind"
     hooks:
-      - hookName: "createContainer"
+      - hookName: "createRuntime"
         path: "/usr/local/bin/cdi-tutorial-hook.sh"
         args:
           - "cdi-tutorial-hook.sh"
@@ -187,10 +187,10 @@ graph TB
   **Key things to note about this spec:**
 
   - **`kind`**: `tutorial.cdi.cncf.io/sensor` - must follow the `vendor.com/class` naming convention, which is a CDI Spec requirement enforced syntactically during spec validation
-  - **Two devices**: `temp0` (read-write) and `temp1` (read-only) show how the same physical device can be exposed with different permissions
+  - **Two devices**: `read-write` and `read-only` show how the same physical device can be exposed with different permissions
   - **`containerEdits` at the top level**: Applied whenever *any* device from this spec is requested - sets environment variables, mounts device metadata, and runs the hook
   - **`containerEdits` at the device level**: Device-specific edits (the device node itself)
-  - **`hooks`**: Injects a `createContainer` OCI hook that runs our script during container creation
+  - **`hooks`**: Injects a `createRuntime` OCI hook that runs our script during container creation. `createRuntime` is preferred over `createContainer` because `createContainer` hooks in runc inherit the container's environment when none is explicitly set, which exposes the hook to `LD_PRELOAD` attacks from untrusted containers (see [CVE-2025-23266](https://www.wiz.io/blog/nvidia-ai-vulnerability-cve-2025-23266-nvidiascape))
 
 - Validate the CDI Spec with the `cdi` CLI
 
@@ -201,14 +201,14 @@ graph TB
   No CDI cache errors.
   $ cdi devices
   CDI devices found:
-  0. tutorial.cdi.cncf.io/sensor=temp0
-  1. tutorial.cdi.cncf.io/sensor=temp1
+  0. tutorial.cdi.cncf.io/sensor=read-only
+  1. tutorial.cdi.cncf.io/sensor=read-write
   ```
 
 - Run a Container with the CDI Device
 
   ```console
-  $ docker run --rm -it --device tutorial.cdi.cncf.io/sensor=temp0 ubuntu:22.04 bash
+  $ docker run --rm -it --device tutorial.cdi.cncf.io/sensor=read-write ubuntu:22.04 bash
   ```
 
 - Verify CDI Spec Works Inside the Container
@@ -244,7 +244,7 @@ graph TB
 - Experiment - Request the Read-Only Device
 
   ```console
-  $ docker run --rm -it --device tutorial.cdi.cncf.io/sensor=temp1 ubuntu:22.04 bash
+  $ docker run --rm -it --device tutorial.cdi.cncf.io/sensor=read-only ubuntu:22.04 bash
   $ ls -la /dev/cdi-tutorial-sensor
   cr--r--r-- 1 root root 10, 200 Feb 20 06:17 /dev/cdi-tutorial-sensor
   $ echo "test" > /dev/cdi-tutorial-sensor
