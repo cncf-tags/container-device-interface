@@ -1839,6 +1839,46 @@ devices:
 	}
 }
 
+func TestRemoveCache(t *testing.T) {
+
+	tmpDir := t.TempDir()
+
+	testCases := []struct {
+		name          string
+		cache         *Cache
+		specToRemove  string
+		expectedError error
+	}{
+		{
+			name: "returns error if cache dirs is empty",
+			cache: &Cache{
+				specDirs: nil,
+			},
+			specToRemove:  "any",
+			expectedError: os.ErrNotExist,
+		},
+		{
+			name: "returns no error if spec does not exist",
+			cache: &Cache{
+				specDirs: []string{tmpDir},
+			},
+			specToRemove:  "non-existent",
+			expectedError: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.cache.RemoveSpec(tc.specToRemove)
+			if tc.expectedError == nil {
+				require.NoError(t, err)
+			} else {
+				require.ErrorIs(t, err, tc.expectedError)
+			}
+		})
+	}
+}
+
 // Create and populate automatically cleaned up spec directories.
 func createSpecDirs(t *testing.T, etc, run map[string]string) (string, error) {
 	return mkTestDir(t, map[string]map[string]string{
