@@ -88,34 +88,9 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 	for _, d := range e.DeviceNodes {
 		dn := DeviceNode{d}
 
-		err := dn.fillMissingInfo()
+		err := dn.addToGenerator(&specgen, spec)
 		if err != nil {
 			return err
-		}
-		dev := dn.toOCI()
-		if dev.UID == nil && spec.Process != nil {
-			if uid := spec.Process.User.UID; uid > 0 {
-				dev.UID = &uid
-			}
-		}
-		if dev.GID == nil && spec.Process != nil {
-			if gid := spec.Process.User.GID; gid > 0 {
-				dev.GID = &gid
-			}
-		}
-
-		specgen.RemoveDevice(dev.Path)
-		specgen.AddDevice(dev)
-
-		if dev.Type == "b" || dev.Type == "c" {
-			access := d.Permissions
-			switch access {
-			case "":
-				access = "rwm"
-			case NoPermissions:
-				access = ""
-			}
-			specgen.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, access)
 		}
 	}
 
@@ -378,6 +353,42 @@ func (d *DeviceNode) Validate() error {
 	return nil
 }
 
+func (d *DeviceNode) addToGenerator(specgen *ocigen.Generator, spec *oci.Spec) error {
+	err := d.fillMissingInfo()
+	if err != nil {
+		return err
+	}
+	dev := d.toOCI()
+	if dev.UID == nil && spec.Process != nil {
+		if uid := spec.Process.User.UID; uid > 0 {
+			dev.UID = &uid
+		}
+	}
+	if dev.GID == nil && spec.Process != nil {
+		if gid := spec.Process.User.GID; gid > 0 {
+			dev.GID = &gid
+		}
+	}
+
+	specgen.RemoveDevice(dev.Path)
+	specgen.AddDevice(dev)
+
+	if dev.Type == "b" || dev.Type == "c" {
+		access := d.Permissions
+		switch access {
+		case "":
+			access = "rwm"
+		case NoPermissions:
+			access = ""
+		}
+		specgen.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, access)
+	}
+	return nil
+}
+
+	}
+	return nil
+}
 // Hook is a CDI Spec Hook wrapper, used for validating hooks.
 type Hook struct {
 	*cdi.Hook
