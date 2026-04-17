@@ -374,19 +374,21 @@ func (d *DeviceNode) addToGenerator(specgen *ocigen.Generator, spec *oci.Spec) e
 	specgen.AddDevice(dev)
 
 	if dev.Type == "b" || dev.Type == "c" {
-		access := d.Permissions
-		switch access {
-		case "":
-			access = "rwm"
-		case NoPermissions:
-			access = ""
-		}
-		specgen.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, access)
+		specgen.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, d.getAccessString())
 	}
 	return nil
 }
 
+func (d *DeviceNode) getAccessString() string {
+	switch d.Permissions {
+	case "":
+		return "rwm"
+	case NoPermissions:
+		return ""
+	default:
+		return d.Permissions
 	}
+}
 	return nil
 }
 // Hook is a CDI Spec Hook wrapper, used for validating hooks.
