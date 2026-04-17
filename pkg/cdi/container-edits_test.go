@@ -98,6 +98,31 @@ func TestValidateContainerEdits(t *testing.T) {
 			},
 		},
 		{
+			name: "valid wildcard device nodes",
+			edits: &cdi.ContainerEdits{
+				DeviceNodes: []*cdi.DeviceNode{
+					{
+						Path: "*", Type: "c",
+					},
+					{
+						Path: "*", Type: "b",
+					},
+					{
+						Path: "*", Type: "c", Major: -1,
+					},
+					{
+						Path: "*", Type: "b", Minor: -1,
+					},
+					{
+						Path: "*", Type: "c", Permissions: NoPermissions,
+					},
+					{
+						Path: "*", Type: "c", Permissions: "rwm",
+					},
+				},
+			},
+		},
+		{
 			name: "invalid device, empty path",
 			edits: &cdi.ContainerEdits{
 				DeviceNodes: []*cdi.DeviceNode{
@@ -128,6 +153,54 @@ func TestValidateContainerEdits(t *testing.T) {
 						Path:        "/dev/vendorctl",
 						Type:        "b",
 						Permissions: "to land",
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid wildcard device, wildcard in path",
+			edits: &cdi.ContainerEdits{
+				DeviceNodes: []*cdi.DeviceNode{
+					{
+						Path: "/dev/vendor*",
+						Type: "b",
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid wildcard device, non-wildcard with major",
+			edits: &cdi.ContainerEdits{
+				DeviceNodes: []*cdi.DeviceNode{
+					{
+						Path:  "/dev/vendorctl",
+						Major: -1,
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid wildcard device, non-wildcard with minor",
+			edits: &cdi.ContainerEdits{
+				DeviceNodes: []*cdi.DeviceNode{
+					{
+						Path:  "/dev/vendorctl",
+						Minor: -1,
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid wildcard device, with incorrect type",
+			edits: &cdi.ContainerEdits{
+				DeviceNodes: []*cdi.DeviceNode{
+					{
+						Path: "*",
+						Type: "p",
 					},
 				},
 			},

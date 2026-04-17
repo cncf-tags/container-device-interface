@@ -328,19 +328,11 @@ type DeviceNode struct {
 
 // Validate a CDI Spec DeviceNode.
 func (d *DeviceNode) Validate() error {
-	validTypes := map[string]struct{}{
-		"":  {},
-		"b": {},
-		"c": {},
-		"u": {},
-		"p": {},
-	}
-
 	if d.Path == "" {
 		return errors.New("invalid (empty) device path")
 	}
-	if _, ok := validTypes[d.Type]; !ok {
-		return fmt.Errorf("device %q: invalid type %q", d.Path, d.Type)
+	if strings.Contains(d.Path, "*") && d.Path != "*" {
+		return errors.New("invalid device device path; wildcard device path")
 	}
 	switch {
 	case d.Permissions == "":
@@ -350,10 +342,41 @@ func (d *DeviceNode) Validate() error {
 			d.Path, d.Permissions)
 	}
 
+	switch {
+	case d.isWildcardDevice():
+		validTypes := map[string]struct{}{"b": {}, "c": {}}
+		if _, ok := validTypes[d.Type]; !ok {
+			return fmt.Errorf("device %q: invalid type %q", d.Path, d.Type)
+		}
+	default:
+		validTypes := map[string]struct{}{
+			"":  {},
+			"b": {},
+			"c": {},
+			"u": {},
+			"p": {},
+		}
+		if _, ok := validTypes[d.Type]; !ok {
+			return fmt.Errorf("device %q: invalid type %q", d.Path, d.Type)
+		}
+		// For a regular device, we also check that we have valid major and
+		// minor numbers.
+		if d.Major == -1 {
+			return fmt.Errorf("wildcard device major requires a wildcard device")
+		}
+		if d.Minor == -1 {
+			return fmt.Errorf("wildcard device minor requires a wildcard device")
+		}
+	}
+
 	return nil
 }
 
 func (d *DeviceNode) addToGenerator(specgen *ocigen.Generator, spec *oci.Spec) error {
+	if d.isWildcardDevice() {
+		return d.addAsWildcardDevice(specgen)
+	}
+
 	err := d.fillMissingInfo()
 	if err != nil {
 		return err
@@ -389,8 +412,33 @@ func (d *DeviceNode) getAccessString() string {
 		return d.Permissions
 	}
 }
+
+// isWildcardDevice returns whether the device node represents a "wildcard" device.
+// Such devices do not cause device nodes to be created in the container, but
+// do update the cgroups to allow device access. A wildcard device always has
+// the path specified as "*" and setting major or minor numbers to -1 will add
+// a cgroup rule that matches all major (or minor) numbers.
+func (d *DeviceNode) isWildcardDevice() bool {
+	return d.Path == "*"
+}
+
+func (d *DeviceNode) addAsWildcardDevice(specgen *ocigen.Generator) error {
+	if d.Type != "b" && d.Type != "c" {
+		return fmt.Errorf("wildcard device node not supported for device type %v", d.Type)
+	}
+	var major *int64
+	if d.Major != -1 {
+		major = &d.Major
+	}
+	var minor *int64
+	if d.Minor != -1 {
+		minor = &d.Minor
+	}
+	specgen.AddLinuxResourcesDevice(true, d.Type, major, minor, d.getAccessString())
+
 	return nil
 }
+
 // Hook is a CDI Spec Hook wrapper, used for validating hooks.
 type Hook struct {
 	*cdi.Hook

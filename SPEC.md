@@ -34,6 +34,7 @@ Released versions of the spec are available as Git tags.
 | v0.8.0 |   | Remove .ToOCI() functions from specs-go package. |
 | v1.0.0 |   | Move minimum version logic to specs-go package. |
 | v1.1.0 |   | Add `NetDevices` to `ContainerEdits`, `Schemata` and `EnableMonitoring` to `IntelRdt`. Dropped `EnableCMT` and `EnableMBM` fields from `IntelRdt`. |
+| v1.2.0 |   | Allow wildcard device nodes to be specified. These have a `Path` of `*` and allow for device `Major` and `Minor` values of `-1` which is mapped to the `*` device in the OCI runtime spec. |
 
 *Note*: spec loading fails on unknown fields and when the minimum required version is higher than the version specified in the spec. The minimum required version is determined based on the usage of fields mentioned in the table above. For example the minimum required version is v0.6.0 if the `Annotations` field is used in the spec, but `IntelRdt` is not.
 `MinimumRequiredVersion` API can be used to get the minimum required version.
@@ -229,11 +230,11 @@ The `containerEdits` field is referenced in two places in the specification:
 The `containerEdits` field has the following definition:
   * `env` (array of strings in the format of "VARNAME=VARVALUE", OPTIONAL) describes the environment variables that should be set. These values are appended to the container environment array.
   * `deviceNodes` (array of objects, OPTIONAL) describes the device nodes that should be mounted:
-    * `path` (string, REQUIRED) path of the device within the container.
+    * `path` (string, REQUIRED) path of the device within the container. As of v1.2.0, if the path is `*` the device node is used to only update the cgroups for the container.
     * `hostPath` (string, OPTIONAL) path of the device node on the host. If not specified the value for `path` is used. Added in v0.5.0.
     * `type` (string, OPTIONAL) Device type: block, char, etc.
-    * `major` (int64, OPTIONAL) Device major number.
-    * `minor` (int64, OPTIONAL) Device minor number.
+    * `major` (int64, OPTIONAL) Device major number. As of v1.2.0, if the `path` of the device node is `*` the value of `-1` is allowed and represents a group rule matching all device major numbers.
+    * `minor` (int64, OPTIONAL) Device minor number. As of v1.2.0, if the `path` of the device node is `*` the value of `-1` is allowed and represents a group rule matching all device minor numbers.
     * `fileMode` (int64, OPTIONAL) file mode for the device.
     * `permissions` (string, OPTIONAL) Cgroups permissions of the device, candidates are one or more of:
       * r - allows container to read from the specified device.
