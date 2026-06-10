@@ -196,23 +196,20 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 // addMultipleProcessEnv adds or replaces environment variables on the process,
 // deduplicating by key.
 func addMultipleProcessEnv(process *oci.Process, envs []string) {
+EnvLoop:
 	for _, env := range envs {
 		parts := strings.SplitN(env, "=", 2)
 		if len(parts) < 2 {
 			continue
 		}
 		prefix := parts[0] + "="
-		replaced := false
 		for i, e := range process.Env {
 			if strings.HasPrefix(e, prefix) {
 				process.Env[i] = env
-				replaced = true
-				break
+				continue EnvLoop
 			}
 		}
-		if !replaced {
-			process.Env = append(process.Env, env)
-		}
+		process.Env = append(process.Env, env)
 	}
 }
 
