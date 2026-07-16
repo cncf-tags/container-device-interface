@@ -67,15 +67,8 @@ func initSpecDirs() {
 	cdi.SetSpecValidator(schema.WithSchema(s))
 
 	if len(specDirs) > 0 {
-		cache, err := cdi.NewCache(
-			cdi.WithSpecDirs(specDirs...),
-		)
-		if err != nil {
-			fmt.Printf("failed to create CDI cache: %v\n", err)
-			os.Exit(1)
-		}
-		if len(cache.GetErrors()) > 0 {
-			cdiPrintCacheErrors()
+		if err := cdi.Configure(cdi.WithSpecDirs(specDirs...)); err != nil {
+			fmt.Printf("failed to configure CDI cache: %v\n", err)
 			os.Exit(1)
 		}
 	}
