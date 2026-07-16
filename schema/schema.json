@@ -35,6 +35,9 @@
                     "containerEdits"
                 ]
             }
+        },
+        "containerEdits": {
+            "$ref": "defs.json#/definitions/containerEdits"
         }
     },
     "required": [
