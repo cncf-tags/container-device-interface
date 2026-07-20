@@ -41,6 +41,31 @@ func TestQualifiedName(t *testing.T) {
 			isQualified: true,
 		},
 		{
+			// single-character vendor and class (regression: used to panic
+			// with slice bounds out of range [1:0])
+			device:      "a/b=c",
+			vendor:      "a",
+			class:       "b",
+			name:        "c",
+			isQualified: true,
+		},
+		{
+			// single-character class
+			device:      "aa/b=cc",
+			vendor:      "aa",
+			class:       "b",
+			name:        "cc",
+			isQualified: true,
+		},
+		{
+			// single-character vendor
+			device:      "a/bb=cc",
+			vendor:      "a",
+			class:       "bb",
+			name:        "cc",
+			isQualified: true,
+		},
+		{
 			device:      "vendor.com/class=0",
 			vendor:      "vendor.com",
 			class:       "class",
