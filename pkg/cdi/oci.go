@@ -92,7 +92,7 @@ func (i *IntelRdt) toOCI() *spec.LinuxIntelRdt {
 		L3CacheSchema:    i.L3CacheSchema,
 		MemBwSchema:      i.MemBwSchema,
 		Schemata:         i.Schemata,
-		EnableMonitoring: i.EnableMonitoring,
+		EnableMonitoring: i.EnableMonitoring || i.EnableCMT || i.EnableMBM,
 	}
 }
 

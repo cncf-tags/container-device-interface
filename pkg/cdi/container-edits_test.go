@@ -722,6 +722,24 @@ func TestApplyContainerEdits(t *testing.T) {
 			},
 		},
 		{
+			name: "empty spec, legacy rdt monitoring",
+			spec: &oci.Spec{},
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID:    "clos-1",
+					EnableCMT: true,
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					IntelRdt: &oci.LinuxIntelRdt{
+						ClosID:           "clos-1",
+						EnableMonitoring: true,
+					},
+				},
+			},
+		},
+		{
 			name: "non-empty spec, overriding rdt",
 			spec: &oci.Spec{
 				Linux: &oci.Linux{

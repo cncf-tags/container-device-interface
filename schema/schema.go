@@ -167,12 +167,11 @@ func Load(source string) (*Schema, error) {
 
 // ReadAndValidate all data from the given reader, using the schema for validation.
 func (s *Schema) ReadAndValidate(r io.Reader) ([]byte, error) {
-	loader, reader := schema.NewReaderLoader(r)
-	data, err := io.ReadAll(reader)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read data for validation: %w", err)
 	}
-	return data, s.validate(loader)
+	return data, s.ValidateData(data)
 }
 
 // ValidateReader validates the data read from an io.Reader against the schema.
@@ -197,6 +196,11 @@ func (s *Schema) ValidateData(data []byte) error {
 		if err != nil {
 			return fmt.Errorf("failed to JSON remarshal data for validation: %w", err)
 		}
+	} else {
+		err = json.Unmarshal(data, &any)
+		if err != nil {
+			return fmt.Errorf("failed to JSON unmarshal data for validation: %w", err)
+		}
 	}
 
 	if err := s.validate(schema.NewBytesLoader(data)); err != nil {
@@ -208,10 +212,6 @@ func (s *Schema) ValidateData(data []byte) error {
 
 // ValidateFile validates the given JSON file against the schema.
 func (s *Schema) ValidateFile(path string) error {
-	if filepath.Ext(path) == ".json" {
-		return s.validate(schema.NewReferenceLoader("file://" + path))
-	}
-
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -308,11 +308,15 @@ func (c schemaContents) getDevices() ([]schemaContents, error) {
 
 // validateContents performs additional validation against the schema contents.
 func (s *Schema) validateContents(any map[string]interface{}) error {
-	if any == nil || s == nil {
+	if any == nil || s == nil || s.schema == nil {
 		return nil
 	}
 
 	contents := schemaContents(any)
+
+	if err := cdi.ValidateVersionContents(any); err != nil {
+		return err
+	}
 
 	if specAnnotations, ok := contents.getAnnotations(); ok {
 		if err := validation.ValidateSpecAnnotations("", specAnnotations); err != nil {

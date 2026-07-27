@@ -70,6 +70,9 @@ func ValidateVersion(spec *Spec) error {
 	if !validSpecVersions.isValidVersion(spec.Version) {
 		return fmt.Errorf("invalid version %q", spec.Version)
 	}
+	if err := validateVersionedSpec(spec); err != nil {
+		return err
+	}
 	minVersion, err := MinimumRequiredVersion(spec)
 	if err != nil {
 		return fmt.Errorf("could not determine minimum required version: %w", err)
@@ -77,6 +80,36 @@ func ValidateVersion(spec *Spec) error {
 	if newVersion(minVersion).isGreaterThan(newVersion(spec.Version)) {
 		return fmt.Errorf("the spec version must be at least v%v", minVersion)
 	}
+	return nil
+}
+
+// ValidateVersionContents checks versioned fields in raw CDI Spec contents.
+// This complements ValidateVersion for fields whose mere presence matters but
+// whose zero value is indistinguishable from omission after unmarshalling.
+// Invalid or missing cdiVersion values are left for ValidateVersion to report.
+func ValidateVersionContents(contents map[string]interface{}) error {
+	specVersion, ok := getString(contents, "cdiVersion")
+	if !ok {
+		return nil
+	}
+	if !validSpecVersions.isValidVersion(specVersion) {
+		return nil
+	}
+
+	version := newVersion(specVersion)
+	if err := validateVersionedContainerEditsContents(version, "containerEdits", getMap(contents, "containerEdits")); err != nil {
+		return err
+	}
+
+	devices, _ := contents["devices"].([]interface{})
+	for idx, device := range devices {
+		deviceContents, _ := device.(map[string]interface{})
+		path := fmt.Sprintf("devices[%d].containerEdits", idx)
+		if err := validateVersionedContainerEditsContents(version, path, getMap(deviceContents, "containerEdits")); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -108,6 +141,93 @@ func (v version) isGreaterThan(o version) bool {
 // isLatest checks whether the version is the latest supported version
 func (v version) isLatest() bool {
 	return v == vCurrent
+}
+
+func getString(contents map[string]interface{}, field string) (string, bool) {
+	if contents == nil {
+		return "", false
+	}
+	value, ok := contents[field]
+	if !ok {
+		return "", false
+	}
+	valueString, ok := value.(string)
+	return valueString, ok
+}
+
+func getMap(contents map[string]interface{}, field string) map[string]interface{} {
+	if contents == nil {
+		return nil
+	}
+	value, ok := contents[field]
+	if !ok {
+		return nil
+	}
+	valueMap, _ := value.(map[string]interface{})
+	return valueMap
+}
+
+func validateVersionedContainerEditsContents(specVersion version, path string, edits map[string]interface{}) error {
+	if edits != nil {
+		if _, ok := edits["netDevices"]; ok && v110.isGreaterThan(specVersion) {
+			return fmt.Errorf("%s.netDevices requires CDI spec version at least %s", path, v110)
+		}
+		if err := validateVersionedIntelRdtContents(specVersion, path+".intelRdt", getMap(edits, "intelRdt")); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validateVersionedIntelRdtContents(specVersion version, path string, intelRdt map[string]interface{}) error {
+	if intelRdt == nil {
+		return nil
+	}
+
+	for _, field := range []string{"enableCMT", "enableMBM"} {
+		if _, ok := intelRdt[field]; ok && !v110.isGreaterThan(specVersion) {
+			return fmt.Errorf("%s.%s is not valid for CDI spec version %s", path, field, specVersion)
+		}
+	}
+	for _, field := range []string{"schemata", "enableMonitoring"} {
+		if _, ok := intelRdt[field]; ok && v110.isGreaterThan(specVersion) {
+			return fmt.Errorf("%s.%s requires CDI spec version at least %s", path, field, v110)
+		}
+	}
+
+	return nil
+}
+
+func validateVersionedSpec(spec *Spec) error {
+	specVersion := newVersion(spec.Version)
+	if err := validateVersionedIntelRdt(specVersion, "containerEdits.intelRdt", spec.ContainerEdits.IntelRdt); err != nil {
+		return err
+	}
+
+	for idx, dev := range spec.Devices {
+		path := fmt.Sprintf("devices[%d].containerEdits.intelRdt", idx)
+		if err := validateVersionedIntelRdt(specVersion, path, dev.ContainerEdits.IntelRdt); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validateVersionedIntelRdt(specVersion version, path string, intelRdt *IntelRdt) error {
+	if intelRdt == nil || v110.isGreaterThan(specVersion) {
+		return nil
+	}
+
+	switch {
+	case intelRdt.EnableCMT:
+		return fmt.Errorf("%s.enableCMT is not valid for CDI spec version %s", path, specVersion)
+	case intelRdt.EnableMBM:
+		return fmt.Errorf("%s.enableMBM is not valid for CDI spec version %s", path, specVersion)
+	}
+
+	return nil
 }
 
 type requiredFunc func(*Spec) bool

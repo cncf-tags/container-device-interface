@@ -131,6 +131,88 @@ func TestValidateData(t *testing.T) {
 	}
 }
 
+func TestValidateDataIntelRdtVersionCompatibility(t *testing.T) {
+	scm := loadSchema(t, schema.BuiltinSchemaName)
+
+	for _, tc := range []struct {
+		name    string
+		data    string
+		wantErr bool
+	}{
+		{
+			name: "legacy field is valid before v1.1.0",
+			data: `
+cdiVersion: "1.0.0"
+kind: "vendor.com/device"
+containerEdits:
+  intelRdt:
+    enableCMT: true
+devices:
+  - name: "gpu0"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/null"
+`,
+		},
+		{
+			name: "legacy field is invalid for v1.1.0 even when false",
+			data: `
+cdiVersion: "1.1.0"
+kind: "vendor.com/device"
+containerEdits:
+  intelRdt:
+    enableMBM: false
+devices:
+  - name: "gpu0"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/null"
+`,
+			wantErr: true,
+		},
+		{
+			name: "new monitoring field is invalid before v1.1.0 even when false",
+			data: `
+cdiVersion: "1.0.0"
+kind: "vendor.com/device"
+containerEdits:
+  intelRdt:
+    enableMonitoring: false
+devices:
+  - name: "gpu0"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/null"
+`,
+			wantErr: true,
+		},
+		{
+			name: "device scoped new RDT field is invalid before v1.1.0",
+			data: `
+cdiVersion: "1.0.0"
+kind: "vendor.com/device"
+devices:
+  - name: "gpu0"
+    containerEdits:
+      intelRdt:
+        schemata: []
+      deviceNodes:
+        - path: "/dev/null"
+`,
+			wantErr: true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := scm.ValidateData([]byte(tc.data))
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestValidateReader(t *testing.T) {
 	type testCase struct {
 		testName   string

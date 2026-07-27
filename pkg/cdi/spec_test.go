@@ -256,6 +256,79 @@ devices:
 	}
 }
 
+func TestParseSpecIntelRdtVersionCompatibility(t *testing.T) {
+	baseSpec := `
+cdiVersion: "%s"
+kind: vendor.com/device
+containerEdits:
+  intelRdt:
+%s
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/null"
+`
+
+	for _, tc := range []struct {
+		name           string
+		version        string
+		intelRdt       string
+		shouldParse    bool
+		shouldValidate bool
+		enableCMT      bool
+	}{
+		{
+			name:           "legacy CMT is accepted before v1.1.0",
+			version:        "1.0.0",
+			intelRdt:       "    enableCMT: true",
+			shouldParse:    true,
+			shouldValidate: true,
+			enableCMT:      true,
+		},
+		{
+			name:           "legacy CMT is rejected for v1.1.0",
+			version:        "1.1.0",
+			intelRdt:       "    enableCMT: true",
+			shouldParse:    false,
+			shouldValidate: false,
+		},
+		{
+			name:           "new monitoring field is rejected before v1.1.0",
+			version:        "1.0.0",
+			intelRdt:       "    enableMonitoring: false",
+			shouldParse:    false,
+			shouldValidate: false,
+		},
+		{
+			name:           "unknown RDT fields are still rejected",
+			version:        "1.0.0",
+			intelRdt:       "    unknown: true",
+			shouldParse:    false,
+			shouldValidate: false,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			raw, err := ParseSpec([]byte(fmt.Sprintf(baseSpec, tc.version, tc.intelRdt)))
+			if !tc.shouldParse {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.enableCMT, raw.ContainerEdits.IntelRdt.EnableCMT)
+
+			spec, err := newSpec(raw, tc.name, 0)
+			if !tc.shouldValidate {
+				require.Error(t, err)
+				require.Nil(t, spec)
+				return
+			}
+			require.NoError(t, err)
+			require.NotNil(t, spec)
+		})
+	}
+}
+
 func TestWriteSpec(t *testing.T) {
 	type testCase struct {
 		name    string

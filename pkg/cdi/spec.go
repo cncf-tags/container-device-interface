@@ -250,6 +250,14 @@ func (s *Spec) validate() (map[string]*Device, error) {
 
 // ParseSpec parses CDI Spec data into a raw CDI Spec.
 func ParseSpec(data []byte) (*cdi.Spec, error) {
+	var contents map[string]interface{}
+	if err := yaml.UnmarshalStrict(data, &contents); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal CDI Spec: %w", err)
+	}
+	if err := cdi.ValidateVersionContents(contents); err != nil {
+		return nil, fmt.Errorf("failed to validate CDI Spec version: %w", err)
+	}
+
 	var raw *cdi.Spec
 	err := yaml.UnmarshalStrict(data, &raw)
 	if err != nil {
