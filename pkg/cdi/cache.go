@@ -226,8 +226,6 @@ func (c *Cache) refreshIfRequired(force bool) (bool, error) {
 // any of the devices. Might trigger a cache refresh, in which case any
 // errors encountered can be obtained using GetErrors().
 func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, error) {
-	var unresolved []string
-
 	if ociSpec == nil {
 		return devices, fmt.Errorf("can't inject devices, nil OCI Spec")
 	}
@@ -237,23 +235,8 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
-	edits := &ContainerEdits{}
-	specs := map[*Spec]struct{}{}
-
-	for _, device := range devices {
-		d := c.devices[device]
-		if d == nil {
-			unresolved = append(unresolved, device)
-			continue
-		}
-		if _, ok := specs[d.GetSpec()]; !ok {
-			specs[d.GetSpec()] = struct{}{}
-			edits.Append(d.GetSpec().edits())
-		}
-		edits.Append(d.edits())
-	}
-
-	if unresolved != nil {
+	edits, unresolved := c.collectContainerEdits(devices)
+	if len(unresolved) > 0 {
 		return unresolved, fmt.Errorf("unresolvable CDI devices %s",
 			strings.Join(unresolved, ", "))
 	}
@@ -263,6 +246,59 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 	}
 
 	return nil, nil
+}
+
+// ResolveEdits resolves the given qualified devices to their effective CDI
+// edits without applying OCI conversion or mutating an OCI Spec.
+func (c *Cache) ResolveEdits(devices ...string) (*ContainerEdits, error) {
+	resolved, err := func() (*ContainerEdits, error) {
+		c.Lock()
+		defer c.Unlock()
+
+		if _, err := c.refreshIfRequired(false); err != nil {
+			return nil, err
+		}
+
+		selected, unresolved := c.collectContainerEdits(devices)
+		if len(unresolved) > 0 {
+			return nil, fmt.Errorf("unresolvable CDI devices %s", strings.Join(unresolved, ", "))
+		}
+
+		return cloneContainerEdits(selected)
+	}()
+	if err != nil {
+		return nil, err
+	}
+	if err := resolved.resolveDeviceNodes(); err != nil {
+		return nil, err
+	}
+
+	return resolved, nil
+}
+
+// collectContainerEdits selects the container edits for devices. The
+// caller must hold the cache lock and is responsible for refresh policy.
+func (c *Cache) collectContainerEdits(devices []string) (*ContainerEdits, []string) {
+	edits := &ContainerEdits{}
+	var unresolved []string
+	specs := map[*Spec]struct{}{}
+
+	for _, qualifiedName := range devices {
+		device := c.devices[qualifiedName]
+		if device == nil {
+			unresolved = append(unresolved, qualifiedName)
+			continue
+		}
+
+		spec := device.GetSpec()
+		if _, ok := specs[spec]; !ok {
+			specs[spec] = struct{}{}
+			edits.Append(spec.edits())
+		}
+		edits.Append(device.edits())
+	}
+
+	return edits, unresolved
 }
 
 // highestPrioritySpecDir returns the Spec directory with highest priority
