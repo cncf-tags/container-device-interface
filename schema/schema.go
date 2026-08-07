@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"embed"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -29,10 +28,11 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
+	"github.com/santhosh-tekuri/jsonschema/v6"
 	"sigs.k8s.io/yaml"
 
-	schema "github.com/xeipuuv/gojsonschema"
 	"tags.cncf.io/container-device-interface/internal/validation"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
@@ -55,7 +55,7 @@ const (
 
 // Schema is a JSON validation schema.
 type Schema struct {
-	schema *schema.Schema
+	schema *jsonschema.Schema
 }
 
 // Validate applies a schema validation on the supplied CDI specification.
@@ -64,12 +64,11 @@ func (s *Schema) Validate(spec *cdi.Spec) error {
 	if s == nil {
 		return nil
 	}
-	return s.ValidateType(spec)
-}
-
-// validationError wraps a JSON validation result.
-type validationError struct {
-	result *schema.Result
+	data, err := json.Marshal(spec)
+	if err != nil {
+		return fmt.Errorf("failed to load JSON data for validation: %w", err)
+	}
+	return s.validate(bytes.NewReader(data))
 }
 
 // Set sets the default validating JSON schema.
@@ -91,14 +90,26 @@ func BuiltinSchema() *Schema {
 	return builtinSchema()
 }
 
-var builtinSchema = sync.OnceValue(func() *Schema {
-	s, err := schema.NewSchema(
-		schema.NewReferenceLoaderFileSystem(
-			builtinSchemaFile,
-			http.FS(builtinFS),
-		),
-	)
+// builtinURLLoader loads schemas from the embedded builtin filesystem.
+type builtinURLLoader struct{}
 
+func (builtinURLLoader) Load(url string) (any, error) {
+	f, err := builtinFS.Open(strings.TrimPrefix(url, "file:///"))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }()
+
+	return jsonschema.UnmarshalJSON(f)
+}
+
+var builtinSchema = sync.OnceValue(func() *Schema {
+	compiler := jsonschema.NewCompiler()
+	compiler.UseLoader(jsonschema.SchemeURLLoader{
+		"file": builtinURLLoader{},
+	})
+
+	s, err := compiler.Compile(builtinSchemaFile)
 	if err != nil {
 		return NopSchema()
 	}
@@ -137,12 +148,6 @@ func ValidateType(obj any) error {
 
 // Load the given JSON Schema.
 func Load(source string) (*Schema, error) {
-	var (
-		loader schema.JSONLoader
-		err    error
-		s      *schema.Schema
-	)
-
 	source = strings.TrimSpace(source)
 
 	switch {
@@ -150,12 +155,12 @@ func Load(source string) (*Schema, error) {
 		return BuiltinSchema(), nil
 	case source == NoneSchemaName, source == "":
 		return NopSchema(), nil
-	case strings.HasPrefix(source, "file://"):
 	case strings.HasPrefix(source, "http://"):
 	case strings.HasPrefix(source, "https://"):
 	default:
-		if !strings.Contains(source, "://") {
-			source, err = filepath.Abs(source)
+		if !strings.Contains(source, "://") || strings.HasPrefix(source, "file://") {
+			var err error
+			source, err = filepath.Abs(strings.TrimPrefix(source, "file://"))
 			if err != nil {
 				return nil, fmt.Errorf("failed to get JSON schema absolute path for %s: %w",
 					source, err)
@@ -164,9 +169,17 @@ func Load(source string) (*Schema, error) {
 		}
 	}
 
-	loader = schema.NewReferenceLoader(source)
+	compiler := jsonschema.NewCompiler()
+	httpLoader := httpURLLoader(http.Client{
+		Timeout: 15 * time.Second,
+	})
+	compiler.UseLoader(jsonschema.SchemeURLLoader{
+		"file":  jsonschema.FileLoader{},
+		"http":  &httpLoader,
+		"https": &httpLoader,
+	})
 
-	s, err = schema.NewSchema(loader)
+	s, err := compiler.Compile(source)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load JSON schema: %w", err)
 	}
@@ -176,18 +189,16 @@ func Load(source string) (*Schema, error) {
 
 // ReadAndValidate all data from the given reader, using the schema for validation.
 func (s *Schema) ReadAndValidate(r io.Reader) ([]byte, error) {
-	loader, reader := schema.NewReaderLoader(r)
-	data, err := io.ReadAll(reader)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read data for validation: %w", err)
 	}
-	return data, s.validate(loader)
+	return data, s.validate(bytes.NewReader(data))
 }
 
 // ValidateReader validates the data read from an io.Reader against the schema.
 func (s *Schema) ValidateReader(r io.Reader) error {
-	_, err := s.ReadAndValidate(r)
-	return err
+	return s.validate(r)
 }
 
 // ValidateData validates the given JSON data against the schema.
@@ -205,7 +216,7 @@ func (s *Schema) ValidateData(data []byte) error {
 		}
 	}
 
-	if err := s.validate(schema.NewBytesLoader(data)); err != nil {
+	if err := s.validate(bytes.NewReader(data)); err != nil {
 		return err
 	}
 
@@ -215,7 +226,13 @@ func (s *Schema) ValidateData(data []byte) error {
 // ValidateFile validates the given JSON file against the schema.
 func (s *Schema) ValidateFile(path string) error {
 	if filepath.Ext(path) == ".json" {
-		return s.validate(schema.NewReferenceLoader("file://" + path))
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		return s.validate(f)
 	}
 
 	data, err := os.ReadFile(path)
@@ -227,25 +244,25 @@ func (s *Schema) ValidateFile(path string) error {
 
 // ValidateType validates a go object against the schema.
 func (s *Schema) ValidateType(obj any) error {
-	l := schema.NewGoLoader(obj)
-	return s.validate(l)
+	data, err := json.Marshal(obj)
+	if err != nil {
+		return fmt.Errorf("failed to load JSON data for validation: %w", err)
+	}
+
+	return s.validate(bytes.NewReader(data))
 }
 
-// Validate the (to be) loaded doc against the schema.
-func (s *Schema) validate(doc schema.JSONLoader) error {
+// Validate the given doc against the schema.
+func (s *Schema) validate(r io.Reader) error {
 	if s == nil || s.schema == nil {
 		return nil
 	}
 
-	docErr, jsonErr := s.schema.Validate(doc)
-	if jsonErr != nil {
-		return fmt.Errorf("failed to load JSON data for validation: %w", jsonErr)
+	doc, err := jsonschema.UnmarshalJSON(r)
+	if err != nil {
+		return fmt.Errorf("failed to load JSON data for validation: %w", err)
 	}
-	if docErr.Valid() {
-		return nil
-	}
-
-	return &validationError{result: docErr}
+	return s.schema.Validate(doc)
 }
 
 type schemaContents map[string]any
@@ -343,22 +360,20 @@ func (s *Schema) validateContents(data map[string]any) error {
 	return nil
 }
 
-// validationError returns the given result's errors as a single error string.
-func (e *validationError) Error() string {
-	if e == nil || e.result == nil || e.result.Valid() {
-		return ""
+type httpURLLoader http.Client
+
+func (l *httpURLLoader) Load(url string) (any, error) {
+	resp, err := (*http.Client)(l).Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s returned status code %d", url, resp.StatusCode)
 	}
 
-	errs := []error{}
-	for _, err := range e.result.Errors() {
-		errs = append(errs, fmt.Errorf("%v", err))
-	}
-
-	if err := errors.Join(errs...); err != nil {
-		return fmt.Sprintf("%v", err)
-	}
-
-	return ""
+	return jsonschema.UnmarshalJSON(resp.Body)
 }
 
 //go:embed *.json
