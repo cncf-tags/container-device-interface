@@ -27,6 +27,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"sigs.k8s.io/yaml"
 
@@ -76,10 +77,10 @@ func Get() *Schema {
 // BuiltinSchema returns the builtin schema if we have a valid one. Otherwise
 // it falls back to NopSchema().
 func BuiltinSchema() *Schema {
-	if builtin != nil {
-		return builtin
-	}
+	return builtinSchema()
+}
 
+var builtinSchema = sync.OnceValue(func() *Schema {
 	s, err := schema.NewSchema(
 		schema.NewReferenceLoaderFileSystem(
 			builtinSchemaFile,
@@ -87,14 +88,11 @@ func BuiltinSchema() *Schema {
 		),
 	)
 
-	if err == nil {
-		builtin = &Schema{schema: s}
-	} else {
-		builtin = NopSchema()
+	if err != nil {
+		return NopSchema()
 	}
-
-	return builtin
-}
+	return &Schema{schema: s}
+})
 
 // NopSchema returns an validating JSON Schema that does no real validation.
 func NopSchema() *Schema {
@@ -352,12 +350,8 @@ func (e *Error) Error() string {
 	return ""
 }
 
-var (
-	// our builtin schema
-	builtin *Schema
-	// currently loaded schema, builtin by default
-	current = BuiltinSchema()
-)
+// currently loaded schema, builtin by default
+var current = builtinSchema()
 
 //go:embed *.json
 var builtinFS embed.FS
