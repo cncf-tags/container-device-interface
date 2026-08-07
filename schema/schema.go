@@ -58,9 +58,9 @@ func (s *Schema) Validate(spec *cdi.Spec) error {
 	return s.ValidateType(spec)
 }
 
-// Error wraps a JSON validation result.
-type Error struct {
-	Result *schema.Result
+// validationError wraps a JSON validation result.
+type validationError struct {
+	result *schema.Result
 }
 
 // Set sets the default validating JSON schema.
@@ -239,7 +239,7 @@ func (s *Schema) validate(doc schema.JSONLoader) error {
 		return nil
 	}
 
-	return &Error{Result: docErr}
+	return &validationError{result: docErr}
 }
 
 type schemaContents map[string]interface{}
@@ -337,14 +337,14 @@ func (s *Schema) validateContents(any map[string]interface{}) error {
 	return nil
 }
 
-// Error returns the given Result's errors as a single error string.
-func (e *Error) Error() string {
-	if e == nil || e.Result == nil || e.Result.Valid() {
+// validationError returns the given result's errors as a single error string.
+func (e *validationError) Error() string {
+	if e == nil || e.result == nil || e.result.Valid() {
 		return ""
 	}
 
 	errs := []error{}
-	for _, err := range e.Result.Errors() {
+	for _, err := range e.result.Errors() {
 		errs = append(errs, fmt.Errorf("%v", err))
 	}
 
