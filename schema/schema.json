@@ -33,7 +33,8 @@
                 "required": [
                     "name",
                     "containerEdits"
-                ]
+                ],
+                "additionalProperties": false
             }
         },
         "containerEdits": {
@@ -44,5 +45,6 @@
         "cdiVersion",
         "kind",
         "devices"
-    ]
+    ],
+    "additionalProperties": false
 }
