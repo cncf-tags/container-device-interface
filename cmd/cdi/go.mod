@@ -7,7 +7,7 @@ require (
 	github.com/opencontainers/runtime-spec v1.3.0
 	github.com/spf13/cobra v1.6.0
 	github.com/stretchr/testify v1.7.0
-	gopkg.in/yaml.v3 v3.0.1
+	go.yaml.in/yaml/v3 v3.0.5
 	sigs.k8s.io/yaml v1.4.0
 	tags.cncf.io/container-device-interface v1.1.0
 	tags.cncf.io/container-device-interface/schema v0.0.0
@@ -24,6 +24,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace (

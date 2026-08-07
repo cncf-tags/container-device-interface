@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	orderedyaml "gopkg.in/yaml.v3"
+	orderedyaml "go.yaml.in/yaml/v3"
 )
 
 func chooseFormat(format string, path string) string {

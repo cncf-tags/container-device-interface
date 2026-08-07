@@ -25,7 +25,7 @@ import (
 	"sync"
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
-	orderedyaml "gopkg.in/yaml.v3"
+	orderedyaml "go.yaml.in/yaml/v3"
 	"sigs.k8s.io/yaml"
 
 	"tags.cncf.io/container-device-interface/internal/validation"
