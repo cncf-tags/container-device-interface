@@ -183,17 +183,14 @@ func (s *Schema) ValidateReader(r io.Reader) error {
 
 // ValidateData validates the given JSON data against the schema.
 func (s *Schema) ValidateData(data []byte) error {
-	var (
-		any map[string]interface{}
-		err error
-	)
-
+	var schemaData map[string]interface{}
 	if !bytes.HasPrefix(bytes.TrimSpace(data), []byte{'{'}) {
-		err = yaml.Unmarshal(data, &any)
+		var err error
+		err = yaml.Unmarshal(data, &schemaData)
 		if err != nil {
 			return fmt.Errorf("failed to YAML unmarshal data for validation: %w", err)
 		}
-		data, err = json.Marshal(any)
+		data, err = json.Marshal(schemaData)
 		if err != nil {
 			return fmt.Errorf("failed to JSON remarshal data for validation: %w", err)
 		}
@@ -203,7 +200,7 @@ func (s *Schema) ValidateData(data []byte) error {
 		return err
 	}
 
-	return s.validateContents(any)
+	return s.validateContents(schemaData)
 }
 
 // ValidateFile validates the given JSON file against the schema.
@@ -260,8 +257,8 @@ func (c schemaContents) getFieldAsString(key string) (string, bool) {
 	if c == nil {
 		return "", false
 	}
-	if value, ok := c[key]; ok {
-		if value, ok := value.(string); ok {
+	if v, ok := c[key]; ok {
+		if value, ok := v.(string); ok {
 			return value, true
 		}
 	}
@@ -272,8 +269,8 @@ func (c schemaContents) getAnnotations() (map[string]interface{}, bool) {
 	if c == nil {
 		return nil, false
 	}
-	if annotations, ok := c["annotations"]; ok {
-		if annotations, ok := annotations.(map[string]interface{}); ok {
+	if v, ok := c["annotations"]; ok {
+		if annotations, ok := v.(map[string]interface{}); ok {
 			return annotations, true
 		}
 	}
@@ -296,23 +293,23 @@ func (c schemaContents) getDevices() ([]schemaContents, error) {
 
 	var deviceContents []schemaContents
 	for _, device := range devices {
-		c, err := asSchemaContents(device)
+		sc, err := asSchemaContents(device)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse device: %w", err)
 		}
-		deviceContents = append(deviceContents, c)
+		deviceContents = append(deviceContents, sc)
 	}
 
 	return deviceContents, nil
 }
 
 // validateContents performs additional validation against the schema contents.
-func (s *Schema) validateContents(any map[string]interface{}) error {
-	if any == nil || s == nil {
+func (s *Schema) validateContents(data map[string]interface{}) error {
+	if data == nil || s == nil {
 		return nil
 	}
 
-	contents := schemaContents(any)
+	contents := schemaContents(data)
 
 	if specAnnotations, ok := contents.getAnnotations(); ok {
 		if err := validation.ValidateSpecAnnotations("", specAnnotations); err != nil {
