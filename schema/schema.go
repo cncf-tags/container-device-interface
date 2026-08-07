@@ -28,6 +28,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"sigs.k8s.io/yaml"
 
@@ -35,6 +36,13 @@ import (
 	"tags.cncf.io/container-device-interface/internal/validation"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
+
+// currently loaded schema, builtin by default
+var current atomic.Pointer[Schema]
+
+func init() {
+	current.Store(BuiltinSchema())
+}
 
 const (
 	// BuiltinSchemaName names the builtin schema for Load()/Set().
@@ -66,12 +74,15 @@ type Error struct {
 
 // Set sets the default validating JSON schema.
 func Set(s *Schema) {
-	current = s
+	if s == nil {
+		s = NopSchema()
+	}
+	current.Store(s)
 }
 
 // Get returns the active validating JSON schema.
 func Get() *Schema {
-	return current
+	return current.Load()
 }
 
 // BuiltinSchema returns the builtin schema if we have a valid one. Otherwise
@@ -101,27 +112,27 @@ func NopSchema() *Schema {
 
 // ReadAndValidate all data from the given reader, using the active schema for validation.
 func ReadAndValidate(r io.Reader) ([]byte, error) {
-	return current.ReadAndValidate(r)
+	return Get().ReadAndValidate(r)
 }
 
 // ValidateReader validates the data read from an io.Reader against the active schema.
 func ValidateReader(r io.Reader) error {
-	return current.ValidateReader(r)
+	return Get().ValidateReader(r)
 }
 
 // ValidateData validates the given JSON document against the active schema.
 func ValidateData(data []byte) error {
-	return current.ValidateData(data)
+	return Get().ValidateData(data)
 }
 
 // ValidateFile validates the given JSON file against the active schema.
 func ValidateFile(path string) error {
-	return current.ValidateFile(path)
+	return Get().ValidateFile(path)
 }
 
 // ValidateType validates a go object against the schema.
 func ValidateType(obj any) error {
-	return current.ValidateType(obj)
+	return Get().ValidateType(obj)
 }
 
 // Load the given JSON Schema.
@@ -349,9 +360,6 @@ func (e *Error) Error() string {
 
 	return ""
 }
-
-// currently loaded schema, builtin by default
-var current = builtinSchema()
 
 //go:embed *.json
 var builtinFS embed.FS
