@@ -16,7 +16,6 @@ require (
 	github.com/opencontainers/runtime-spec v1.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
