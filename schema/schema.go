@@ -122,7 +122,7 @@ func ValidateFile(path string) error {
 }
 
 // ValidateType validates a go object against the schema.
-func ValidateType(obj interface{}) error {
+func ValidateType(obj any) error {
 	return current.ValidateType(obj)
 }
 
@@ -183,7 +183,7 @@ func (s *Schema) ValidateReader(r io.Reader) error {
 
 // ValidateData validates the given JSON data against the schema.
 func (s *Schema) ValidateData(data []byte) error {
-	var schemaData map[string]interface{}
+	var schemaData map[string]any
 	if !bytes.HasPrefix(bytes.TrimSpace(data), []byte{'{'}) {
 		var err error
 		err = yaml.Unmarshal(data, &schemaData)
@@ -217,7 +217,7 @@ func (s *Schema) ValidateFile(path string) error {
 }
 
 // ValidateType validates a go object against the schema.
-func (s *Schema) ValidateType(obj interface{}) error {
+func (s *Schema) ValidateType(obj any) error {
 	l := schema.NewGoLoader(obj)
 	return s.validate(l)
 }
@@ -239,18 +239,18 @@ func (s *Schema) validate(doc schema.JSONLoader) error {
 	return &Error{Result: docErr}
 }
 
-type schemaContents map[string]interface{}
+type schemaContents map[string]any
 
-func asSchemaContents(i interface{}) (schemaContents, error) {
+func asSchemaContents(i any) (schemaContents, error) {
 	if i == nil {
 		return nil, nil
 	}
 
-	if c, ok := i.(map[string]interface{}); ok {
+	if c, ok := i.(map[string]any); ok {
 		return schemaContents(c), nil
 	}
 
-	return nil, fmt.Errorf("expected map[string]interface{} but got %T", i)
+	return nil, fmt.Errorf("expected map[string]any but got %T", i)
 }
 
 func (c schemaContents) getFieldAsString(key string) (string, bool) {
@@ -265,12 +265,12 @@ func (c schemaContents) getFieldAsString(key string) (string, bool) {
 	return "", false
 }
 
-func (c schemaContents) getAnnotations() (map[string]interface{}, bool) {
+func (c schemaContents) getAnnotations() (map[string]any, bool) {
 	if c == nil {
 		return nil, false
 	}
 	if v, ok := c["annotations"]; ok {
-		if annotations, ok := v.(map[string]interface{}); ok {
+		if annotations, ok := v.(map[string]any); ok {
 			return annotations, true
 		}
 	}
@@ -286,7 +286,7 @@ func (c schemaContents) getDevices() ([]schemaContents, error) {
 		return nil, nil
 	}
 
-	devices, ok := devicesIfc.([]interface{})
+	devices, ok := devicesIfc.([]any)
 	if !ok {
 		return nil, nil
 	}
@@ -304,7 +304,7 @@ func (c schemaContents) getDevices() ([]schemaContents, error) {
 }
 
 // validateContents performs additional validation against the schema contents.
-func (s *Schema) validateContents(data map[string]interface{}) error {
+func (s *Schema) validateContents(data map[string]any) error {
 	if data == nil || s == nil {
 		return nil
 	}
