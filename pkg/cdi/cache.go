@@ -290,25 +290,17 @@ func (c *Cache) highestPrioritySpecDir() (string, int) {
 // priority Spec directory. If name has a "json" or "yaml" extension it
 // choses the encoding. Otherwise the default YAML encoding is used.
 func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
-	var (
-		specDir string
-		path    string
-		prio    int
-		spec    *Spec
-		err     error
-	)
-
-	specDir, prio = c.highestPrioritySpecDir()
+	specDir, prio := c.highestPrioritySpecDir()
 	if specDir == "" {
 		return errors.New("no Spec directories to write to")
 	}
 
-	path = filepath.Join(specDir, name)
+	path := filepath.Join(specDir, name)
 	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
 		path += defaultSpecExt
 	}
 
-	spec, err = newSpec(raw, path, prio)
+	spec, err := newSpec(raw, path, prio)
 	if err != nil {
 		return err
 	}
@@ -321,25 +313,19 @@ func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
 // Spec previously written by WriteSpec(). If the file exists and
 // its removal fails RemoveSpec returns an error.
 func (c *Cache) RemoveSpec(name string) error {
-	var (
-		specDir string
-		path    string
-		err     error
-	)
-
-	specDir, _ = c.highestPrioritySpecDir()
+	specDir, _ := c.highestPrioritySpecDir()
 	if specDir == "" {
 		return errors.New("no Spec directories to remove from")
 	}
 
-	path = filepath.Join(specDir, name)
+	path := filepath.Join(specDir, name)
 	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
 		path += defaultSpecExt
 	}
 
-	err = os.Remove(path)
-	if err != nil && errors.Is(err, fs.ErrNotExist) {
-		err = nil
+	err := os.Remove(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
 	}
 
 	return err
@@ -539,13 +525,6 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func(), dirE
 
 // Update watch with pending/missing or removed directories.
 func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
-	var (
-		dir    string
-		ok     bool
-		err    error
-		update bool
-	)
-
 	// If we failed to create an fsnotify.Watcher we have a nil watcher here
 	// (but with autoRefresh left on). One known case when this can happen is
 	// if we have too many open files. In that case we always return true and
@@ -554,12 +533,13 @@ func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
 		return true
 	}
 
-	for dir, ok = range w.tracked {
+	var update bool
+	for dir, ok := range w.tracked {
 		if ok {
 			continue
 		}
 
-		err = w.watcher.Add(dir)
+		err := w.watcher.Add(dir)
 		if err == nil {
 			w.tracked[dir] = true
 			delete(dirErrors, dir)
@@ -570,7 +550,7 @@ func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
 		}
 	}
 
-	for _, dir = range removed {
+	for _, dir := range removed {
 		w.tracked[dir] = false
 		dirErrors[dir] = errors.New("directory removed")
 		update = true
