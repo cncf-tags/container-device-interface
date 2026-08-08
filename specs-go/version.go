@@ -209,23 +209,20 @@ func requiresV070(spec *Spec) bool {
 // requiresV060 returns true if the spec uses v0.6.0 features
 func requiresV060(spec *Spec) bool {
 	// The v0.6.0 spec allows annotations to be specified at a spec level
-	for range spec.Annotations {
+	if len(spec.Annotations) > 0 {
 		return true
 	}
 
 	// The v0.6.0 spec allows annotations to be specified at a device level
 	for _, d := range spec.Devices {
-		for range d.Annotations {
+		if len(d.Annotations) > 0 {
 			return true
 		}
 	}
 
 	// The v0.6.0 spec allows dots "." in Kind name label (class)
-	if !strings.Contains(spec.Kind, "/") {
-		return false
-	}
-	class := strings.SplitN(spec.Kind, "/", 2)[1]
-	return strings.Contains(class, ".")
+	_, class, ok := strings.Cut(spec.Kind, "/")
+	return ok && strings.Contains(class, ".")
 }
 
 // requiresV050 returns true if the spec uses v0.5.0 features
