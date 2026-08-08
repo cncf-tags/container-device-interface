@@ -389,23 +389,22 @@ func (c *Cache) ListVendors() []string {
 // ListClasses lists all device classes known to the cache. Might trigger a cache
 // refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListClasses() []string {
-	var (
-		cmap    = map[string]struct{}{}
-		classes []string
-	)
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
+	var classes []string
+	seen := map[string]struct{}{}
 	for _, specs := range c.specs {
 		for _, spec := range specs {
-			cmap[spec.GetClass()] = struct{}{}
+			class := spec.GetClass()
+			if _, ok := seen[class]; ok {
+				continue
+			}
+			seen[class] = struct{}{}
+			classes = append(classes, class)
 		}
-	}
-	for class := range cmap {
-		classes = append(classes, class)
 	}
 	slices.Sort(classes)
 
