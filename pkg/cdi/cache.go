@@ -20,11 +20,11 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
-	"sort"
 	"strings"
 	"sync"
 
@@ -367,37 +367,23 @@ func (c *Cache) GetDevice(device string) *Device {
 // ListDevices lists all cached devices by qualified name. Might trigger a cache
 // refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListDevices() []string {
-	var devices []string
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
-	for name := range c.devices {
-		devices = append(devices, name)
-	}
-	sort.Strings(devices)
-
-	return devices
+	return slices.Sorted(maps.Keys(c.devices))
 }
 
 // ListVendors lists all vendors known to the cache. Might trigger a cache refresh,
 // in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListVendors() []string {
-	var vendors []string
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
-	for vendor := range c.specs {
-		vendors = append(vendors, vendor)
-	}
-	sort.Strings(vendors)
-
-	return vendors
+	return slices.Sorted(maps.Keys(c.specs))
 }
 
 // ListClasses lists all device classes known to the cache. Might trigger a cache
@@ -421,7 +407,7 @@ func (c *Cache) ListClasses() []string {
 	for class := range cmap {
 		classes = append(classes, class)
 	}
-	sort.Strings(classes)
+	slices.Sort(classes)
 
 	return classes
 }
@@ -442,12 +428,7 @@ func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
 func (c *Cache) GetSpecErrors(spec *Spec) []error {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	var errs []error
-	if e, ok := c.errors[spec.GetPath()]; ok {
-		errs = make([]error, len(e))
-		copy(errs, e)
-	}
-	return errs
+	return slices.Clone(c.errors[spec.GetPath()])
 }
 
 // GetErrors returns all errors encountered during the last
@@ -471,25 +452,14 @@ func (c *Cache) GetErrors() map[string][]error {
 func (c *Cache) GetSpecDirectories() []string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-
-	dirs := make([]string, len(c.specDirs))
-	copy(dirs, c.specDirs)
-	return dirs
+	return slices.Clone(c.specDirs)
 }
 
 // GetSpecDirErrors returns any errors related to configured Spec directories.
 func (c *Cache) GetSpecDirErrors() map[string]error {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	if c.dirErrors == nil {
-		return nil
-	}
-
-	errs := make(map[string]error)
-	for dir, err := range c.dirErrors {
-		errs[dir] = err
-	}
-	return errs
+	return maps.Clone(c.dirErrors)
 }
 
 // Our fsnotify helper wrapper.
