@@ -89,15 +89,15 @@ func NewCache(options ...Option) (*Cache, error) {
 // This function allows testing without handling the nil error returned by the
 // NewCache function.
 func newCache(options ...Option) *Cache {
+	specDirs := slices.Clone(DefaultSpecDirs)
+	for i := range specDirs {
+		specDirs[i] = filepath.Clean(specDirs[i])
+	}
 	c := &Cache{
+		specDirs:    specDirs,
 		autoRefresh: true,
 		watch:       &watch{},
 	}
-
-	WithSpecDirs(DefaultSpecDirs...)(c)
-	c.Lock()
-	defer c.Unlock()
-
 	c.configure(options...)
 	return c
 }
