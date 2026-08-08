@@ -1869,6 +1869,40 @@ func updateSpecDirs(dir string, etc, run map[string]string) error {
 	return updateTestDir(dir, updates)
 }
 
+// TestCacheConcurrentConfigure verifies concurrent spec directory access is synchronized.
+func TestCacheConcurrentConfigure(t *testing.T) {
+	dir1 := t.TempDir()
+	dir2 := t.TempDir()
+
+	cache, err := NewCache(WithSpecDirs(dir1))
+	require.NoError(t, err)
+
+	const iterations = 1000
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		for i := 0; i < iterations; i++ {
+			if i%2 == 0 {
+				_ = cache.Configure(WithSpecDirs(dir1))
+			} else {
+				_ = cache.Configure(WithSpecDirs(dir1, dir2))
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		for i := 0; i < iterations; i++ {
+			cache.highestPrioritySpecDir()
+		}
+	}()
+
+	wg.Wait()
+}
+
 func int64ptr(v int64) *int64 {
 	return &v
 }

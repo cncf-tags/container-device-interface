@@ -281,6 +281,8 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 // highestPrioritySpecDir returns the Spec directory with highest priority
 // and its priority.
 func (c *Cache) highestPrioritySpecDir() (string, int) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if len(c.specDirs) == 0 {
 		return "", -1
 	}
