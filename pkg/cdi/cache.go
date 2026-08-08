@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -439,17 +440,14 @@ func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
 // GetSpecErrors returns all errors encountered for the spec during the
 // last cache refresh.
 func (c *Cache) GetSpecErrors(spec *Spec) []error {
-	var errors []error
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
-	if errs, ok := c.errors[spec.GetPath()]; ok {
-		errors = make([]error, len(errs))
-		copy(errors, errs)
+	var errs []error
+	if e, ok := c.errors[spec.GetPath()]; ok {
+		errs = make([]error, len(e))
+		copy(errs, e)
 	}
-
-	return errors
+	return errs
 }
 
 // GetErrors returns all errors encountered during the last
@@ -458,15 +456,15 @@ func (c *Cache) GetErrors() map[string][]error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	errors := map[string][]error{}
+	errsByPath := make(map[string][]error, len(c.errors)+len(c.dirErrors))
 	for path, errs := range c.errors {
-		errors[path] = errs
+		errsByPath[path] = slices.Clone(errs)
 	}
 	for path, err := range c.dirErrors {
-		errors[path] = []error{err}
+		errsByPath[path] = append(errsByPath[path], err)
 	}
 
-	return errors
+	return errsByPath
 }
 
 // GetSpecDirectories returns the CDI Spec directories currently in use.
@@ -481,18 +479,17 @@ func (c *Cache) GetSpecDirectories() []string {
 
 // GetSpecDirErrors returns any errors related to configured Spec directories.
 func (c *Cache) GetSpecDirErrors() map[string]error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if c.dirErrors == nil {
 		return nil
 	}
 
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	errors := make(map[string]error)
+	errs := make(map[string]error)
 	for dir, err := range c.dirErrors {
-		errors[dir] = err
+		errs[dir] = err
 	}
-	return errors
+	return errs
 }
 
 // Our fsnotify helper wrapper.
