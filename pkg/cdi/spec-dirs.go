@@ -30,16 +30,17 @@ const (
 	DefaultDynamicDir = "/var/run/cdi"
 )
 
-var (
-	// DefaultSpecDirs is the default Spec directory configuration.
-	// While altering this variable changes the package defaults,
-	// the preferred way of overriding the default directories is
-	// to use a WithSpecDirs options. Otherwise the change is only
-	// effective if it takes place before creating the cache instance.
-	DefaultSpecDirs = []string{DefaultStaticDir, DefaultDynamicDir}
-	// ErrStopScan can be returned from a ScanSpecFunc to stop the scan.
-	ErrStopScan = errors.New("stop Spec scan")
-)
+// DefaultSpecDirs is the default Spec directory configuration.
+// While altering this variable changes the package defaults,
+// the preferred way of overriding the default directories is
+// to use a WithSpecDirs options. Otherwise the change is only
+// effective if it takes place before creating the cache instance.
+var DefaultSpecDirs = []string{DefaultStaticDir, DefaultDynamicDir}
+
+// ErrStopScan can be returned from a scanSpecFunc to stop the scan.
+//
+// Deprecated: ErrStopScan was only used by internal scan callbacks and is no longer used.
+var ErrStopScan = errors.New("stop Spec scan")
 
 // WithSpecDirs returns an option to override the CDI Spec directories.
 func WithSpecDirs(dirs ...string) Option {
@@ -68,9 +69,8 @@ type scanSpecFunc func(string, int, *Spec, error) error
 //
 // Scanning stops once all files have been processed or when the scan
 // function returns an error. The result of ScanSpecDirs is the error
-// returned by the scan function, if any. The special error ErrStopScan
-// can be used to terminate the scan gracefully without ScanSpecDirs
-// returning an error. ScanSpecDirs silently skips any subdirectories.
+// returned by the scan function, if any. ScanSpecDirs silently skips
+// any subdirectories.
 func scanSpecDirs(dirs []string, scanFn scanSpecFunc) error {
 	var (
 		spec *Spec
@@ -107,7 +107,7 @@ func scanSpecDirs(dirs []string, scanFn scanSpecFunc) error {
 			return scanFn(path, priority, spec, err)
 		})
 
-		if err != nil && err != ErrStopScan {
+		if err != nil {
 			return err
 		}
 	}
