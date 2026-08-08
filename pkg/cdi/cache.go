@@ -239,22 +239,21 @@ func (c *Cache) refreshIfRequired(force bool) (bool, error) {
 // any of the devices. Might trigger a cache refresh, in which case any
 // errors encountered can be obtained using GetErrors().
 func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, error) {
-	var unresolved []string
-
 	if ociSpec == nil {
 		return devices, fmt.Errorf("can't inject devices, nil OCI Spec")
 	}
 
 	c.mu.Lock()
-	defer c.mu.Unlock()
-
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	cachedDevices := c.devices
+	c.mu.Unlock()
 
 	edits := &ContainerEdits{}
 	specs := map[*Spec]struct{}{}
 
+	var unresolved []string
 	for _, device := range devices {
-		d := c.devices[device]
+		d := cachedDevices[device]
 		if d == nil {
 			unresolved = append(unresolved, device)
 			continue
@@ -266,7 +265,7 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 		edits.Append(d.edits())
 	}
 
-	if unresolved != nil {
+	if len(unresolved) > 0 {
 		return unresolved, fmt.Errorf("unresolvable CDI devices %s",
 			strings.Join(unresolved, ", "))
 	}
