@@ -132,7 +132,7 @@ func (c *Cache) configure(options ...Option) {
 		c.dirErrors = make(map[string]error)
 		c.watch.start(c.specDirs, &c.mu, c.refresh, c.dirErrors)
 	}
-	_ = c.refresh() // we record but ignore errors
+	c.refresh()
 }
 
 // Refresh rescans the CDI Spec directories and refreshes the Cache.
@@ -143,12 +143,14 @@ func (c *Cache) Refresh() error {
 	defer c.mu.Unlock()
 
 	// force a refresh in manual mode
-	if refreshed, err := c.refreshIfRequired(!c.autoRefresh); refreshed {
-		return err
+	if !c.autoRefresh {
+		c.refresh()
+	} else {
+		c.refreshIfRequired()
 	}
 
-	// collect and return cached errors, much like refresh() does it
-	errs := []error{}
+	// collect and return cached errors.
+	var errs []error
 	for _, specErrs := range c.errors {
 		errs = append(errs, errors.Join(specErrs...))
 	}
@@ -156,7 +158,7 @@ func (c *Cache) Refresh() error {
 }
 
 // Refresh the Cache by rescanning CDI Spec directories and files.
-func (c *Cache) refresh() error {
+func (c *Cache) refresh() {
 	var (
 		specs      = map[string][]*Spec{}
 		devices    = map[string]*Device{}
@@ -216,23 +218,14 @@ func (c *Cache) refresh() error {
 	c.specs = specs
 	c.devices = devices
 	c.errors = specErrors
-
-	errs := []error{}
-	for _, specErrs := range specErrors {
-		errs = append(errs, errors.Join(specErrs...))
-	}
-	return errors.Join(errs...)
 }
 
-// RefreshIfRequired triggers a refresh if necessary.
-func (c *Cache) refreshIfRequired(force bool) (bool, error) {
-	// We need to refresh if
-	// - it's forced by an explicit call to Refresh() in manual mode
-	// - a missing Spec dir appears (added to watch) in auto-refresh mode
-	if force || (c.autoRefresh && c.watch.update(c.dirErrors)) {
-		return true, c.refresh()
+// refreshIfRequired triggers a refresh if necessary.
+func (c *Cache) refreshIfRequired() {
+	// We need to refresh if a missing Spec dir appears (added to watch) in auto-refresh mode.
+	if c.autoRefresh && c.watch.update(c.dirErrors) {
+		c.refresh()
 	}
-	return false, nil
 }
 
 // InjectDevices injects the given qualified devices to an OCI Spec. It
@@ -245,7 +238,7 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 	}
 
 	c.mu.Lock()
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
 	cachedDevices := c.devices
 	c.mu.Unlock()
 
@@ -359,7 +352,7 @@ func (c *Cache) GetDevice(device string) *Device {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
 
 	return c.devices[device]
 }
@@ -372,7 +365,7 @@ func (c *Cache) ListDevices() []string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
 
 	for name := range c.devices {
 		devices = append(devices, name)
@@ -390,7 +383,7 @@ func (c *Cache) ListVendors() []string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
 
 	for vendor := range c.specs {
 		vendors = append(vendors, vendor)
@@ -411,7 +404,7 @@ func (c *Cache) ListClasses() []string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
 
 	for _, specs := range c.specs {
 		for _, spec := range specs {
@@ -432,7 +425,7 @@ func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
 
 	return c.specs[vendor]
 }
@@ -499,7 +492,7 @@ type watch struct {
 }
 
 // Start watching the configured Spec directories.
-func (w *watch) start(dirs []string, m sync.Locker, refresh func() error, dirErrors map[string]error) {
+func (w *watch) start(dirs []string, m sync.Locker, refresh func(), dirErrors map[string]error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		for _, dir := range dirs {
@@ -534,7 +527,7 @@ func (w *watch) stop() {
 }
 
 // Watch Spec directory changes, triggering a refresh if necessary.
-func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func() error, dirErrors map[string]error) {
+func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func(), dirErrors map[string]error) {
 	eventMask := fsnotify.Rename | fsnotify.Remove | fsnotify.Write
 	// On macOS, we also need to watch for Create events.
 	if runtime.GOOS == "darwin" {
@@ -563,7 +556,7 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func() error
 			} else {
 				w.update(dirErrors)
 			}
-			_ = refresh()
+			refresh()
 			m.Unlock()
 
 		case _, ok := <-fsw.Errors:
