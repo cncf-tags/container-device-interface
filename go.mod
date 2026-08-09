@@ -8,7 +8,6 @@ require (
 	github.com/stretchr/testify v1.12.1
 	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/sys v0.19.0
-	sigs.k8s.io/yaml v1.4.0
 	tags.cncf.io/container-device-interface/specs-go v1.1.0
 )
 

@@ -30,7 +30,7 @@ import (
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"sigs.k8s.io/yaml"
+	"go.yaml.in/yaml/v3"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 

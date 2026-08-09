@@ -8,7 +8,6 @@ require (
 	github.com/spf13/cobra v1.6.0
 	github.com/stretchr/testify v1.12.1
 	go.yaml.in/yaml/v3 v3.0.5
-	sigs.k8s.io/yaml v1.4.0
 	tags.cncf.io/container-device-interface v1.1.0
 	tags.cncf.io/container-device-interface/schema v0.0.0
 	tags.cncf.io/container-device-interface/specs-go v1.1.0
