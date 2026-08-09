@@ -500,13 +500,15 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func(), dirE
 			if fsOp == 0 {
 				continue
 			}
-			if fsOp&(fsnotify.Write|fsnotify.Create) != 0 {
-				if ext := filepath.Ext(event.Name); ext != ".json" && ext != ".yaml" {
-					continue
-				}
-			}
 
 			m.Lock()
+			// Ignore changes unrelated to Spec files or configured Spec directories.
+			_, tracked := w.tracked[event.Name]
+			if ext := filepath.Ext(event.Name); ext != ".json" && ext != ".yaml" && !tracked {
+				m.Unlock()
+				continue
+			}
+			// If a configured Spec directory was removed, mark its watch for restoration.
 			if fsOp&fsnotify.Remove != 0 && w.tracked[event.Name] {
 				w.update(dirErrors, event.Name)
 			} else {
