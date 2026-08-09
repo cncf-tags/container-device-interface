@@ -496,17 +496,18 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func(), dirE
 				return
 			}
 
-			if (event.Op & eventMask) == 0 {
+			fsOp := event.Op & eventMask
+			if fsOp == 0 {
 				continue
 			}
-			if event.Op == fsnotify.Write || event.Op == fsnotify.Create {
+			if fsOp&(fsnotify.Write|fsnotify.Create) != 0 {
 				if ext := filepath.Ext(event.Name); ext != ".json" && ext != ".yaml" {
 					continue
 				}
 			}
 
 			m.Lock()
-			if event.Op == fsnotify.Remove && w.tracked[event.Name] {
+			if fsOp&fsnotify.Remove != 0 && w.tracked[event.Name] {
 				w.update(dirErrors, event.Name)
 			} else {
 				w.update(dirErrors)
