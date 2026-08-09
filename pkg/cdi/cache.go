@@ -499,15 +499,15 @@ func (w *watch) watch(fsw *fsnotify.Watcher, c *Cache) {
 			if fsOp == 0 {
 				continue
 			}
-			if fsOp&(fsnotify.Write|fsnotify.Create) != 0 {
-				if ext := filepath.Ext(event.Name); ext != ".json" && ext != ".yaml" {
-					continue
-				}
-			}
 
 			c.mu.Lock()
 			_, isTracked := w.tracked[event.Name]
 
+			// Ignore changes unrelated to Spec files or configured Spec directories.
+			if ext := filepath.Ext(event.Name); ext != ".json" && ext != ".yaml" && !isTracked {
+				c.mu.Unlock()
+				continue
+			}
 			if fsOp&fsnotify.Remove != 0 && isTracked {
 				w.markRemoved(c.dirErrors, event.Name)
 			}
