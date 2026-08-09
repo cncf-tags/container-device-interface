@@ -507,11 +507,12 @@ func (w *watch) watch(fsw *fsnotify.Watcher, c *Cache) {
 			}
 
 			c.mu.Lock()
-			if event.Op == fsnotify.Remove && w.tracked[event.Name] {
-				w.update(c.dirErrors, event.Name)
-			} else {
-				w.update(c.dirErrors)
+			_, isTracked := w.tracked[event.Name]
+
+			if event.Op == fsnotify.Remove && isTracked {
+				w.markRemoved(c.dirErrors, event.Name)
 			}
+			w.update(c.dirErrors)
 			c.refresh()
 			c.mu.Unlock()
 
@@ -523,8 +524,16 @@ func (w *watch) watch(fsw *fsnotify.Watcher, c *Cache) {
 	}
 }
 
-// Update watch with pending/missing or removed directories.
-func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
+// markRemoved marks a configured Spec directory as not currently watched so
+// its watch can be restored if the directory is recreated.
+func (w *watch) markRemoved(dirErrors map[string]error, dir string) {
+	w.tracked[dir] = false
+	dirErrors[dir] = errors.New("directory removed")
+}
+
+// update restores watches for configured directories that are not currently
+// being watched. It reports whether any watches were restored.
+func (w *watch) update(dirErrors map[string]error) bool {
 	// If we failed to create an fsnotify.Watcher we have a nil watcher here
 	// (but with autoRefresh left on). One known case when this can happen is
 	// if we have too many open files. In that case we always return true and
@@ -534,25 +543,18 @@ func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
 	}
 
 	var update bool
-	for dir, ok := range w.tracked {
-		if ok {
+	for dir, watched := range w.tracked {
+		if watched {
 			continue
 		}
 
-		err := w.watcher.Add(dir)
-		if err == nil {
-			w.tracked[dir] = true
-			delete(dirErrors, dir)
-			update = true
-		} else {
-			w.tracked[dir] = false
+		if err := w.watcher.Add(dir); err != nil {
 			dirErrors[dir] = fmt.Errorf("failed to monitor for changes: %w", err)
+			continue
 		}
-	}
 
-	for _, dir := range removed {
-		w.tracked[dir] = false
-		dirErrors[dir] = errors.New("directory removed")
+		w.tracked[dir] = true
+		delete(dirErrors, dir)
 		update = true
 	}
 
