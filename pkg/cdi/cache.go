@@ -121,16 +121,16 @@ func (c *Cache) Configure(options ...Option) error {
 // Configure the Cache. Start/stop CDI Spec directory watch, refresh
 // the Cache if necessary.
 func (c *Cache) configure(options ...Option) {
+	c.watch.stop()
+	c.dirErrors = nil
+
 	for _, o := range options {
 		o(c)
 	}
 
-	c.dirErrors = make(map[string]error)
-
-	c.watch.stop()
 	if c.autoRefresh {
-		c.watch.setup(c.specDirs, c.dirErrors)
-		c.watch.start(&c.mu, c.refresh, c.dirErrors)
+		c.dirErrors = make(map[string]error)
+		c.watch.start(c.specDirs, &c.mu, c.refresh, c.dirErrors)
 	}
 	_ = c.refresh() // we record but ignore errors
 }
@@ -498,18 +498,9 @@ type watch struct {
 	tracked map[string]bool
 }
 
-// Setup monitoring for the given Spec directories.
-func (w *watch) setup(dirs []string, dirErrors map[string]error) {
-	var (
-		dir string
-		err error
-	)
-	w.tracked = make(map[string]bool)
-	for _, dir = range dirs {
-		w.tracked[dir] = false
-	}
-
-	w.watcher, err = fsnotify.NewWatcher()
+// Start watching the configured Spec directories.
+func (w *watch) start(dirs []string, m sync.Locker, refresh func() error, dirErrors map[string]error) {
+	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		for _, dir := range dirs {
 			dirErrors[dir] = fmt.Errorf("failed to create watcher: %w", err)
@@ -517,12 +508,18 @@ func (w *watch) setup(dirs []string, dirErrors map[string]error) {
 		return
 	}
 
-	w.update(dirErrors)
-}
+	w.watcher = watcher
+	w.tracked = make(map[string]bool, len(dirs))
+	for _, dir := range dirs {
+		if err := watcher.Add(dir); err != nil {
+			dirErrors[dir] = fmt.Errorf("failed to monitor for changes: %w", err)
+			w.tracked[dir] = false
+			continue
+		}
+		w.tracked[dir] = true
+	}
 
-// Start watching Spec directories for relevant changes.
-func (w *watch) start(m sync.Locker, refresh func() error, dirErrors map[string]error) {
-	go w.watch(w.watcher, m, refresh, dirErrors)
+	go w.watch(watcher, m, refresh, dirErrors)
 }
 
 // Stop watching directories.
@@ -532,16 +529,12 @@ func (w *watch) stop() {
 	}
 
 	_ = w.watcher.Close()
+	w.watcher = nil
 	w.tracked = nil
 }
 
 // Watch Spec directory changes, triggering a refresh if necessary.
 func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func() error, dirErrors map[string]error) {
-	watch := fsw
-	if watch == nil {
-		return
-	}
-
 	eventMask := fsnotify.Rename | fsnotify.Remove | fsnotify.Write
 	// On macOS, we also need to watch for Create events.
 	if runtime.GOOS == "darwin" {
@@ -550,7 +543,7 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func() error
 
 	for {
 		select {
-		case event, ok := <-watch.Events:
+		case event, ok := <-fsw.Events:
 			if !ok {
 				return
 			}
@@ -573,7 +566,7 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func() error
 			_ = refresh()
 			m.Unlock()
 
-		case _, ok := <-watch.Errors:
+		case _, ok := <-fsw.Errors:
 			if !ok {
 				return
 			}
