@@ -38,7 +38,7 @@ type Option func(*Cache)
 
 // Cache stores CDI Specs loaded from Spec directories.
 type Cache struct {
-	mu        sync.Mutex
+	mu        sync.RWMutex
 	specDirs  []string
 	specs     map[string][]*Spec
 	devices   map[string]*Device
@@ -281,8 +281,8 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 // highestPrioritySpecDir returns the Spec directory with highest priority
 // and its priority.
 func (c *Cache) highestPrioritySpecDir() (string, int) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	if len(c.specDirs) == 0 {
 		return "", -1
 	}
@@ -440,8 +440,8 @@ func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
 // GetSpecErrors returns all errors encountered for the spec during the
 // last cache refresh.
 func (c *Cache) GetSpecErrors(spec *Spec) []error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	var errs []error
 	if e, ok := c.errors[spec.GetPath()]; ok {
 		errs = make([]error, len(e))
@@ -453,8 +453,8 @@ func (c *Cache) GetSpecErrors(spec *Spec) []error {
 // GetErrors returns all errors encountered during the last
 // cache refresh.
 func (c *Cache) GetErrors() map[string][]error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 
 	errsByPath := make(map[string][]error, len(c.errors)+len(c.dirErrors))
 	for path, errs := range c.errors {
@@ -469,8 +469,8 @@ func (c *Cache) GetErrors() map[string][]error {
 
 // GetSpecDirectories returns the CDI Spec directories currently in use.
 func (c *Cache) GetSpecDirectories() []string {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 
 	dirs := make([]string, len(c.specDirs))
 	copy(dirs, c.specDirs)
@@ -479,8 +479,8 @@ func (c *Cache) GetSpecDirectories() []string {
 
 // GetSpecDirErrors returns any errors related to configured Spec directories.
 func (c *Cache) GetSpecDirErrors() map[string]error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	if c.dirErrors == nil {
 		return nil
 	}
@@ -521,7 +521,7 @@ func (w *watch) setup(dirs []string, dirErrors map[string]error) {
 }
 
 // Start watching Spec directories for relevant changes.
-func (w *watch) start(m *sync.Mutex, refresh func() error, dirErrors map[string]error) {
+func (w *watch) start(m sync.Locker, refresh func() error, dirErrors map[string]error) {
 	go w.watch(w.watcher, m, refresh, dirErrors)
 }
 
@@ -536,7 +536,7 @@ func (w *watch) stop() {
 }
 
 // Watch Spec directory changes, triggering a refresh if necessary.
-func (w *watch) watch(fsw *fsnotify.Watcher, m *sync.Mutex, refresh func() error, dirErrors map[string]error) {
+func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func() error, dirErrors map[string]error) {
 	watch := fsw
 	if watch == nil {
 		return
