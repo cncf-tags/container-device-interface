@@ -223,7 +223,7 @@ func (c *Cache) refresh() {
 // refreshIfRequired triggers a refresh if necessary.
 func (c *Cache) refreshIfRequired() {
 	// We need to refresh if a missing Spec dir appears (added to watch) in auto-refresh mode.
-	if c.autoRefresh && c.watch.update(c.dirErrors) {
+	if c.autoRefresh && c.watch.update(c.dirErrors, "") {
 		c.refresh()
 	}
 }
@@ -509,11 +509,11 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func(), dirE
 				continue
 			}
 			// If a configured Spec directory was removed, mark its watch for restoration.
+			var removed string
 			if fsOp&fsnotify.Remove != 0 && w.tracked[event.Name] {
-				w.update(dirErrors, event.Name)
-			} else {
-				w.update(dirErrors)
+				removed = event.Name
 			}
+			w.update(dirErrors, removed)
 			refresh()
 			m.Unlock()
 
@@ -526,7 +526,7 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func(), dirE
 }
 
 // Update watch with pending/missing or removed directories.
-func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
+func (w *watch) update(dirErrors map[string]error, removedDir string) bool {
 	// If we failed to create an fsnotify.Watcher we have a nil watcher here
 	// (but with autoRefresh left on). One known case when this can happen is
 	// if we have too many open files. In that case we always return true and
@@ -535,26 +535,28 @@ func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
 		return true
 	}
 
+	// Add or restore watches for configured directories not currently watched.
 	var update bool
-	for dir, ok := range w.tracked {
-		if ok {
+	for dir, watched := range w.tracked {
+		if watched {
+			if dir == removedDir {
+				// Directory we were watching was removed.
+				// Mark it as no longer watched.
+				w.tracked[removedDir] = false
+				dirErrors[removedDir] = errors.New("directory removed")
+				update = true
+			}
 			continue
 		}
 
-		err := w.watcher.Add(dir)
-		if err == nil {
-			w.tracked[dir] = true
-			delete(dirErrors, dir)
-			update = true
-		} else {
-			w.tracked[dir] = false
+		if err := w.watcher.Add(dir); err != nil {
 			dirErrors[dir] = fmt.Errorf("failed to monitor for changes: %w", err)
+			continue
 		}
-	}
 
-	for _, dir := range removed {
-		w.tracked[dir] = false
-		dirErrors[dir] = errors.New("directory removed")
+		// Mark directory as watched and clear any previous watch error.
+		w.tracked[dir] = true
+		delete(dirErrors, dir)
 		update = true
 	}
 
