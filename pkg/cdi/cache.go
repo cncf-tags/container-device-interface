@@ -495,10 +495,11 @@ func (w *watch) watch(fsw *fsnotify.Watcher, c *Cache) {
 				return
 			}
 
-			if (event.Op & eventMask) == 0 {
+			fsOp := event.Op & eventMask
+			if fsOp == 0 {
 				continue
 			}
-			if event.Op == fsnotify.Write || event.Op == fsnotify.Create {
+			if fsOp&(fsnotify.Write|fsnotify.Create) != 0 {
 				if ext := filepath.Ext(event.Name); ext != ".json" && ext != ".yaml" {
 					continue
 				}
@@ -507,7 +508,7 @@ func (w *watch) watch(fsw *fsnotify.Watcher, c *Cache) {
 			c.mu.Lock()
 			_, isTracked := w.tracked[event.Name]
 
-			if event.Op == fsnotify.Remove && isTracked {
+			if fsOp&fsnotify.Remove != 0 && isTracked {
 				w.markRemoved(c.dirErrors, event.Name)
 			}
 			w.update(c.dirErrors)
