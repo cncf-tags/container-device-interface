@@ -31,10 +31,10 @@ const (
 )
 
 // DefaultSpecDirs is the default Spec directory configuration.
-// While altering this variable changes the package defaults,
-// the preferred way of overriding the default directories is
-// to use a WithSpecDirs options. Otherwise the change is only
-// effective if it takes place before creating the cache instance.
+//
+// The preferred way of overriding the default directories is
+// to use [WithSpecDirs], otherwise the change is only effective
+// if it takes place before creating the cache instance.
 var DefaultSpecDirs = []string{DefaultStaticDir, DefaultDynamicDir}
 
 // ErrStopScan can be returned from a scanSpecFunc to stop the scan.
