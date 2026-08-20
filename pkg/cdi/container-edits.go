@@ -17,6 +17,7 @@
 package cdi
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -68,6 +69,39 @@ var (
 // is injected.
 type ContainerEdits struct {
 	*cdi.ContainerEdits
+}
+
+// cloneContainerEdits returns a deep copy of edits that can be safely modified
+// without changing the source CDI Spec.
+func cloneContainerEdits(edits *ContainerEdits) (*ContainerEdits, error) {
+	clone := &ContainerEdits{ContainerEdits: &cdi.ContainerEdits{}}
+	if edits == nil || edits.ContainerEdits == nil {
+		return clone, nil
+	}
+
+	data, err := json.Marshal(edits.ContainerEdits)
+	if err != nil {
+		return nil, fmt.Errorf("marshal container edits: %w", err)
+	}
+	if err := json.Unmarshal(data, clone.ContainerEdits); err != nil {
+		return nil, fmt.Errorf("unmarshal container edits: %w", err)
+	}
+
+	return clone, nil
+}
+
+// resolveDeviceNodes fills in host-derived device-node fields in edits.
+func (e *ContainerEdits) resolveDeviceNodes() error {
+	if e == nil || e.ContainerEdits == nil {
+		return nil
+	}
+
+	for _, node := range e.DeviceNodes {
+		if err := (&DeviceNode{node}).fillMissingInfo(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Apply edits to the given OCI Spec. Updates the OCI Spec in place.

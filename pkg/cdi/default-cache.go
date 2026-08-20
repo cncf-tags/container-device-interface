@@ -63,6 +63,12 @@ func InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, error) {
 	return GetDefaultCache().InjectDevices(ociSpec, devices...)
 }
 
+// ResolveEdits resolves qualified devices using the default CDI cache without
+// applying OCI conversion or mutating an OCI Spec.
+func ResolveEdits(devices ...string) (*ContainerEdits, error) {
+	return GetDefaultCache().ResolveEdits(devices...)
+}
+
 // GetErrors returns all errors encountered during the last refresh of
 // the default CDI cache instance.
 func GetErrors() map[string][]error {
