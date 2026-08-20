@@ -207,7 +207,10 @@ func (s *Spec) edits() *ContainerEdits {
 }
 
 // MinimumRequiredVersion determines the minimum spec version for the input spec.
-// Deprecated: use cdi.MinimumRequiredVersion instead
+//
+// Deprecated: use [cdi.MinimumRequiredVersion] instead.
+//
+//go:fix inline
 func MinimumRequiredVersion(spec *cdi.Spec) (string, error) {
 	return cdi.MinimumRequiredVersion(spec)
 }
