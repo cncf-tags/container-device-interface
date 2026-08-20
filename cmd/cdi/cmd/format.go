@@ -36,11 +36,11 @@ func chooseFormat(format string, path string) string {
 	return format
 }
 
-func marshalObject(level int, obj interface{}, format string) string {
+func marshalObject(level int, obj any, format string) string {
 	var (
 		raw []byte
 		err error
-		out string
+		out strings.Builder
 	)
 
 	if format == "json" {
@@ -54,10 +54,10 @@ func marshalObject(level int, obj interface{}, format string) string {
 	}
 
 	for _, line := range strings.Split(strings.TrimSuffix(string(raw), "\n"), "\n") {
-		out += indent(level) + line + "\n"
+		out.WriteString(indent(level) + line + "\n")
 	}
 
-	return out
+	return out.String()
 }
 
 func indent(level int) string {

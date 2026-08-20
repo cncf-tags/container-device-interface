@@ -27,6 +27,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 
 	"sigs.k8s.io/yaml"
 
@@ -34,6 +36,13 @@ import (
 	"tags.cncf.io/container-device-interface/internal/validation"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
+
+// currently loaded schema, builtin by default
+var current atomic.Pointer[Schema]
+
+func init() {
+	current.Store(BuiltinSchema())
+}
 
 const (
 	// BuiltinSchemaName names the builtin schema for Load()/Set().
@@ -65,21 +74,24 @@ type validationError struct {
 
 // Set sets the default validating JSON schema.
 func Set(s *Schema) {
-	current = s
+	if s == nil {
+		s = NopSchema()
+	}
+	current.Store(s)
 }
 
 // Get returns the active validating JSON schema.
 func Get() *Schema {
-	return current
+	return current.Load()
 }
 
 // BuiltinSchema returns the builtin schema if we have a valid one. Otherwise
 // it falls back to NopSchema().
 func BuiltinSchema() *Schema {
-	if builtin != nil {
-		return builtin
-	}
+	return builtinSchema()
+}
 
+var builtinSchema = sync.OnceValue(func() *Schema {
 	s, err := schema.NewSchema(
 		schema.NewReferenceLoaderFileSystem(
 			builtinSchemaFile,
@@ -87,14 +99,11 @@ func BuiltinSchema() *Schema {
 		),
 	)
 
-	if err == nil {
-		builtin = &Schema{schema: s}
-	} else {
-		builtin = NopSchema()
+	if err != nil {
+		return NopSchema()
 	}
-
-	return builtin
-}
+	return &Schema{schema: s}
+})
 
 // NopSchema returns an validating JSON Schema that does no real validation.
 func NopSchema() *Schema {
@@ -103,27 +112,27 @@ func NopSchema() *Schema {
 
 // ReadAndValidate all data from the given reader, using the active schema for validation.
 func ReadAndValidate(r io.Reader) ([]byte, error) {
-	return current.ReadAndValidate(r)
+	return Get().ReadAndValidate(r)
 }
 
 // ValidateReader validates the data read from an io.Reader against the active schema.
 func ValidateReader(r io.Reader) error {
-	return current.ValidateReader(r)
+	return Get().ValidateReader(r)
 }
 
 // ValidateData validates the given JSON document against the active schema.
 func ValidateData(data []byte) error {
-	return current.ValidateData(data)
+	return Get().ValidateData(data)
 }
 
 // ValidateFile validates the given JSON file against the active schema.
 func ValidateFile(path string) error {
-	return current.ValidateFile(path)
+	return Get().ValidateFile(path)
 }
 
 // ValidateType validates a go object against the schema.
-func ValidateType(obj interface{}) error {
-	return current.ValidateType(obj)
+func ValidateType(obj any) error {
+	return Get().ValidateType(obj)
 }
 
 // Load the given JSON Schema.
@@ -183,17 +192,14 @@ func (s *Schema) ValidateReader(r io.Reader) error {
 
 // ValidateData validates the given JSON data against the schema.
 func (s *Schema) ValidateData(data []byte) error {
-	var (
-		any map[string]interface{}
-		err error
-	)
-
+	var schemaData map[string]any
 	if !bytes.HasPrefix(bytes.TrimSpace(data), []byte{'{'}) {
-		err = yaml.Unmarshal(data, &any)
+		var err error
+		err = yaml.Unmarshal(data, &schemaData)
 		if err != nil {
 			return fmt.Errorf("failed to YAML unmarshal data for validation: %w", err)
 		}
-		data, err = json.Marshal(any)
+		data, err = json.Marshal(schemaData)
 		if err != nil {
 			return fmt.Errorf("failed to JSON remarshal data for validation: %w", err)
 		}
@@ -203,7 +209,7 @@ func (s *Schema) ValidateData(data []byte) error {
 		return err
 	}
 
-	return s.validateContents(any)
+	return s.validateContents(schemaData)
 }
 
 // ValidateFile validates the given JSON file against the schema.
@@ -220,7 +226,7 @@ func (s *Schema) ValidateFile(path string) error {
 }
 
 // ValidateType validates a go object against the schema.
-func (s *Schema) ValidateType(obj interface{}) error {
+func (s *Schema) ValidateType(obj any) error {
 	l := schema.NewGoLoader(obj)
 	return s.validate(l)
 }
@@ -242,38 +248,38 @@ func (s *Schema) validate(doc schema.JSONLoader) error {
 	return &validationError{result: docErr}
 }
 
-type schemaContents map[string]interface{}
+type schemaContents map[string]any
 
-func asSchemaContents(i interface{}) (schemaContents, error) {
+func asSchemaContents(i any) (schemaContents, error) {
 	if i == nil {
 		return nil, nil
 	}
 
-	if c, ok := i.(map[string]interface{}); ok {
+	if c, ok := i.(map[string]any); ok {
 		return schemaContents(c), nil
 	}
 
-	return nil, fmt.Errorf("expected map[string]interface{} but got %T", i)
+	return nil, fmt.Errorf("expected map[string]any but got %T", i)
 }
 
 func (c schemaContents) getFieldAsString(key string) (string, bool) {
 	if c == nil {
 		return "", false
 	}
-	if value, ok := c[key]; ok {
-		if value, ok := value.(string); ok {
+	if v, ok := c[key]; ok {
+		if value, ok := v.(string); ok {
 			return value, true
 		}
 	}
 	return "", false
 }
 
-func (c schemaContents) getAnnotations() (map[string]interface{}, bool) {
+func (c schemaContents) getAnnotations() (map[string]any, bool) {
 	if c == nil {
 		return nil, false
 	}
-	if annotations, ok := c["annotations"]; ok {
-		if annotations, ok := annotations.(map[string]interface{}); ok {
+	if v, ok := c["annotations"]; ok {
+		if annotations, ok := v.(map[string]any); ok {
 			return annotations, true
 		}
 	}
@@ -289,30 +295,30 @@ func (c schemaContents) getDevices() ([]schemaContents, error) {
 		return nil, nil
 	}
 
-	devices, ok := devicesIfc.([]interface{})
+	devices, ok := devicesIfc.([]any)
 	if !ok {
 		return nil, nil
 	}
 
 	var deviceContents []schemaContents
 	for _, device := range devices {
-		c, err := asSchemaContents(device)
+		sc, err := asSchemaContents(device)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse device: %w", err)
 		}
-		deviceContents = append(deviceContents, c)
+		deviceContents = append(deviceContents, sc)
 	}
 
 	return deviceContents, nil
 }
 
 // validateContents performs additional validation against the schema contents.
-func (s *Schema) validateContents(any map[string]interface{}) error {
-	if any == nil || s == nil {
+func (s *Schema) validateContents(data map[string]any) error {
+	if data == nil || s == nil {
 		return nil
 	}
 
-	contents := schemaContents(any)
+	contents := schemaContents(data)
 
 	if specAnnotations, ok := contents.getAnnotations(); ok {
 		if err := validation.ValidateSpecAnnotations("", specAnnotations); err != nil {
@@ -354,13 +360,6 @@ func (e *validationError) Error() string {
 
 	return ""
 }
-
-var (
-	// our builtin schema
-	builtin *Schema
-	// currently loaded schema, builtin by default
-	current = BuiltinSchema()
-)
 
 //go:embed *.json
 var builtinFS embed.FS
