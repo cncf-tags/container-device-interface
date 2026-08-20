@@ -37,7 +37,7 @@ type Option func(*Cache)
 
 // Cache stores CDI Specs loaded from Spec directories.
 type Cache struct {
-	sync.Mutex
+	mu        sync.Mutex
 	specDirs  []string
 	specs     map[string][]*Spec
 	devices   map[string]*Device
@@ -46,6 +46,20 @@ type Cache struct {
 
 	autoRefresh bool
 	watch       *watch
+}
+
+// Lock locks the cache.
+//
+// Deprecated: Cache locking is an implementation detail and should not be managed by callers.
+func (c *Cache) Lock() {
+	c.mu.Lock()
+}
+
+// Unlock unlocks the cache.
+//
+// Deprecated: Cache locking is an implementation detail and should not be managed by callers.
+func (c *Cache) Unlock() {
+	c.mu.Unlock()
 }
 
 // WithAutoRefresh returns an option to control automatic Cache refresh.
@@ -95,8 +109,8 @@ func (c *Cache) Configure(options ...Option) error {
 		return nil
 	}
 
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	c.configure(options...)
 
@@ -115,7 +129,7 @@ func (c *Cache) configure(options ...Option) {
 	c.watch.stop()
 	if c.autoRefresh {
 		c.watch.setup(c.specDirs, c.dirErrors)
-		c.watch.start(&c.Mutex, c.refresh, c.dirErrors)
+		c.watch.start(&c.mu, c.refresh, c.dirErrors)
 	}
 	_ = c.refresh() // we record but ignore errors
 }
@@ -124,8 +138,8 @@ func (c *Cache) configure(options ...Option) {
 // In manual refresh mode the cache is always refreshed. In auto-
 // refresh mode the cache is only refreshed if it is out of date.
 func (c *Cache) Refresh() error {
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	// force a refresh in manual mode
 	if refreshed, err := c.refreshIfRequired(!c.autoRefresh); refreshed {
@@ -232,8 +246,8 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 		return devices, fmt.Errorf("can't inject devices, nil OCI Spec")
 	}
 
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
@@ -341,8 +355,8 @@ func (c *Cache) RemoveSpec(name string) error {
 // a cache refresh, in which case any errors encountered can be obtained using
 // GetErrors().
 func (c *Cache) GetDevice(device string) *Device {
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
@@ -354,8 +368,8 @@ func (c *Cache) GetDevice(device string) *Device {
 func (c *Cache) ListDevices() []string {
 	var devices []string
 
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
@@ -372,8 +386,8 @@ func (c *Cache) ListDevices() []string {
 func (c *Cache) ListVendors() []string {
 	var vendors []string
 
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
@@ -393,8 +407,8 @@ func (c *Cache) ListClasses() []string {
 		classes []string
 	)
 
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
@@ -414,8 +428,8 @@ func (c *Cache) ListClasses() []string {
 // GetVendorSpecs returns all specs for the given vendor. Might trigger a cache
 // refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
@@ -427,8 +441,8 @@ func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
 func (c *Cache) GetSpecErrors(spec *Spec) []error {
 	var errors []error
 
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	if errs, ok := c.errors[spec.GetPath()]; ok {
 		errors = make([]error, len(errs))
@@ -441,8 +455,8 @@ func (c *Cache) GetSpecErrors(spec *Spec) []error {
 // GetErrors returns all errors encountered during the last
 // cache refresh.
 func (c *Cache) GetErrors() map[string][]error {
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	errors := map[string][]error{}
 	for path, errs := range c.errors {
@@ -457,8 +471,8 @@ func (c *Cache) GetErrors() map[string][]error {
 
 // GetSpecDirectories returns the CDI Spec directories currently in use.
 func (c *Cache) GetSpecDirectories() []string {
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	dirs := make([]string, len(c.specDirs))
 	copy(dirs, c.specDirs)
@@ -471,8 +485,8 @@ func (c *Cache) GetSpecDirErrors() map[string]error {
 		return nil
 	}
 
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	errors := make(map[string]error)
 	for dir, err := range c.dirErrors {
