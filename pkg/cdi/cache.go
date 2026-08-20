@@ -186,7 +186,6 @@ func (c *Cache) refresh() error {
 	}
 
 	_ = scanSpecDirs(c.specDirs, func(path string, priority int, spec *Spec, err error) error {
-		path = filepath.Clean(path)
 		if err != nil {
 			collectError(fmt.Errorf("failed to load CDI Spec %w", err), path)
 			return nil
