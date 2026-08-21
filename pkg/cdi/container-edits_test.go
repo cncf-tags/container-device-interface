@@ -481,8 +481,8 @@ func TestApplyContainerEdits(t *testing.T) {
 					{
 						Path:        "/dev/nil",
 						Type:        "c",
-						Major:       1,
-						Minor:       3,
+						Major:       nullDeviceMajor,
+						Minor:       nullDeviceMinor,
 						Permissions: NoPermissions,
 					},
 				},
@@ -519,8 +519,8 @@ func TestApplyContainerEdits(t *testing.T) {
 					{
 						Path:        "/dev/nil",
 						Type:        "c",
-						Major:       1,
-						Minor:       3,
+						Major:       nullDeviceMajor,
+						Minor:       nullDeviceMinor,
 						Permissions: "",
 					},
 				},
@@ -655,7 +655,7 @@ func TestApplyContainerEdits(t *testing.T) {
 			},
 			result: &oci.Spec{
 				Hooks: &oci.Hooks{
-					Prestart: []oci.Hook{
+					Prestart: []oci.Hook{ //nolint:staticcheck // ignore SA1019 - Prestart is deprecated, but must be tested.
 						{
 							Path: "/usr/local/bin/prestart-vendor-hook",
 							Args: []string{"--verbose"},
