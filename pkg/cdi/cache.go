@@ -20,10 +20,11 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"runtime"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 
@@ -37,7 +38,7 @@ type Option func(*Cache)
 
 // Cache stores CDI Specs loaded from Spec directories.
 type Cache struct {
-	mu        sync.Mutex
+	mu        sync.RWMutex
 	specDirs  []string
 	specs     map[string][]*Spec
 	devices   map[string]*Device
@@ -89,15 +90,15 @@ func NewCache(options ...Option) (*Cache, error) {
 // This function allows testing without handling the nil error returned by the
 // NewCache function.
 func newCache(options ...Option) *Cache {
+	specDirs := slices.Clone(DefaultSpecDirs)
+	for i := range specDirs {
+		specDirs[i] = filepath.Clean(specDirs[i])
+	}
 	c := &Cache{
+		specDirs:    specDirs,
 		autoRefresh: true,
 		watch:       &watch{},
 	}
-
-	WithSpecDirs(DefaultSpecDirs...)(c)
-	c.Lock()
-	defer c.Unlock()
-
 	c.configure(options...)
 	return c
 }
@@ -120,18 +121,18 @@ func (c *Cache) Configure(options ...Option) error {
 // Configure the Cache. Start/stop CDI Spec directory watch, refresh
 // the Cache if necessary.
 func (c *Cache) configure(options ...Option) {
+	c.watch.stop()
+	c.dirErrors = nil
+
 	for _, o := range options {
 		o(c)
 	}
 
-	c.dirErrors = make(map[string]error)
-
-	c.watch.stop()
 	if c.autoRefresh {
-		c.watch.setup(c.specDirs, c.dirErrors)
-		c.watch.start(&c.mu, c.refresh, c.dirErrors)
+		c.dirErrors = make(map[string]error)
+		c.watch.start(c.specDirs, &c.mu, c.refresh, c.dirErrors)
 	}
-	_ = c.refresh() // we record but ignore errors
+	c.refresh()
 }
 
 // Refresh rescans the CDI Spec directories and refreshes the Cache.
@@ -142,12 +143,14 @@ func (c *Cache) Refresh() error {
 	defer c.mu.Unlock()
 
 	// force a refresh in manual mode
-	if refreshed, err := c.refreshIfRequired(!c.autoRefresh); refreshed {
-		return err
+	if !c.autoRefresh {
+		c.refresh()
+	} else {
+		c.refreshIfRequired()
 	}
 
-	// collect and return cached errors, much like refresh() does it
-	errs := []error{}
+	// collect and return cached errors.
+	var errs []error
 	for _, specErrs := range c.errors {
 		errs = append(errs, errors.Join(specErrs...))
 	}
@@ -155,7 +158,7 @@ func (c *Cache) Refresh() error {
 }
 
 // Refresh the Cache by rescanning CDI Spec directories and files.
-func (c *Cache) refresh() error {
+func (c *Cache) refresh() {
 	var (
 		specs      = map[string][]*Spec{}
 		devices    = map[string]*Device{}
@@ -215,23 +218,14 @@ func (c *Cache) refresh() error {
 	c.specs = specs
 	c.devices = devices
 	c.errors = specErrors
-
-	errs := []error{}
-	for _, specErrs := range specErrors {
-		errs = append(errs, errors.Join(specErrs...))
-	}
-	return errors.Join(errs...)
 }
 
-// RefreshIfRequired triggers a refresh if necessary.
-func (c *Cache) refreshIfRequired(force bool) (bool, error) {
-	// We need to refresh if
-	// - it's forced by an explicit call to Refresh() in manual mode
-	// - a missing Spec dir appears (added to watch) in auto-refresh mode
-	if force || (c.autoRefresh && c.watch.update(c.dirErrors)) {
-		return true, c.refresh()
+// refreshIfRequired triggers a refresh if necessary.
+func (c *Cache) refreshIfRequired() {
+	// We need to refresh if a missing Spec dir appears (added to watch) in auto-refresh mode.
+	if c.autoRefresh && c.watch.update(c.dirErrors, "") {
+		c.refresh()
 	}
-	return false, nil
 }
 
 // InjectDevices injects the given qualified devices to an OCI Spec. It
@@ -239,22 +233,21 @@ func (c *Cache) refreshIfRequired(force bool) (bool, error) {
 // any of the devices. Might trigger a cache refresh, in which case any
 // errors encountered can be obtained using GetErrors().
 func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, error) {
-	var unresolved []string
-
 	if ociSpec == nil {
 		return devices, fmt.Errorf("can't inject devices, nil OCI Spec")
 	}
 
 	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
+	cachedDevices := c.devices
+	c.mu.Unlock()
 
 	edits := &ContainerEdits{}
 	specs := map[*Spec]struct{}{}
 
+	var unresolved []string
 	for _, device := range devices {
-		d := c.devices[device]
+		d := cachedDevices[device]
 		if d == nil {
 			unresolved = append(unresolved, device)
 			continue
@@ -266,7 +259,7 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 		edits.Append(d.edits())
 	}
 
-	if unresolved != nil {
+	if len(unresolved) > 0 {
 		return unresolved, fmt.Errorf("unresolvable CDI devices %s",
 			strings.Join(unresolved, ", "))
 	}
@@ -281,8 +274,8 @@ func (c *Cache) InjectDevices(ociSpec *oci.Spec, devices ...string) ([]string, e
 // highestPrioritySpecDir returns the Spec directory with highest priority
 // and its priority.
 func (c *Cache) highestPrioritySpecDir() (string, int) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	if len(c.specDirs) == 0 {
 		return "", -1
 	}
@@ -297,25 +290,17 @@ func (c *Cache) highestPrioritySpecDir() (string, int) {
 // priority Spec directory. If name has a "json" or "yaml" extension it
 // choses the encoding. Otherwise the default YAML encoding is used.
 func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
-	var (
-		specDir string
-		path    string
-		prio    int
-		spec    *Spec
-		err     error
-	)
-
-	specDir, prio = c.highestPrioritySpecDir()
+	specDir, prio := c.highestPrioritySpecDir()
 	if specDir == "" {
 		return errors.New("no Spec directories to write to")
 	}
 
-	path = filepath.Join(specDir, name)
+	path := filepath.Join(specDir, name)
 	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
 		path += defaultSpecExt
 	}
 
-	spec, err = newSpec(raw, path, prio)
+	spec, err := newSpec(raw, path, prio)
 	if err != nil {
 		return err
 	}
@@ -328,25 +313,19 @@ func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
 // Spec previously written by WriteSpec(). If the file exists and
 // its removal fails RemoveSpec returns an error.
 func (c *Cache) RemoveSpec(name string) error {
-	var (
-		specDir string
-		path    string
-		err     error
-	)
-
-	specDir, _ = c.highestPrioritySpecDir()
+	specDir, _ := c.highestPrioritySpecDir()
 	if specDir == "" {
 		return errors.New("no Spec directories to remove from")
 	}
 
-	path = filepath.Join(specDir, name)
+	path := filepath.Join(specDir, name)
 	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
 		path += defaultSpecExt
 	}
 
-	err = os.Remove(path)
-	if err != nil && errors.Is(err, fs.ErrNotExist) {
-		err = nil
+	err := os.Remove(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
 	}
 
 	return err
@@ -359,7 +338,7 @@ func (c *Cache) GetDevice(device string) *Device {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
 
 	return c.devices[device]
 }
@@ -367,61 +346,46 @@ func (c *Cache) GetDevice(device string) *Device {
 // ListDevices lists all cached devices by qualified name. Might trigger a cache
 // refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListDevices() []string {
-	var devices []string
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
 
-	for name := range c.devices {
-		devices = append(devices, name)
-	}
-	sort.Strings(devices)
-
-	return devices
+	return slices.Sorted(maps.Keys(c.devices))
 }
 
 // ListVendors lists all vendors known to the cache. Might trigger a cache refresh,
 // in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListVendors() []string {
-	var vendors []string
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
 
-	for vendor := range c.specs {
-		vendors = append(vendors, vendor)
-	}
-	sort.Strings(vendors)
-
-	return vendors
+	return slices.Sorted(maps.Keys(c.specs))
 }
 
 // ListClasses lists all device classes known to the cache. Might trigger a cache
 // refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListClasses() []string {
-	var (
-		cmap    = map[string]struct{}{}
-		classes []string
-	)
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
 
+	var classes []string
+	seen := map[string]struct{}{}
 	for _, specs := range c.specs {
 		for _, spec := range specs {
-			cmap[spec.GetClass()] = struct{}{}
+			class := spec.GetClass()
+			if _, ok := seen[class]; ok {
+				continue
+			}
+			seen[class] = struct{}{}
+			classes = append(classes, class)
 		}
 	}
-	for class := range cmap {
-		classes = append(classes, class)
-	}
-	sort.Strings(classes)
+	slices.Sort(classes)
 
 	return classes
 }
@@ -432,7 +396,7 @@ func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	_, _ = c.refreshIfRequired(false) // we record but ignore errors
+	c.refreshIfRequired()
 
 	return c.specs[vendor]
 }
@@ -440,60 +404,40 @@ func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
 // GetSpecErrors returns all errors encountered for the spec during the
 // last cache refresh.
 func (c *Cache) GetSpecErrors(spec *Spec) []error {
-	var errors []error
-
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if errs, ok := c.errors[spec.GetPath()]; ok {
-		errors = make([]error, len(errs))
-		copy(errors, errs)
-	}
-
-	return errors
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return slices.Clone(c.errors[spec.GetPath()])
 }
 
 // GetErrors returns all errors encountered during the last
 // cache refresh.
 func (c *Cache) GetErrors() map[string][]error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 
-	errors := map[string][]error{}
+	errsByPath := make(map[string][]error, len(c.errors)+len(c.dirErrors))
 	for path, errs := range c.errors {
-		errors[path] = errs
+		errsByPath[path] = slices.Clone(errs)
 	}
 	for path, err := range c.dirErrors {
-		errors[path] = []error{err}
+		errsByPath[path] = append(errsByPath[path], err)
 	}
 
-	return errors
+	return errsByPath
 }
 
 // GetSpecDirectories returns the CDI Spec directories currently in use.
 func (c *Cache) GetSpecDirectories() []string {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	dirs := make([]string, len(c.specDirs))
-	copy(dirs, c.specDirs)
-	return dirs
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return slices.Clone(c.specDirs)
 }
 
 // GetSpecDirErrors returns any errors related to configured Spec directories.
 func (c *Cache) GetSpecDirErrors() map[string]error {
-	if c.dirErrors == nil {
-		return nil
-	}
-
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	errors := make(map[string]error)
-	for dir, err := range c.dirErrors {
-		errors[dir] = err
-	}
-	return errors
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return maps.Clone(c.dirErrors)
 }
 
 // Our fsnotify helper wrapper.
@@ -502,18 +446,9 @@ type watch struct {
 	tracked map[string]bool
 }
 
-// Setup monitoring for the given Spec directories.
-func (w *watch) setup(dirs []string, dirErrors map[string]error) {
-	var (
-		dir string
-		err error
-	)
-	w.tracked = make(map[string]bool)
-	for _, dir = range dirs {
-		w.tracked[dir] = false
-	}
-
-	w.watcher, err = fsnotify.NewWatcher()
+// Start watching the configured Spec directories.
+func (w *watch) start(dirs []string, m sync.Locker, refresh func(), dirErrors map[string]error) {
+	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		for _, dir := range dirs {
 			dirErrors[dir] = fmt.Errorf("failed to create watcher: %w", err)
@@ -521,12 +456,18 @@ func (w *watch) setup(dirs []string, dirErrors map[string]error) {
 		return
 	}
 
-	w.update(dirErrors)
-}
+	w.watcher = watcher
+	w.tracked = make(map[string]bool, len(dirs))
+	for _, dir := range dirs {
+		if err := watcher.Add(dir); err != nil {
+			dirErrors[dir] = fmt.Errorf("failed to monitor for changes: %w", err)
+			w.tracked[dir] = false
+			continue
+		}
+		w.tracked[dir] = true
+	}
 
-// Start watching Spec directories for relevant changes.
-func (w *watch) start(m *sync.Mutex, refresh func() error, dirErrors map[string]error) {
-	go w.watch(w.watcher, m, refresh, dirErrors)
+	go w.watch(watcher, m, refresh, dirErrors)
 }
 
 // Stop watching directories.
@@ -536,16 +477,12 @@ func (w *watch) stop() {
 	}
 
 	_ = w.watcher.Close()
+	w.watcher = nil
 	w.tracked = nil
 }
 
 // Watch Spec directory changes, triggering a refresh if necessary.
-func (w *watch) watch(fsw *fsnotify.Watcher, m *sync.Mutex, refresh func() error, dirErrors map[string]error) {
-	watch := fsw
-	if watch == nil {
-		return
-	}
-
+func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func(), dirErrors map[string]error) {
 	eventMask := fsnotify.Rename | fsnotify.Remove | fsnotify.Write
 	// On macOS, we also need to watch for Create events.
 	if runtime.GOOS == "darwin" {
@@ -554,30 +491,33 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m *sync.Mutex, refresh func() error
 
 	for {
 		select {
-		case event, ok := <-watch.Events:
+		case event, ok := <-fsw.Events:
 			if !ok {
 				return
 			}
 
-			if (event.Op & eventMask) == 0 {
+			fsOp := event.Op & eventMask
+			if fsOp == 0 {
 				continue
-			}
-			if event.Op == fsnotify.Write || event.Op == fsnotify.Create {
-				if ext := filepath.Ext(event.Name); ext != ".json" && ext != ".yaml" {
-					continue
-				}
 			}
 
 			m.Lock()
-			if event.Op == fsnotify.Remove && w.tracked[event.Name] {
-				w.update(dirErrors, event.Name)
-			} else {
-				w.update(dirErrors)
+			// Ignore changes unrelated to Spec files or configured Spec directories.
+			_, tracked := w.tracked[event.Name]
+			if ext := filepath.Ext(event.Name); ext != ".json" && ext != ".yaml" && !tracked {
+				m.Unlock()
+				continue
 			}
-			_ = refresh()
+			// If a configured Spec directory was removed, mark its watch for restoration.
+			var removed string
+			if fsOp&fsnotify.Remove != 0 && w.tracked[event.Name] {
+				removed = event.Name
+			}
+			w.update(dirErrors, removed)
+			refresh()
 			m.Unlock()
 
-		case _, ok := <-watch.Errors:
+		case _, ok := <-fsw.Errors:
 			if !ok {
 				return
 			}
@@ -586,14 +526,7 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m *sync.Mutex, refresh func() error
 }
 
 // Update watch with pending/missing or removed directories.
-func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
-	var (
-		dir    string
-		ok     bool
-		err    error
-		update bool
-	)
-
+func (w *watch) update(dirErrors map[string]error, removedDir string) bool {
 	// If we failed to create an fsnotify.Watcher we have a nil watcher here
 	// (but with autoRefresh left on). One known case when this can happen is
 	// if we have too many open files. In that case we always return true and
@@ -602,25 +535,28 @@ func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
 		return true
 	}
 
-	for dir, ok = range w.tracked {
-		if ok {
+	// Add or restore watches for configured directories not currently watched.
+	var update bool
+	for dir, watched := range w.tracked {
+		if watched {
+			if dir == removedDir {
+				// Directory we were watching was removed.
+				// Mark it as no longer watched.
+				w.tracked[removedDir] = false
+				dirErrors[removedDir] = errors.New("directory removed")
+				update = true
+			}
 			continue
 		}
 
-		err = w.watcher.Add(dir)
-		if err == nil {
-			w.tracked[dir] = true
-			delete(dirErrors, dir)
-			update = true
-		} else {
-			w.tracked[dir] = false
+		if err := w.watcher.Add(dir); err != nil {
 			dirErrors[dir] = fmt.Errorf("failed to monitor for changes: %w", err)
+			continue
 		}
-	}
 
-	for _, dir = range removed {
-		w.tracked[dir] = false
-		dirErrors[dir] = errors.New("directory removed")
+		// Mark directory as watched and clear any previous watch error.
+		w.tracked[dir] = true
+		delete(dirErrors, dir)
 		update = true
 	}
 
