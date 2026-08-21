@@ -655,7 +655,7 @@ func TestApplyContainerEdits(t *testing.T) {
 			},
 			result: &oci.Spec{
 				Hooks: &oci.Hooks{
-					Prestart: []oci.Hook{
+					Prestart: []oci.Hook{ //nolint:staticcheck // ignore SA1019 - Prestart is deprecated, but must be tested.
 						{
 							Path: "/usr/local/bin/prestart-vendor-hook",
 							Args: []string{"--verbose"},

@@ -758,11 +758,11 @@ devices:
 			}
 
 			fssyncer := func() {
-				var sync = time.NewTimer(2 * time.Second)
+				var fsync = time.NewTimer(2 * time.Second)
 
 				defer func() {
-					if !sync.Stop() {
-						<-sync.C
+					if !fsync.Stop() {
+						<-fsync.C
 					}
 					wg.Done()
 				}()
@@ -774,9 +774,9 @@ devices:
 					case <-stopCh:
 						go osSync()
 						return
-					case <-sync.C:
+					case <-fsync.C:
 						go osSync()
-						sync.Reset(2 * time.Second)
+						fsync.Reset(2 * time.Second)
 					}
 				}
 			}
@@ -996,18 +996,18 @@ devices:
         major: 10
         minor: 2
       hooks:
-      - hookName: prestart
-        path: "/usr/local/bin/prestart-vendor-hook"
-        args:
-        - "--verbose"
-        env:
-        - "HOOK_ENV1=PRESTART_VAL1"
       - hookName: createRuntime
         path: "/usr/local/bin/cr-vendor-hook"
         args:
-        - "--debug"
+        - "--verbose"
         env:
         - "HOOK_ENV1=CREATE_RUNTIME_VAL1"
+      - hookName: createContainer
+        path: "/usr/local/bin/cc-vendor-hook"
+        args:
+        - "--debug"
+        env:
+        - "HOOK_ENV1=CREATE_CONTAINER_VAL1"
   - name: "dev3"
     containerEdits:
       env:
@@ -1055,18 +1055,18 @@ devices:
 					},
 				},
 				Hooks: &oci.Hooks{
-					Prestart: []oci.Hook{
-						{
-							Path: "/usr/local/bin/prestart-vendor-hook",
-							Args: []string{"--verbose"},
-							Env:  []string{"HOOK_ENV1=PRESTART_VAL1"},
-						},
-					},
 					CreateRuntime: []oci.Hook{
 						{
 							Path: "/usr/local/bin/cr-vendor-hook",
-							Args: []string{"--debug"},
+							Args: []string{"--verbose"},
 							Env:  []string{"HOOK_ENV1=CREATE_RUNTIME_VAL1"},
+						},
+					},
+					CreateContainer: []oci.Hook{
+						{
+							Path: "/usr/local/bin/cc-vendor-hook",
+							Args: []string{"--debug"},
+							Env:  []string{"HOOK_ENV1=CREATE_CONTAINER_VAL1"},
 						},
 					},
 				},
