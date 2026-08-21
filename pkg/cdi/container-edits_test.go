@@ -481,8 +481,8 @@ func TestApplyContainerEdits(t *testing.T) {
 					{
 						Path:        "/dev/nil",
 						Type:        "c",
-						Major:       1,
-						Minor:       3,
+						Major:       nullDeviceMajor,
+						Minor:       nullDeviceMinor,
 						Permissions: NoPermissions,
 					},
 				},
@@ -519,8 +519,8 @@ func TestApplyContainerEdits(t *testing.T) {
 					{
 						Path:        "/dev/nil",
 						Type:        "c",
-						Major:       1,
-						Minor:       3,
+						Major:       nullDeviceMajor,
+						Minor:       nullDeviceMinor,
 						Permissions: "",
 					},
 				},
