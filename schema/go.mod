@@ -1,6 +1,6 @@
 module tags.cncf.io/container-device-interface/schema
 
-go 1.21
+go 1.23
 
 require (
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
