@@ -28,6 +28,7 @@ import (
 	"time"
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/yaml"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
@@ -562,7 +563,10 @@ devices:
 							return
 						}
 						if selfRefresh {
-							time.Sleep(100 * time.Millisecond)
+							require.EventuallyWithT(t, func(t *assert.CollectT) {
+								assert.Equal(t, tc.devices[idx], cache.ListDevices())
+								assert.Len(t, cache.GetErrors(), len(tc.errors[idx]))
+							}, time.Second, 10*time.Millisecond)
 						} else {
 							err = cache.Refresh()
 
