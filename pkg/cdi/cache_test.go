@@ -235,6 +235,7 @@ func TestRefreshCache(t *testing.T) {
 		errors  []map[string]struct{}
 		devices [][]string
 		devprio []map[string]int
+		waitSrc string
 	}
 	for _, tc := range []*testCase{
 		{
@@ -450,6 +451,7 @@ devices:
 				{},
 				{},
 			},
+			waitSrc: "run/vendor1.yaml",
 		},
 		{
 			name: "one Spec, add another, conflicts",
@@ -564,8 +566,16 @@ devices:
 						}
 						if selfRefresh {
 							require.EventuallyWithT(t, func(t *assert.CollectT) {
+								// For some tests cases, to avoid flakiness we need to ensure that
+								// the refresh has already taken place. Otherwise all guard conditions
+								// could pass with the old cache already on the first iteration of the
+								// test loop in EventuallyWithT.
+								assert.True(t, tc.waitSrc == "" ||
+									(len(cache.ListDevices()) > 0 &&
+										strings.Contains(cache.GetDevice(cache.ListDevices()[0]).GetSpec().GetPath(), tc.waitSrc)))
 								assert.Equal(t, tc.devices[idx], cache.ListDevices())
 								assert.Len(t, cache.GetErrors(), len(tc.errors[idx]))
+
 							}, time.Second, 10*time.Millisecond)
 						} else {
 							err = cache.Refresh()
