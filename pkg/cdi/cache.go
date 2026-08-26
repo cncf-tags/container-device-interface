@@ -129,8 +129,7 @@ func (c *Cache) configure(options ...Option) {
 	}
 
 	if c.autoRefresh {
-		c.dirErrors = make(map[string]error)
-		c.watch.start(c.specDirs, &c.mu, c.refresh, c.dirErrors)
+		c.watch.start(c)
 	}
 	c.refresh()
 }
@@ -491,28 +490,30 @@ type watch struct {
 	tracked map[string]bool
 }
 
-// Start watching the configured Spec directories.
-func (w *watch) start(dirs []string, m sync.Locker, refresh func(), dirErrors map[string]error) {
+// Start watching the Spec directories configured in the cache, recording
+// watch errors and triggering cache refreshes as directories change.
+func (w *watch) start(c *Cache) {
+	c.dirErrors = make(map[string]error)
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		for _, dir := range dirs {
-			dirErrors[dir] = fmt.Errorf("failed to create watcher: %w", err)
+		for _, dir := range c.specDirs {
+			c.dirErrors[dir] = fmt.Errorf("failed to create watcher: %w", err)
 		}
 		return
 	}
 
 	w.watcher = watcher
-	w.tracked = make(map[string]bool, len(dirs))
-	for _, dir := range dirs {
+	w.tracked = make(map[string]bool, len(c.specDirs))
+	for _, dir := range c.specDirs {
 		if err := watcher.Add(dir); err != nil {
-			dirErrors[dir] = fmt.Errorf("failed to monitor for changes: %w", err)
+			c.dirErrors[dir] = fmt.Errorf("failed to monitor for changes: %w", err)
 			w.tracked[dir] = false
 			continue
 		}
 		w.tracked[dir] = true
 	}
 
-	go w.watch(watcher, m, refresh, dirErrors)
+	go w.watch(watcher, c)
 }
 
 // Stop watching directories.
@@ -527,7 +528,7 @@ func (w *watch) stop() {
 }
 
 // Watch Spec directory changes, triggering a refresh if necessary.
-func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func(), dirErrors map[string]error) {
+func (w *watch) watch(fsw *fsnotify.Watcher, c *Cache) {
 	eventMask := fsnotify.Rename | fsnotify.Remove | fsnotify.Write
 	// On macOS, we also need to watch for Create events.
 	if runtime.GOOS == "darwin" {
@@ -550,14 +551,14 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func(), dirE
 				}
 			}
 
-			m.Lock()
+			c.mu.Lock()
 			if event.Op == fsnotify.Remove && w.tracked[event.Name] {
-				w.update(dirErrors, event.Name)
+				w.update(c.dirErrors, event.Name)
 			} else {
-				w.update(dirErrors)
+				w.update(c.dirErrors)
 			}
-			refresh()
-			m.Unlock()
+			c.refresh()
+			c.mu.Unlock()
 
 		case _, ok := <-fsw.Errors:
 			if !ok {
