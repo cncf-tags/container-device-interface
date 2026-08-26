@@ -65,6 +65,13 @@
 //	    return nil
 //	}
 //
+// # Resolving Edits Without OCI Conversion
+//
+// Consumers that apply CDI edits outside an OCI runtime can call ResolveEdits.
+// It returns a complete, detached set of CDI edits in selection order, with
+// host-derived device-node fields resolved, without creating or modifying an
+// OCI Spec. Consumers decide how to apply each returned edit class.
+//
 // # Cache Refresh
 //
 // By default the CDI Spec cache monitors the configured Spec directories
