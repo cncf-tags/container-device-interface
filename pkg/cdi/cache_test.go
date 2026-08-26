@@ -562,12 +562,7 @@ devices:
 							t.Errorf("failed to update test directory: %v", err)
 							return
 						}
-						if selfRefresh {
-							require.EventuallyWithT(t, func(t *assert.CollectT) {
-								assert.Equal(t, tc.devices[idx], cache.ListDevices())
-								assert.Len(t, cache.GetErrors(), len(tc.errors[idx]))
-							}, time.Second, 10*time.Millisecond)
-						} else {
+						if !selfRefresh {
 							err = cache.Refresh()
 
 							if len(tc.errors[idx]) == 0 {
@@ -578,27 +573,32 @@ devices:
 						}
 					}
 
-					devices := cache.ListDevices()
-					if len(tc.devices[idx]) == 0 {
-						require.True(t, len(devices) == 0)
-					} else {
-						require.Equal(t, tc.devices[idx], devices)
-					}
-
-					for name, prio := range tc.devprio[idx] {
-						dev := cache.GetDevice(name)
-						require.NotNil(t, dev)
-						require.Equal(t, dev.GetSpec().GetPriority(), prio)
-					}
-
-					for _, v := range cache.ListVendors() {
-						for _, spec := range cache.GetVendorSpecs(v) {
-							err := cache.GetSpecErrors(spec)
-							relSpecPath, _ := filepath.Rel(dir, spec.GetPath())
-							_, ok := tc.errors[idx][relSpecPath]
-							require.True(t, (err == nil && !ok) || (err != nil && ok))
+					require.EventuallyWithT(t, func(t *assert.CollectT) {
+						devices := cache.ListDevices()
+						if len(tc.devices[idx]) == 0 {
+							assert.True(t, len(devices) == 0)
+						} else {
+							assert.Equal(t, tc.devices[idx], devices)
 						}
-					}
+
+						assert.Len(t, cache.GetErrors(), len(tc.errors[idx]))
+
+						for name, prio := range tc.devprio[idx] {
+							dev := cache.GetDevice(name)
+							if assert.NotNil(t, dev) {
+								assert.Equal(t, prio, dev.GetSpec().GetPriority())
+							}
+						}
+
+						for _, v := range cache.ListVendors() {
+							for _, spec := range cache.GetVendorSpecs(v) {
+								err := cache.GetSpecErrors(spec)
+								relSpecPath, _ := filepath.Rel(dir, spec.GetPath())
+								_, ok := tc.errors[idx][relSpecPath]
+								assert.True(t, (err == nil && !ok) || (err != nil && ok))
+							}
+						}
+					}, time.Second, 10*time.Millisecond)
 				}
 			}
 		})
