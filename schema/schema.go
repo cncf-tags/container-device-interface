@@ -31,7 +31,7 @@ import (
 	"time"
 
 	"github.com/santhosh-tekuri/jsonschema/v6"
-	"sigs.k8s.io/yaml"
+	"go.yaml.in/yaml/v3"
 
 	"tags.cncf.io/container-device-interface/internal/validation"
 	cdi "tags.cncf.io/container-device-interface/specs-go"
