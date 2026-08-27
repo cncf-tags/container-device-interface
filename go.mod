@@ -3,7 +3,7 @@ module tags.cncf.io/container-device-interface
 go 1.23
 
 require (
-	github.com/fsnotify/fsnotify v1.5.1
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/opencontainers/runtime-spec v1.3.0
 	github.com/stretchr/testify v1.12.1
 	go.yaml.in/yaml/v3 v3.0.5

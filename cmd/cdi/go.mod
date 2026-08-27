@@ -3,7 +3,7 @@ module tags.cncf.io/container-device-interface/cmd/cdi
 go 1.23
 
 require (
-	github.com/fsnotify/fsnotify v1.5.1
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/opencontainers/runtime-spec v1.3.0
 	github.com/spf13/cobra v1.6.0
 	github.com/stretchr/testify v1.12.1
