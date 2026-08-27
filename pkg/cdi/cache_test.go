@@ -1888,7 +1888,7 @@ func TestCacheConcurrentConfigure(t *testing.T) {
 
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for i := range iterations {
 			if i%2 == 0 {
 				_ = cache.Configure(WithSpecDirs(dir1))
 			} else {
@@ -1899,7 +1899,7 @@ func TestCacheConcurrentConfigure(t *testing.T) {
 
 	go func() {
 		defer wg.Done()
-		for i := 0; i < iterations; i++ {
+		for range iterations {
 			cache.highestPrioritySpecDir()
 		}
 	}()

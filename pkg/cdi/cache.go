@@ -20,11 +20,11 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
-	"sort"
 	"strings"
 	"sync"
 
@@ -297,25 +297,17 @@ func (c *Cache) highestPrioritySpecDir() (string, int) {
 // priority Spec directory. If name has a "json" or "yaml" extension it
 // choses the encoding. Otherwise the default YAML encoding is used.
 func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
-	var (
-		specDir string
-		path    string
-		prio    int
-		spec    *Spec
-		err     error
-	)
-
-	specDir, prio = c.highestPrioritySpecDir()
+	specDir, prio := c.highestPrioritySpecDir()
 	if specDir == "" {
 		return errors.New("no Spec directories to write to")
 	}
 
-	path = filepath.Join(specDir, name)
+	path := filepath.Join(specDir, name)
 	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
 		path += defaultSpecExt
 	}
 
-	spec, err = newSpec(raw, path, prio)
+	spec, err := newSpec(raw, path, prio)
 	if err != nil {
 		return err
 	}
@@ -328,25 +320,19 @@ func (c *Cache) WriteSpec(raw *cdi.Spec, name string) error {
 // Spec previously written by WriteSpec(). If the file exists and
 // its removal fails RemoveSpec returns an error.
 func (c *Cache) RemoveSpec(name string) error {
-	var (
-		specDir string
-		path    string
-		err     error
-	)
-
-	specDir, _ = c.highestPrioritySpecDir()
+	specDir, _ := c.highestPrioritySpecDir()
 	if specDir == "" {
 		return errors.New("no Spec directories to remove from")
 	}
 
-	path = filepath.Join(specDir, name)
+	path := filepath.Join(specDir, name)
 	if ext := filepath.Ext(path); ext != ".json" && ext != ".yaml" {
 		path += defaultSpecExt
 	}
 
-	err = os.Remove(path)
-	if err != nil && errors.Is(err, fs.ErrNotExist) {
-		err = nil
+	err := os.Remove(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
 	}
 
 	return err
@@ -367,61 +353,46 @@ func (c *Cache) GetDevice(device string) *Device {
 // ListDevices lists all cached devices by qualified name. Might trigger a cache
 // refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListDevices() []string {
-	var devices []string
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
-	for name := range c.devices {
-		devices = append(devices, name)
-	}
-	sort.Strings(devices)
-
-	return devices
+	return slices.Sorted(maps.Keys(c.devices))
 }
 
 // ListVendors lists all vendors known to the cache. Might trigger a cache refresh,
 // in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListVendors() []string {
-	var vendors []string
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
-	for vendor := range c.specs {
-		vendors = append(vendors, vendor)
-	}
-	sort.Strings(vendors)
-
-	return vendors
+	return slices.Sorted(maps.Keys(c.specs))
 }
 
 // ListClasses lists all device classes known to the cache. Might trigger a cache
 // refresh, in which case any errors encountered can be obtained using GetErrors().
 func (c *Cache) ListClasses() []string {
-	var (
-		cmap    = map[string]struct{}{}
-		classes []string
-	)
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	_, _ = c.refreshIfRequired(false) // we record but ignore errors
 
+	var classes []string
+	seen := map[string]struct{}{}
 	for _, specs := range c.specs {
 		for _, spec := range specs {
-			cmap[spec.GetClass()] = struct{}{}
+			class := spec.GetClass()
+			if _, ok := seen[class]; ok {
+				continue
+			}
+			seen[class] = struct{}{}
+			classes = append(classes, class)
 		}
 	}
-	for class := range cmap {
-		classes = append(classes, class)
-	}
-	sort.Strings(classes)
+	slices.Sort(classes)
 
 	return classes
 }
@@ -442,12 +413,7 @@ func (c *Cache) GetVendorSpecs(vendor string) []*Spec {
 func (c *Cache) GetSpecErrors(spec *Spec) []error {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	var errs []error
-	if e, ok := c.errors[spec.GetPath()]; ok {
-		errs = make([]error, len(e))
-		copy(errs, e)
-	}
-	return errs
+	return slices.Clone(c.errors[spec.GetPath()])
 }
 
 // GetErrors returns all errors encountered during the last
@@ -471,25 +437,14 @@ func (c *Cache) GetErrors() map[string][]error {
 func (c *Cache) GetSpecDirectories() []string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-
-	dirs := make([]string, len(c.specDirs))
-	copy(dirs, c.specDirs)
-	return dirs
+	return slices.Clone(c.specDirs)
 }
 
 // GetSpecDirErrors returns any errors related to configured Spec directories.
 func (c *Cache) GetSpecDirErrors() map[string]error {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	if c.dirErrors == nil {
-		return nil
-	}
-
-	errs := make(map[string]error)
-	for dir, err := range c.dirErrors {
-		errs[dir] = err
-	}
-	return errs
+	return maps.Clone(c.dirErrors)
 }
 
 // Our fsnotify helper wrapper.
@@ -583,13 +538,6 @@ func (w *watch) watch(fsw *fsnotify.Watcher, m sync.Locker, refresh func() error
 
 // Update watch with pending/missing or removed directories.
 func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
-	var (
-		dir    string
-		ok     bool
-		err    error
-		update bool
-	)
-
 	// If we failed to create an fsnotify.Watcher we have a nil watcher here
 	// (but with autoRefresh left on). One known case when this can happen is
 	// if we have too many open files. In that case we always return true and
@@ -598,12 +546,13 @@ func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
 		return true
 	}
 
-	for dir, ok = range w.tracked {
+	var update bool
+	for dir, ok := range w.tracked {
 		if ok {
 			continue
 		}
 
-		err = w.watcher.Add(dir)
+		err := w.watcher.Add(dir)
 		if err == nil {
 			w.tracked[dir] = true
 			delete(dirErrors, dir)
@@ -614,7 +563,7 @@ func (w *watch) update(dirErrors map[string]error, removed ...string) bool {
 		}
 	}
 
-	for _, dir = range removed {
+	for _, dir := range removed {
 		w.tracked[dir] = false
 		dirErrors[dir] = errors.New("directory removed")
 		update = true

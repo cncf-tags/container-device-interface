@@ -1,6 +1,6 @@
 module tags.cncf.io/container-device-interface/cmd/cdi
 
-go 1.21
+go 1.23
 
 require (
 	github.com/fsnotify/fsnotify v1.5.1
