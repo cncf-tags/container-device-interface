@@ -23,7 +23,6 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"strings"
 	"sync"
@@ -484,11 +483,10 @@ func (w *watch) stop() {
 
 // Watch Spec directory changes, triggering a refresh if necessary.
 func (w *watch) watch(fsw *fsnotify.Watcher, c *Cache) {
-	eventMask := fsnotify.Rename | fsnotify.Remove | fsnotify.Write
-	// On macOS, we also need to watch for Create events.
-	if runtime.GOOS == "darwin" {
-		eventMask |= fsnotify.Create
-	}
+	// Watch for Spec file changes. Atomic writes may create a temporary file and
+	// rename it into place. On Linux, fsnotify reports the destination of such a
+	// rename as a Create event, so Create must be watched on all platforms.
+	eventMask := fsnotify.Create | fsnotify.Rename | fsnotify.Remove | fsnotify.Write
 
 	for {
 		select {
