@@ -1,0 +1,14 @@
+{
+  "cdiVersion": "1.2.0",
+  "kind": "vendor.com/device",
+  "devices": [
+    {
+      "name": "myDevice",
+      "containerEdits": {
+        "deviceCgroupRules": [
+          {"type": "c", "major": 0, "minor": 3}
+        ]
+      }
+    }
+  ]
+}
