@@ -74,6 +74,71 @@ devices:
         - "FOO=BAR"
 `,
 		},
+		{
+			name: "valid, device cgroup rules only",
+			data: `
+cdiVersion: "1.2.0"
+kind: vendor.com/device
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceCgroupRules:
+        - type: "c"
+          major: 226
+          minor: -1
+          permissions: "rw"
+        - type: "b"
+          major: 8
+          minor: 0
+        - type: "c"
+          major: 1
+          minor: 3
+`,
+		},
+		{
+			name: "unparsable, device cgroup rule with invalid minor",
+			data: `
+cdiVersion: "1.2.0"
+kind: vendor.com/device
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceCgroupRules:
+        - type: "c"
+          major: 226
+          minor: "*"
+`,
+			unparsable: true,
+		},
+		{
+			name: "invalid, device cgroup rule without minor",
+			data: `
+cdiVersion: "1.2.0"
+kind: vendor.com/device
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceCgroupRules:
+        - type: "c"
+          major: 226
+`,
+			invalid: true,
+		},
+		{
+			name: "invalid, device cgroup rules require v1.2.0",
+			data: `
+cdiVersion: "1.1.0"
+kind: vendor.com/device
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceCgroupRules:
+        - type: "c"
+          major: 226
+          minor: -1
+`,
+			invalid: true,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			file, err := mkTestSpec(t, []byte(tc.data))
