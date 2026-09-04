@@ -8,7 +8,7 @@
 
 ## Version
 
-This is CDI **spec** version **1.1.0**.
+This is CDI **spec** version **1.2.0**.
 
 ### Update policy
 
@@ -35,6 +35,7 @@ Released versions of the spec are available as Git tags.
 | v1.0.0 |   | Move minimum version logic to specs-go package. |
 | v1.1.0 |   | Add `NetDevices` to `ContainerEdits`, `Schemata` and `EnableMonitoring` to `IntelRdt`. Dropped `EnableCMT` and `EnableMBM` fields from `IntelRdt`. |
 | v1.1.1 |   | No Spec changes. Remove semver dependency from specs-go and improve performance. |
+| v1.2.0 |   | Add `DeviceCgroupRules` to `ContainerEdits`. |
 
 *Note*: spec loading fails on unknown fields and when the minimum required version is higher than the version specified in the spec. The minimum required version is determined based on the usage of fields mentioned in the table above. For example the minimum required version is v0.6.0 if the `Annotations` field is used in the spec, but `IntelRdt` is not.
 `MinimumRequiredVersion` API can be used to get the minimum required version.
@@ -146,6 +147,19 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
                     "gid": <int> (optional)
                 }
             ]
+            // Rules to add to the devices cgroup of the container.
+            "deviceCgroupRules": [ (optional)
+                {
+                    // Device type ("b" or "c")
+                    "type": "<type>",
+                    "major": <int64>,
+                    // Minor number, or -1 as a wildcard matching any minor number.
+                    "minor": <int64>,
+                    // Cgroups permissions to grant, candidates are one or more of 'r', 'w' and 'm',
+                    // as for deviceNodes.permissions. Omitted or empty default to 'rwm'. 'none' is not supported.
+                    "permissions": "<permissions>" (optional)
+                }
+            ],
             "mounts": [ (optional)
                 {
                     "hostPath": "<source>",
@@ -242,6 +256,13 @@ The `containerEdits` field has the following definition:
       * m - allows container to create device files that do not yet exist.
     * `uid` (uint32, OPTIONAL) id of device owner in the container namespace.
     * `gid` (uint32, OPTIONAL) id of device group in the container namespace.
+  * `deviceCgroupRules` (array of objects, OPTIONAL) describes rules to be added to the devices cgroup of the container. Added in v1.2.0.
+    * `type` (string, REQUIRED) type of the devices the rule applies to, one of:
+      * b - block device.
+      * c - character device.
+    * `major` (int64, REQUIRED) major number of the devices the rule applies to. Must be greater than 0.
+    * `minor` (int64, REQUIRED) minor number of the devices the rule applies to. Must be non-negative, or `-1` as a wildcard matching all minor numbers of the given major.
+    * `permissions` (string, OPTIONAL) Cgroups permissions to grant, one or more of `r`, `w` and `m`, with the same meaning as for `deviceNodes.permissions`. Omitted or empty default to `rwm`. Unlike for `deviceNodes`, `none` is not supported.
   * `mounts` (array of objects, OPTIONAL) describes the mounts that should be mounted:
     * `hostPath` (string, REQUIRED) path of the device on the host.
     * `containerPath` (string, REQUIRED) path of the device within the container.
