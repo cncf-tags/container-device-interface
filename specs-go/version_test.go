@@ -119,6 +119,45 @@ func TestMinimumRequiredVersion(t *testing.T) {
 			want: "1.1.0",
 		},
 		{
+			doc: "v1.2.0 wildcard device node path",
+			spec: &specs.Spec{
+				ContainerEdits: specs.ContainerEdits{
+					DeviceNodes: []*specs.DeviceNode{{Path: "/dev/dri/card*"}},
+				},
+			},
+			want: "1.2.0",
+		},
+		{
+			doc: "v1.2.0 wildcard device node host path",
+			spec: &specs.Spec{
+				ContainerEdits: specs.ContainerEdits{
+					DeviceNodes: []*specs.DeviceNode{{
+						Path:     "/dev/card[0-9]",
+						HostPath: "/vendorroot/dev/card[0-9]",
+					}},
+				},
+			},
+			want: "1.2.0",
+		},
+		{
+			doc: "v1.2.0 escaped wildcard is still a pattern",
+			spec: &specs.Spec{
+				ContainerEdits: specs.ContainerEdits{
+					DeviceNodes: []*specs.DeviceNode{{Path: `/dev/literal\*`}},
+				},
+			},
+			want: "1.2.0",
+		},
+		{
+			doc: "no wildcards in device node paths",
+			spec: &specs.Spec{
+				ContainerEdits: specs.ContainerEdits{
+					DeviceNodes: []*specs.DeviceNode{{Path: "/dev/card0"}},
+				},
+			},
+			want: "0.3.0",
+		},
+		{
 			doc: "device-scoped feature",
 			spec: &specs.Spec{
 				Devices: []specs.Device{{
@@ -128,6 +167,17 @@ func TestMinimumRequiredVersion(t *testing.T) {
 				}},
 			},
 			want: "0.7.0",
+		},
+		{
+			doc: "device-scoped wildcard device node path",
+			spec: &specs.Spec{
+				Devices: []specs.Device{{
+					ContainerEdits: specs.ContainerEdits{
+						DeviceNodes: []*specs.DeviceNode{{Path: "/dev/mei*"}},
+					},
+				}},
+			},
+			want: "1.2.0",
 		},
 		{
 			doc: "newest feature wins",
@@ -164,12 +214,12 @@ func TestValidateVersion(t *testing.T) {
 	}{
 		{
 			doc:     "current version",
-			version: "1.1.0",
+			version: "1.2.0",
 			spec:    &specs.Spec{},
 		},
 		{
 			doc:     "optional v prefix",
-			version: "v1.1.0",
+			version: "v1.2.0",
 			spec:    &specs.Spec{},
 		},
 		{
@@ -191,9 +241,19 @@ func TestValidateVersion(t *testing.T) {
 		},
 		{
 			doc:     "unknown version",
-			version: "1.2.0",
+			version: "1.3.0",
 			spec:    &specs.Spec{},
-			wantErr: `invalid version "1.2.0"`,
+			wantErr: `invalid version "1.3.0"`,
+		},
+		{
+			doc:     "version too old for wildcard device node",
+			version: "1.1.0",
+			spec: &specs.Spec{
+				ContainerEdits: specs.ContainerEdits{
+					DeviceNodes: []*specs.DeviceNode{{Path: "/dev/dri/card*"}},
+				},
+			},
+			wantErr: "the spec version must be at least v1.2.0",
 		},
 		{
 			doc:     "malformed version",

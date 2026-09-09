@@ -1,0 +1,17 @@
+{
+  "cdiVersion": "1.2.0",
+  "kind": "vendor.com/device",
+  "devices": [
+    {
+      "name": "all",
+      "containerEdits": {
+        "deviceNodes": [
+          {"path": "/dev/dri/card*"},
+          {"path": "/dev/dri/renderD*"},
+          {"path": "/dev/mei[0-9]", "permissions": "rw"},
+          {"hostPath": "/vendorroot/dev/card*", "path": "/dev/vendor/card*"}
+        ]
+      }
+    }
+  ]
+}

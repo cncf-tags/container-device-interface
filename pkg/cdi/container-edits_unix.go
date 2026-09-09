@@ -22,8 +22,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"golang.org/x/sys/unix"
+	cdi "tags.cncf.io/container-device-interface/specs-go"
 )
 
 const (
@@ -74,6 +76,120 @@ func deviceInfoFromPath(path string) (*deviceInfo, error) {
 	}
 
 	return &di, nil
+}
+
+// validateWildcards validates the wildcard patterns (if any) of a device node.
+func (d *DeviceNode) validateWildcards() error {
+	pathIsPattern, hostPathIsPattern := cdi.HasWildcards(d.Path), cdi.HasWildcards(d.HostPath)
+	if !pathIsPattern && !hostPathIsPattern {
+		return nil
+	}
+
+	for _, p := range []string{d.Path, d.HostPath} {
+		if !cdi.HasWildcards(p) {
+			continue
+		}
+		// Require absolute path, and a "clean" path (rule out paths like "/dev/../etc/*")
+		if !filepath.IsAbs(p) || filepath.Clean(p) != p {
+			return fmt.Errorf("device %q: wildcard pattern %q is not an absolute, cleaned path", d.Path, p)
+		}
+		if _, err := filepath.Match(p, ""); err != nil {
+			return fmt.Errorf("device %q: invalid wildcard pattern %q: %w", d.Path, p, err)
+		}
+		if cdi.HasWildcards(filepath.Dir(p)) {
+			return fmt.Errorf("device %q: wildcards are only allowed in the last element of the path %q",
+				d.Path, p)
+		}
+	}
+
+	// The host device node determines the type and the device numbers, thus these must not be set
+	switch {
+	case d.Type != "":
+		return fmt.Errorf("device %q: type must not be set for a wildcard pattern", d.Path)
+	case d.Major != 0 || d.Minor != 0:
+		return fmt.Errorf("device %q: major/minor must not be set for a wildcard pattern", d.Path)
+	}
+
+	if d.HostPath == "" {
+		return nil
+	}
+
+	// The patterns of path and host path must be identical so that the container
+	// path of every match is unambiguous.
+	if filepath.Base(d.Path) != filepath.Base(d.HostPath) {
+		return fmt.Errorf("device %q: last element of path and hostPath %q must be an identical pattern",
+			d.Path, d.HostPath)
+	}
+
+	return nil
+}
+
+// expandWildcards expands device nodes that have paths with wildcard patterns into
+// actual device nodes to be injected into the container. Matches which are not
+// device nodes, e.g. regular files, directories and symlinks, are ignored. A
+// pattern matching no host device nodes expands to an empty list.
+func expandWildcards(nodes []*cdi.DeviceNode) ([]*cdi.DeviceNode, error) {
+	expanded := make([]*cdi.DeviceNode, 0, len(nodes))
+	seen := make(map[string]bool, len(nodes))
+
+	for _, d := range nodes {
+		if !cdi.HasWildcards(d.Path) && !cdi.HasWildcards(d.HostPath) {
+			// NOTE: we don't dedup explicit (non-wildcard) device nodes (to not change the existing behavior).
+			// Should we drop that for wildcard expansion, too(?)
+			seen[d.Path] = true
+			expanded = append(expanded, d)
+			continue
+		}
+
+		matches, err := (&DeviceNode{d}).expand()
+		if err != nil {
+			return nil, err
+		}
+		for _, m := range matches {
+			// Don't inject a device node twice
+			if !seen[m.Path] {
+				seen[m.Path] = true
+				expanded = append(expanded, m)
+			}
+		}
+	}
+
+	return expanded, nil
+}
+
+// expand returns one new device node per host device node matching the path pattern of the device node.
+func (d *DeviceNode) expand() ([]*cdi.DeviceNode, error) {
+	pattern := d.HostPath
+	if pattern == "" {
+		pattern = d.Path
+	}
+
+	// Glob returns matches in sorted order, making this deterministic
+	matches, err := filepath.Glob(pattern)
+	if err != nil {
+		// NOTE: the pattern is checked by Validate() so we should never end up here
+		return nil, fmt.Errorf("invalid device node pattern %q: %w", pattern, err)
+	}
+
+	expanded := make([]*cdi.DeviceNode, 0, len(matches))
+	for _, hostPath := range matches {
+		// Ignores matches which are not device nodes, also filtering out symlinks (like /dev/dri/by-path/*)
+		if _, err := deviceInfoFromPath(hostPath); err != nil {
+			continue
+		}
+
+		node := *d.DeviceNode
+		if node.HostPath == "" {
+			node.Path = hostPath
+		} else {
+			// NOTE: Validate() ensures that the patterns of path and hostPath are identical so we can safely do this
+			node.Path = filepath.Join(filepath.Dir(d.Path), filepath.Base(hostPath))
+			node.HostPath = hostPath
+		}
+		expanded = append(expanded, &node)
+	}
+
+	return expanded, nil
 }
 
 // fillMissingInfo fills in missing mandatory attributes from the host device.

@@ -18,7 +18,21 @@
 
 package cdi
 
-import "fmt"
+import (
+	"fmt"
+
+	cdi "tags.cncf.io/container-device-interface/specs-go"
+)
+
+// validateWildcards is a no-op on Windows as device nodes are unsupported.
+func (d *DeviceNode) validateWildcards() error {
+	return nil
+}
+
+// expandWildcards is a no-op on Windows, as device nodes are unsupported.
+func expandWildcards(nodes []*cdi.DeviceNode) ([]*cdi.DeviceNode, error) {
+	return nodes, nil
+}
 
 // fillMissingInfo fills in missing mandatory attributes from the host device.
 func (d *DeviceNode) fillMissingInfo() error {
