@@ -182,14 +182,13 @@ func cdiInjectDevices(format string, ociSpec *oci.Spec, patterns []string) error
 
 func cdiResolveDevices(ociSpecFiles ...string) error {
 	var (
-		cache      *cdi.Cache
+		cache      = cdi.GetDefaultCache()
 		ociSpec    *oci.Spec
 		devices    []string
 		unresolved []string
 		err        error
 	)
 
-	cache, _ = cdi.NewCache()
 
 	for _, ociSpecFile := range ociSpecFiles {
 		ociSpec, err = readOCISpec(ociSpecFile)
