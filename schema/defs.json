@@ -67,7 +67,8 @@
             },
             "required": [
                 "path"
-            ]
+            ],
+            "additionalProperties": false
         },
         "Mount": {
             "type": "object",
@@ -88,7 +89,8 @@
             "required": [
                 "hostPath",
                 "containerPath"
-            ]
+            ],
+            "additionalProperties": false
         },
         "Hook": {
             "type": "object",
@@ -112,7 +114,8 @@
             "required": [
                 "hookName",
                 "path"
-            ]
+            ],
+            "additionalProperties": false
         },
         "LinuxNetDevice": {
             "type": "object",
@@ -127,7 +130,8 @@
             "required": [
                 "hostInterfaceName",
                 "name"
-            ]
+            ],
+            "additionalProperties": false
         },
         "containerEdits": {
             "type": "object",
@@ -180,7 +184,8 @@
                         "enableMonitoring": {
                             "type": "boolean"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "additionalGids": {
                     "type": "array",
@@ -188,7 +193,8 @@
                         "$ref": "#/definitions/uint32"
                     }
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "annotations": {
             "$ref": "#/definitions/mapStringString"
