@@ -112,20 +112,13 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 		editor.AddDevice(dev)
 
 		if dev.Type == "b" || dev.Type == "c" {
-			access := d.Permissions
-			switch access {
-			case "":
-				access = "rwm"
-			case NoPermissions:
-				access = ""
-			}
-			editor.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, access)
+			editor.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, cgroupAccess(d.Permissions))
 		}
 	}
 
 	for _, r := range e.DeviceCgroupRules {
 		rule := LinuxDeviceCgroupRule{r}
-		editor.AddLinuxResourcesDevice(true, rule.Type, rule.Major, rule.minor(), rule.access())
+		editor.AddLinuxResourcesDevice(true, rule.Type, rule.Major, rule.minor(), cgroupAccess(rule.Permissions))
 	}
 
 	if len(e.NetDevices) > 0 {
@@ -369,6 +362,16 @@ func (d *DeviceNode) Validate() error {
 	return nil
 }
 
+func cgroupAccess(permissions string) string {
+	switch permissions {
+	case "":
+		return "rwm"
+	case NoPermissions:
+		return ""
+	}
+	return permissions
+}
+
 // LinuxDeviceCgroupRule is a CDI Spec LinuxDeviceCgroupRule wrapper, used for validating device cgroup rules.
 type LinuxDeviceCgroupRule struct {
 	*cdi.LinuxDeviceCgroupRule
@@ -412,14 +415,6 @@ func (r *LinuxDeviceCgroupRule) minor() *int64 {
 	return r.Minor
 }
 
-// access returns the cgroup permissions granted by this rule.
-func (r *LinuxDeviceCgroupRule) access() string {
-	if r.Permissions == "" {
-		return "rwm"
-	}
-	return r.Permissions
-}
-
 // String returns the rule in the "<type> <major>:<minor> <permissions>" format
 // used by the devices cgroup, with "*" denoting a wildcard device number.
 func (r *LinuxDeviceCgroupRule) String() string {
@@ -429,7 +424,7 @@ func (r *LinuxDeviceCgroupRule) String() string {
 		}
 		return strconv.FormatInt(*n, 10)
 	}
-	return fmt.Sprintf("%s %s:%s %s", r.Type, num(r.Major), num(r.minor()), r.access())
+	return fmt.Sprintf("%s %s:%s %s", r.Type, num(r.Major), num(r.minor()), cgroupAccess(r.Permissions))
 }
 
 // Hook is a CDI Spec Hook wrapper, used for validating hooks.
