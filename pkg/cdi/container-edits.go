@@ -111,14 +111,7 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 		editor.AddDevice(dev)
 
 		if dev.Type == "b" || dev.Type == "c" {
-			access := d.Permissions
-			switch access {
-			case "":
-				access = "rwm"
-			case NoPermissions:
-				access = ""
-			}
-			editor.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, access)
+			editor.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, cgroupAccess(d.Permissions))
 		}
 	}
 
@@ -130,7 +123,7 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 		if r.Minor == cdi.DeviceCgroupMinorAny {
 			minor = nil
 		}
-		editor.AddLinuxResourcesDevice(true, rule.Type, &major, minor, rule.access())
+		editor.AddLinuxResourcesDevice(true, rule.Type, &major, minor, cgroupAccess(rule.Permissions))
 	}
 
 	if len(e.NetDevices) > 0 {
@@ -374,6 +367,16 @@ func (d *DeviceNode) Validate() error {
 	return nil
 }
 
+func cgroupAccess(permissions string) string {
+	switch permissions {
+	case "":
+		return "rwm"
+	case NoPermissions:
+		return ""
+	}
+	return permissions
+}
+
 // DeviceCgroupRule is a CDI Spec DeviceCgroupRule wrapper, used for validating device cgroup rules.
 type DeviceCgroupRule struct {
 	*cdi.DeviceCgroupRule
@@ -403,17 +406,9 @@ func (r *DeviceCgroupRule) Validate() error {
 	return nil
 }
 
-// access returns the cgroup permissions granted by this rule.
-func (r *DeviceCgroupRule) access() string {
-	if r.Permissions == "" {
-		return "rwm"
-	}
-	return r.Permissions
-}
-
 // String returns the rule in the "<type> <major>:<minor> <permissions>" format.
 func (r *DeviceCgroupRule) String() string {
-	return fmt.Sprintf("%s %d:%d %s", r.Type, r.Major, r.Minor, r.access())
+	return fmt.Sprintf("%s %d:%d %s", r.Type, r.Major, r.Minor, cgroupAccess(r.Permissions))
 }
 
 // Hook is a CDI Spec Hook wrapper, used for validating hooks.
