@@ -346,12 +346,62 @@ func TestValidateContainerEdits(t *testing.T) {
 			},
 			invalid: true,
 		},
+		{
+			name: "invalid device node, negative major",
+			edits: &cdi.ContainerEdits{
+				DeviceNodes: []*cdi.DeviceNode{
+					{Path: "/dev/foo", Type: "c", Major: -1, Minor: 3},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid device node, negative minor",
+			edits: &cdi.ContainerEdits{
+				DeviceNodes: []*cdi.DeviceNode{
+					{Path: "/dev/foo", Type: "c", Major: 1, Minor: -1},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid device node, nil",
+			edits: &cdi.ContainerEdits{
+				DeviceNodes: []*cdi.DeviceNode{nil},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid net device, nil",
+			edits: &cdi.ContainerEdits{
+				NetDevices: []*cdi.LinuxNetDevice{nil},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid hook, nil",
+			edits: &cdi.ContainerEdits{
+				Hooks: []*cdi.Hook{nil},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid mount, nil",
+			edits: &cdi.ContainerEdits{
+				Mounts: []*cdi.Mount{nil},
+			},
+			invalid: true,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			edits := ContainerEdits{tc.edits}
 			err := edits.Validate()
 			if tc.invalid {
 				require.Error(t, err)
+				// Apply must reject invalid edits without touching the spec.
+				spec := &oci.Spec{}
+				require.Error(t, edits.Apply(spec))
+				require.Equal(t, &oci.Spec{}, spec)
 			} else {
 				require.NoError(t, err)
 			}

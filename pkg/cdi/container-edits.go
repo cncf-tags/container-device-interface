@@ -79,6 +79,9 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 	if e == nil || e.ContainerEdits == nil {
 		return nil
 	}
+	if err := e.Validate(); err != nil {
+		return err
+	}
 
 	editor, err := ociedit.NewSpecEditor(spec)
 	if err != nil {
@@ -313,6 +316,9 @@ type LinuxNetDevice struct {
 
 // Validate LinuxNetDevice.
 func (d *LinuxNetDevice) Validate() error {
+	if d.LinuxNetDevice == nil {
+		return errors.New("invalid (nil) linux net device")
+	}
 	if d.HostInterfaceName == "" {
 		return errors.New("invalid linux net device, empty HostInterfaceName")
 	}
@@ -337,11 +343,18 @@ func (d *DeviceNode) Validate() error {
 		"p": {},
 	}
 
+	if d.DeviceNode == nil {
+		return errors.New("invalid (nil) device node")
+	}
 	if d.Path == "" {
 		return errors.New("invalid (empty) device path")
 	}
 	if _, ok := validTypes[d.Type]; !ok {
 		return fmt.Errorf("device %q: invalid type %q", d.Path, d.Type)
+	}
+	// NOTE: negative numbers are rejected as -1 is interpreted as a wildcard
+	if d.Major < 0 || d.Minor < 0 {
+		return fmt.Errorf("device %q: invalid (negative) device number %d:%d", d.Path, d.Major, d.Minor)
 	}
 	switch {
 	case d.Permissions == "":
@@ -361,6 +374,9 @@ type Hook struct {
 
 // Validate a hook.
 func (h *Hook) Validate() error {
+	if h.Hook == nil {
+		return errors.New("invalid (nil) hook")
+	}
 	if _, ok := validHookNames[h.HookName]; !ok {
 		return fmt.Errorf("invalid hook name %q", h.HookName)
 	}
@@ -380,6 +396,9 @@ type Mount struct {
 
 // Validate a mount.
 func (m *Mount) Validate() error {
+	if m.Mount == nil {
+		return errors.New("invalid (nil) mount")
+	}
 	if m.HostPath == "" {
 		return errors.New("invalid mount, empty host path")
 	}
@@ -406,6 +425,9 @@ func ValidateIntelRdt(i *cdi.IntelRdt) error {
 
 // Validate validates the IntelRdt configuration.
 func (i *IntelRdt) Validate() error {
+	if i.IntelRdt == nil {
+		return nil
+	}
 	// ClosID must be a valid Linux filename. Exception: "/" refers to the root CLOS.
 	switch c := i.ClosID; {
 	case c == "/":
