@@ -187,38 +187,43 @@ devices:
 				filepath.Join(dir, "etc"),
 				filepath.Join(dir, "run")),
 			)
+			require.NotNil(t, cache)
+
+			// Stop the watcher before removing the spec directories.
+			t.Cleanup(func() {
+				assert.NoError(t, cache.Configure(WithAutoRefresh(false)))
+			})
 
 			if len(tc.dirErrors) != 0 {
 				for specDir = range tc.dirErrors {
 					specDir = filepath.Join(dir, specDir)
 					require.NotNil(t, cache.GetSpecDirErrors()[specDir])
-					return
 				}
+				return
 			}
 
-			require.NotNil(t, cache)
-
-			for name, dev := range cache.devices {
+			// Read via the locked getters so a watcher refresh cannot race the read.
+			for _, name := range cache.ListDevices() {
+				dev := cache.GetDevice(name)
+				require.NotNil(t, dev)
 				require.Equal(t, filepath.Join(dir, tc.sources[name]),
 					dev.GetSpec().GetPath())
 			}
 			for name, path := range tc.sources {
-				dev := cache.devices[name]
+				dev := cache.GetDevice(name)
 				require.NotNil(t, dev)
 				require.Equal(t, filepath.Join(dir, path),
 					dev.GetSpec().GetPath())
 			}
 
+			errs := cache.GetErrors()
 			for path := range tc.errors {
-				fullPath := filepath.Join(dir, path)
-				_, ok := cache.errors[fullPath]
-				require.True(t, ok)
+				require.Contains(t, errs, filepath.Join(dir, path))
 			}
-			for fullPath := range cache.errors {
-				path, err := filepath.Rel(dir, fullPath)
-				require.Nil(t, err)
-				_, ok := tc.errors[path]
-				require.True(t, ok)
+			for fullPath := range errs {
+				rel, err := filepath.Rel(dir, fullPath)
+				require.NoError(t, err)
+				require.Contains(t, tc.errors, rel)
 			}
 		})
 	}
@@ -1905,6 +1910,28 @@ func TestCacheConcurrentConfigure(t *testing.T) {
 	}()
 
 	wg.Wait()
+}
+
+// TestNewCacheConcurrentConfigure verifies that configuring a Cache from another
+// goroutine while newCache() is still constructing it is free of data races.
+//
+// Regression test for https://github.com/cncf-tags/container-device-interface/pull/345
+func TestNewCacheConcurrentConfigure(t *testing.T) {
+	dir := t.TempDir()
+	spec := []byte(`{"cdiVersion":"0.3.0","kind":"vendor.com/device","devices":[{"name":"dev","containerEdits":{"env":["FOO=bar"]}}]}`)
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "spec.json"), spec, 0o644))
+
+	// Configure the cache from another goroutine while NewCache() is still
+	// constructing it.
+	done := make(chan error, 1)
+	configureConcurrently := func(c *Cache) {
+		go func() { done <- c.Configure(WithAutoRefresh(false)) }()
+	}
+
+	cache, err := NewCache(WithSpecDirs(dir), configureConcurrently)
+	require.NoError(t, err)
+	require.NoError(t, <-done)
+	require.Len(t, cache.ListDevices(), 1)
 }
 
 func int64ptr(v int64) *int64 {
