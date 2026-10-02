@@ -1912,6 +1912,28 @@ func TestCacheConcurrentConfigure(t *testing.T) {
 	wg.Wait()
 }
 
+// TestNewCacheConcurrentConfigure verifies that configuring a Cache from another
+// goroutine while newCache() is still constructing it is free of data races.
+//
+// Regression test for https://github.com/cncf-tags/container-device-interface/pull/345
+func TestNewCacheConcurrentConfigure(t *testing.T) {
+	dir := t.TempDir()
+	spec := []byte(`{"cdiVersion":"0.3.0","kind":"vendor.com/device","devices":[{"name":"dev","containerEdits":{"env":["FOO=bar"]}}]}`)
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "spec.json"), spec, 0o644))
+
+	// Configure the cache from another goroutine while NewCache() is still
+	// constructing it.
+	done := make(chan error, 1)
+	configureConcurrently := func(c *Cache) {
+		go func() { done <- c.Configure(WithAutoRefresh(false)) }()
+	}
+
+	cache, err := NewCache(WithSpecDirs(dir), configureConcurrently)
+	require.NoError(t, err)
+	require.NoError(t, <-done)
+	require.Len(t, cache.ListDevices(), 1)
+}
+
 func int64ptr(v int64) *int64 {
 	return &v
 }
