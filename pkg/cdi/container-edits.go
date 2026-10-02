@@ -22,6 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	oci "github.com/opencontainers/runtime-spec/specs-go"
@@ -111,15 +112,13 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 		editor.AddDevice(dev)
 
 		if dev.Type == "b" || dev.Type == "c" {
-			access := d.Permissions
-			switch access {
-			case "":
-				access = "rwm"
-			case NoPermissions:
-				access = ""
-			}
-			editor.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, access)
+			editor.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, cgroupAccess(d.Permissions))
 		}
+	}
+
+	for _, r := range e.DeviceCgroupRules {
+		rule := LinuxDeviceCgroupRule{r}
+		editor.AddLinuxResourcesDevice(true, rule.Type, rule.Major, rule.minor(), cgroupAccess(rule.Permissions))
 	}
 
 	if len(e.NetDevices) > 0 {
@@ -191,6 +190,11 @@ func (e *ContainerEdits) Validate() error {
 			return err
 		}
 	}
+	for _, r := range e.DeviceCgroupRules {
+		if err := (&LinuxDeviceCgroupRule{r}).Validate(); err != nil {
+			return err
+		}
+	}
 	for _, h := range e.Hooks {
 		if err := (&Hook{h}).Validate(); err != nil {
 			return err
@@ -228,6 +232,7 @@ func (e *ContainerEdits) Append(o *ContainerEdits) *ContainerEdits {
 
 	e.Env = append(e.Env, o.Env...)
 	e.DeviceNodes = append(e.DeviceNodes, o.DeviceNodes...)
+	e.DeviceCgroupRules = append(e.DeviceCgroupRules, o.DeviceCgroupRules...)
 	e.NetDevices = append(e.NetDevices, o.NetDevices...)
 	e.Hooks = append(e.Hooks, o.Hooks...)
 	e.Mounts = append(e.Mounts, o.Mounts...)
@@ -249,6 +254,9 @@ func (e *ContainerEdits) isEmpty() bool {
 		return false
 	}
 	if len(e.DeviceNodes) > 0 {
+		return false
+	}
+	if len(e.DeviceCgroupRules) > 0 {
 		return false
 	}
 	if len(e.Hooks) > 0 {
@@ -352,6 +360,71 @@ func (d *DeviceNode) Validate() error {
 	}
 
 	return nil
+}
+
+func cgroupAccess(permissions string) string {
+	switch permissions {
+	case "":
+		return "rwm"
+	case NoPermissions:
+		return ""
+	}
+	return permissions
+}
+
+// LinuxDeviceCgroupRule is a CDI Spec LinuxDeviceCgroupRule wrapper, used for validating device cgroup rules.
+type LinuxDeviceCgroupRule struct {
+	*cdi.LinuxDeviceCgroupRule
+}
+
+// Validate a CDI Spec LinuxDeviceCgroupRule.
+func (r *LinuxDeviceCgroupRule) Validate() error {
+	// NOTE: stick with the types of the kernel devices cgroup interface.
+	// The extra types ("p" and "u") allowed in the container config are not accepted.
+	// Also, "a" is denied on purpose as that would allow all devices and ignore the
+	// major/minor filtering.
+	switch r.Type {
+	case "b", "c":
+	default:
+		return fmt.Errorf("device cgroup rule %s: invalid type %q", r, r.Type)
+	}
+	if r.Major == nil {
+		return fmt.Errorf("device cgroup rule %s: major device number must be specified", r)
+	}
+	if *r.Major <= 0 {
+		return fmt.Errorf("device cgroup rule %s: major device number must be greater than 0", r)
+	}
+	if r.Minor == nil {
+		return fmt.Errorf("device cgroup rule %s: minor device number must be specified", r)
+	}
+	if *r.Minor < 0 && *r.Minor != cdi.DeviceCgroupMinorAny {
+		return fmt.Errorf("device cgroup rule %s: minor device number must be non-negative or %d", r, cdi.DeviceCgroupMinorAny)
+	}
+	if strings.Trim(r.Permissions, "rwm") != "" {
+		return fmt.Errorf("device cgroup rule %s: invalid permissions %q", r, r.Permissions)
+	}
+
+	return nil
+}
+
+// minor returns the minor device number of this rule in the OCI Spec format.
+func (r *LinuxDeviceCgroupRule) minor() *int64 {
+	if r.Minor == nil || *r.Minor == cdi.DeviceCgroupMinorAny {
+		return nil
+	}
+	return r.Minor
+}
+
+// String returns the rule in the "<type> <major>:<minor> <permissions>" format
+// used by the devices cgroup, with "*" denoting a wildcard device number.
+func (r *LinuxDeviceCgroupRule) String() string {
+	num := func(n *int64) string {
+		if n == nil {
+			return "*"
+		}
+		return strconv.FormatInt(*n, 10)
+	}
+	return fmt.Sprintf("%s %s:%s %s", r.Type, num(r.Major), num(r.minor()), cgroupAccess(r.Permissions))
 }
 
 // Hook is a CDI Spec Hook wrapper, used for validating hooks.

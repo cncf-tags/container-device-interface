@@ -11,6 +11,16 @@
             "minimum": -9223372036854775808,
             "maximum": 9223372036854775807
         },
+        "positiveInt64": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9223372036854775807
+        },
+        "deviceCgroupMinor": {
+            "type": "integer",
+            "minimum": -1,
+            "maximum": 9223372036854775807
+        },
         "ArrayOfStrings": {
             "type": "array",
             "items": {
@@ -67,6 +77,33 @@
             },
             "required": [
                 "path"
+            ]
+        },
+        "LinuxDeviceCgroupRule": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "b",
+                        "c"
+                    ]
+                },
+                "major": {
+                    "$ref": "#/definitions/positiveInt64"
+                },
+                "minor": {
+                    "$ref": "#/definitions/deviceCgroupMinor"
+                },
+                "permissions": {
+                    "type": "string",
+                    "pattern": "^[rwm]*$"
+                }
+            },
+            "required": [
+                "type",
+                "major",
+                "minor"
             ]
         },
         "Mount": {
@@ -142,6 +179,12 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/DeviceNode"
+                    }
+                },
+                "deviceCgroupRules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/LinuxDeviceCgroupRule"
                     }
                 },
                 "netDevices": {
