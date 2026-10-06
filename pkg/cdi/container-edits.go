@@ -89,7 +89,17 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 	}
 
 	for _, d := range e.DeviceNodes {
-		dn := DeviceNode{d}
+		// Work on a copy of the device node. e.DeviceNodes may point into a
+		// cached Spec (see Cache.InjectDevices), and fillMissingInfo() must
+		// not write host-derived information back into the cache: that would
+		// make later injections skip the host check and reuse stale values,
+		// and it races with concurrent injections of the same device.
+		node := *d
+		if d.FileMode != nil {
+			mode := *d.FileMode
+			node.FileMode = &mode
+		}
+		dn := DeviceNode{&node}
 
 		err := dn.fillMissingInfo()
 		if err != nil {
