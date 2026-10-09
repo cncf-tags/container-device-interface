@@ -8,7 +8,7 @@
 
 ## Version
 
-This is CDI **spec** version **1.1.0**.
+This is CDI **spec** version **1.2.0**.
 
 ### Update policy
 
@@ -35,6 +35,7 @@ Released versions of the spec are available as Git tags.
 | v1.0.0 |   | Move minimum version logic to specs-go package. |
 | v1.1.0 |   | Add `NetDevices` to `ContainerEdits`, `Schemata` and `EnableMonitoring` to `IntelRdt`. Dropped `EnableCMT` and `EnableMBM` fields from `IntelRdt`. |
 | v1.1.1 |   | No Spec changes. Remove semver dependency from specs-go and improve performance. |
+| v1.2.0 |   | Allow wildcards in the `Path` and `HostPath` of `DeviceNodes`. |
 
 *Note*: spec loading fails on unknown fields and when the minimum required version is higher than the version specified in the spec. The minimum required version is determined based on the usage of fields mentioned in the table above. For example the minimum required version is v0.6.0 if the `Annotations` field is used in the spec, but `IntelRdt` is not.
 `MinimumRequiredVersion` API can be used to get the minimum required version.
@@ -129,6 +130,7 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
             ]
             "deviceNodes": [ (optional)
                 {
+                    // The last element of the path may be a wildcard pattern which gets expanded into the matching host device nodes.
                     "path": "<path>",
                     "hostPath": "<hostPath>" (optional),
                     "type": "<type>" (optional),
@@ -230,8 +232,8 @@ The `containerEdits` field is referenced in two places in the specification:
 The `containerEdits` field has the following definition:
   * `env` (array of strings in the format of "VARNAME=VARVALUE", OPTIONAL) describes the environment variables that should be set. These values are appended to the container environment array.
   * `deviceNodes` (array of objects, OPTIONAL) describes the device nodes that should be mounted:
-    * `path` (string, REQUIRED) path of the device within the container.
-    * `hostPath` (string, OPTIONAL) path of the device node on the host. If not specified the value for `path` is used. Added in v0.5.0.
+    * `path` (string, REQUIRED) path of the device within the container. May be a wildcard pattern, see [Wildcard device nodes](#wildcard-device-nodes). Wildcards added in v1.2.0.
+    * `hostPath` (string, OPTIONAL) path of the device node on the host. If not specified the value for `path` is used. May be a wildcard pattern, see [Wildcard device nodes](#wildcard-device-nodes). Added in v0.5.0, wildcards added in v1.2.0.
     * `type` (string, OPTIONAL) Device type: block, char, etc.
     * `major` (int64, OPTIONAL) Device major number.
     * `minor` (int64, OPTIONAL) Device minor number.
@@ -261,6 +263,42 @@ The `containerEdits` field has the following definition:
     * `schemata` (array of strings, OPTIONAL) RDT schema for the CLOS.
     * `enableMonitoring` (boolean, OPTIONAL) whether to enable memory bandwidth monitoring for the CLOS.
   * `additionalGids` (array of uint32s, OPTIONAL) A list of additional group IDs to add with the container process. These values are added to the `user.additionalGids` field in the OCI runtime specification. Values of 0 are ignored. Added in v0.7.0.
+
+#### Wildcard device nodes
+
+Added in v1.2.0. The `path` and `hostPath` of a device node may be a wildcard
+pattern, matching multiple device nodes on the host. This allows a device to
+cover all instances of a class of device nodes without the vendor having to
+enumerate them:
+
+```yaml
+cdiVersion: "1.2.0"
+kind: "vendor.com/device"
+devices:
+  - name: "all"
+    containerEdits:
+      deviceNodes:
+        - path: "/dev/dri/card*"
+        - path: "/dev/dri/renderD*"
+        - path: "/dev/mei*"
+          permissions: "rw"
+```
+
+The pattern syntax is that of Go's [path.Match](https://pkg.go.dev/path#Match).
+The following rules are applied:
+
+* A pattern MUST be an absolute path with no `.` or `..` elements.
+* Wildcards MUST only appear in the last element of the path, i.e. the directory
+  of the device nodes is always fixed.
+* A pattern is expanded when the container edits are applied to an OCI
+  specification, i.e. against the state of the host at container creation time.
+* A pattern is expanded to the matching host device nodes only, any other files
+  (regular files, directories etc) are silently ignored.
+* A pattern matching no host device nodes expands to an empty set.
+* `type`, `major` and `minor` MUST NOT be specified for a wildcard device
+  node, these are inherited from the host device node.
+* If `hostPath` is specified, the last elements of `path` and `hostPath` MUST be
+  an identical pattern.
 
 ## Error Handling
   * Kind requested is not present in any CDI file.

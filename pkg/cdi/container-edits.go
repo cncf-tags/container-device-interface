@@ -88,7 +88,12 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 		editor.AddMultipleProcessEnv(e.Env)
 	}
 
-	for _, d := range e.DeviceNodes {
+	deviceNodes, err := expandWildcards(e.DeviceNodes)
+	if err != nil {
+		return err
+	}
+
+	for _, d := range deviceNodes {
 		dn := DeviceNode{d}
 
 		err := dn.fillMissingInfo()
@@ -349,6 +354,9 @@ func (d *DeviceNode) Validate() error {
 	case strings.Trim(d.Permissions, "rwm") != "":
 		return fmt.Errorf("device %q: invalid permissions %q",
 			d.Path, d.Permissions)
+	}
+	if err := d.validateWildcards(); err != nil {
+		return err
 	}
 
 	return nil
