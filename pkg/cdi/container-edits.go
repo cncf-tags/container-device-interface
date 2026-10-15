@@ -111,15 +111,19 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 		editor.AddDevice(dev)
 
 		if dev.Type == "b" || dev.Type == "c" {
-			access := d.Permissions
-			switch access {
-			case "":
-				access = "rwm"
-			case NoPermissions:
-				access = ""
-			}
-			editor.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, access)
+			editor.AddLinuxResourcesDevice(true, dev.Type, &dev.Major, &dev.Minor, cgroupAccess(d.Permissions))
 		}
+	}
+
+	for _, r := range e.DeviceCgroupRules {
+		rule := DeviceCgroupRule{r}
+		major := rule.Major
+		minor := new(int64)
+		*minor = rule.Minor
+		if r.Minor == cdi.DeviceCgroupMinorAny {
+			minor = nil
+		}
+		editor.AddLinuxResourcesDevice(true, rule.Type, &major, minor, cgroupAccess(rule.Permissions))
 	}
 
 	if len(e.NetDevices) > 0 {
@@ -191,6 +195,11 @@ func (e *ContainerEdits) Validate() error {
 			return err
 		}
 	}
+	for _, r := range e.DeviceCgroupRules {
+		if err := (&DeviceCgroupRule{r}).Validate(); err != nil {
+			return err
+		}
+	}
 	for _, h := range e.Hooks {
 		if err := (&Hook{h}).Validate(); err != nil {
 			return err
@@ -228,6 +237,7 @@ func (e *ContainerEdits) Append(o *ContainerEdits) *ContainerEdits {
 
 	e.Env = append(e.Env, o.Env...)
 	e.DeviceNodes = append(e.DeviceNodes, o.DeviceNodes...)
+	e.DeviceCgroupRules = append(e.DeviceCgroupRules, o.DeviceCgroupRules...)
 	e.NetDevices = append(e.NetDevices, o.NetDevices...)
 	e.Hooks = append(e.Hooks, o.Hooks...)
 	e.Mounts = append(e.Mounts, o.Mounts...)
@@ -249,6 +259,9 @@ func (e *ContainerEdits) isEmpty() bool {
 		return false
 	}
 	if len(e.DeviceNodes) > 0 {
+		return false
+	}
+	if len(e.DeviceCgroupRules) > 0 {
 		return false
 	}
 	if len(e.Hooks) > 0 {
@@ -352,6 +365,50 @@ func (d *DeviceNode) Validate() error {
 	}
 
 	return nil
+}
+
+func cgroupAccess(permissions string) string {
+	switch permissions {
+	case "":
+		return "rwm"
+	case NoPermissions:
+		return ""
+	}
+	return permissions
+}
+
+// DeviceCgroupRule is a CDI Spec DeviceCgroupRule wrapper, used for validating device cgroup rules.
+type DeviceCgroupRule struct {
+	*cdi.DeviceCgroupRule
+}
+
+// Validate a CDI Spec DeviceCgroupRule.
+func (r *DeviceCgroupRule) Validate() error {
+	// NOTE: stick with the types of the kernel devices cgroup interface.
+	// The extra types ("p" and "u") allowed in the container config are not accepted.
+	// Also, "a" is denied on purpose as that would allow all devices and ignore the
+	// major/minor filtering.
+	switch r.Type {
+	case "b", "c":
+	default:
+		return fmt.Errorf("device cgroup rule %s: invalid type %q", r, r.Type)
+	}
+	if r.Major <= 0 {
+		return fmt.Errorf("device cgroup rule %s: major device number must be greater than 0", r)
+	}
+	if r.Minor < 0 && r.Minor != cdi.DeviceCgroupMinorAny {
+		return fmt.Errorf("device cgroup rule %s: minor device number must be non-negative or %d", r, cdi.DeviceCgroupMinorAny)
+	}
+	if strings.Trim(r.Permissions, "rwm") != "" {
+		return fmt.Errorf("device cgroup rule %s: invalid permissions %q", r, r.Permissions)
+	}
+
+	return nil
+}
+
+// String returns the rule in the "<type> <major>:<minor> <permissions>" format.
+func (r *DeviceCgroupRule) String() string {
+	return fmt.Sprintf("%s %d:%d %s", r.Type, r.Major, r.Minor, cgroupAccess(r.Permissions))
 }
 
 // Hook is a CDI Spec Hook wrapper, used for validating hooks.

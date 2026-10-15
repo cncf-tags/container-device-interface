@@ -24,13 +24,14 @@ type Device struct {
 
 // ContainerEdits are edits a container runtime must make to the OCI spec to expose the device.
 type ContainerEdits struct {
-	Env            []string          `json:"env,omitempty"            yaml:"env,omitempty"`
-	DeviceNodes    []*DeviceNode     `json:"deviceNodes,omitempty"    yaml:"deviceNodes,omitempty"`
-	NetDevices     []*LinuxNetDevice `json:"netDevices,omitempty"     yaml:"netDevices,omitempty"` // Added in v1.1.0
-	Hooks          []*Hook           `json:"hooks,omitempty"          yaml:"hooks,omitempty"`
-	Mounts         []*Mount          `json:"mounts,omitempty"         yaml:"mounts,omitempty"`
-	IntelRdt       *IntelRdt         `json:"intelRdt,omitempty"       yaml:"intelRdt,omitempty"`       // Added in v0.7.0
-	AdditionalGIDs []uint32          `json:"additionalGids,omitempty" yaml:"additionalGids,omitempty"` // Added in v0.7.0
+	Env               []string            `json:"env,omitempty"               yaml:"env,omitempty"`
+	DeviceNodes       []*DeviceNode       `json:"deviceNodes,omitempty"       yaml:"deviceNodes,omitempty"`
+	DeviceCgroupRules []*DeviceCgroupRule `json:"deviceCgroupRules,omitempty" yaml:"deviceCgroupRules,omitempty"` // Added in v1.2.0
+	NetDevices        []*LinuxNetDevice   `json:"netDevices,omitempty"        yaml:"netDevices,omitempty"`        // Added in v1.1.0
+	Hooks             []*Hook             `json:"hooks,omitempty"             yaml:"hooks,omitempty"`
+	Mounts            []*Mount            `json:"mounts,omitempty"            yaml:"mounts,omitempty"`
+	IntelRdt          *IntelRdt           `json:"intelRdt,omitempty"          yaml:"intelRdt,omitempty"`       // Added in v0.7.0
+	AdditionalGIDs    []uint32            `json:"additionalGids,omitempty"    yaml:"additionalGids,omitempty"` // Added in v0.7.0
 }
 
 // DeviceNode represents a device node that needs to be added to the OCI spec.
@@ -45,6 +46,17 @@ type DeviceNode struct {
 	UID         *uint32      `json:"uid,omitempty"         yaml:"uid,omitempty"`
 	GID         *uint32      `json:"gid,omitempty"         yaml:"gid,omitempty"`
 }
+
+// DeviceCgroupRule represents a rule to be added to the devices cgroup of the container.
+type DeviceCgroupRule struct { // Added in v1.2.0
+	Type        string `json:"type"                  yaml:"type"`
+	Major       int64  `json:"major"                 yaml:"major"`
+	Minor       int64  `json:"minor"                 yaml:"minor"`
+	Permissions string `json:"permissions,omitempty" yaml:"permissions,omitempty"`
+}
+
+// DeviceCgroupMinorAny is the DeviceCgroupRule Minor wildcard matching any minor device number.
+const DeviceCgroupMinorAny = -1
 
 // Mount represents a mount that needs to be added to the OCI spec.
 type Mount struct {

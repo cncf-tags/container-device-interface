@@ -146,6 +146,123 @@ func TestValidateContainerEdits(t *testing.T) {
 			},
 		},
 		{
+			name: "valid device cgroup rules",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:        "c",
+						Major:       226,
+						Minor:       cdi.DeviceCgroupMinorAny,
+						Permissions: "rwm",
+					},
+					{
+						Type:  "b",
+						Major: 8,
+						Minor: 0,
+					},
+					{
+						Type:  "c",
+						Major: 10,
+						Minor: -1,
+					},
+				},
+			},
+		},
+		{
+			name: "invalid device cgroup rule, missing major",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:  "c",
+						Minor: 3,
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid device cgroup rule, zero major",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:  "c",
+						Major: 0,
+						Minor: 0,
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid device cgroup rule, negative major",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:  "c",
+						Major: -1,
+						Minor: 0,
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid device cgroup rule, negative minor",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:  "c",
+						Major: 226,
+						Minor: -2,
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			// "a" would grant access to every device, not to all types of the
+			// device given by the major and minor.
+			name: "invalid device cgroup rule, all devices type",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:  "a",
+						Major: 226,
+						Minor: cdi.DeviceCgroupMinorAny,
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid device cgroup rule, wrong permissions",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:        "c",
+						Major:       226,
+						Minor:       cdi.DeviceCgroupMinorAny,
+						Permissions: "to land",
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid device cgroup rule, NoPermissions",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:        "c",
+						Major:       226,
+						Minor:       cdi.DeviceCgroupMinorAny,
+						Permissions: NoPermissions,
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
 			name: "valid mount",
 			edits: &cdi.ContainerEdits{
 				Mounts: []*cdi.Mount{
@@ -466,6 +583,58 @@ func TestApplyContainerEdits(t *testing.T) {
 								Type:   "c",
 								Major:  &nullDeviceMajor,
 								Minor:  &nullDeviceMinor,
+								Access: "rwm",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "empty spec, device cgroup rules",
+			spec: &oci.Spec{},
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:        "c",
+						Major:       226,
+						Minor:       cdi.DeviceCgroupMinorAny,
+						Permissions: "rw",
+					},
+					{
+						// An omitted permission defaults to "rwm".
+						Type:  "b",
+						Major: 8,
+						Minor: cdi.DeviceCgroupMinorAny,
+					},
+					{
+						Type:  "c",
+						Major: 1,
+						Minor: 3,
+					},
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					Resources: &oci.LinuxResources{
+						Devices: []oci.LinuxDeviceCgroup{
+							{
+								Allow:  true,
+								Type:   "c",
+								Major:  int64ptr(226),
+								Access: "rw",
+							},
+							{
+								Allow:  true,
+								Type:   "b",
+								Major:  int64ptr(8),
+								Access: "rwm",
+							},
+							{
+								Allow:  true,
+								Type:   "c",
+								Major:  int64ptr(1),
+								Minor:  int64ptr(3),
 								Access: "rwm",
 							},
 						},
