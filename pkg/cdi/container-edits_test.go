@@ -1047,6 +1047,99 @@ func TestApplyContainerEdits(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "mount added to container with Linux user namespace and only uid mappings",
+			spec: &oci.Spec{
+				Linux: &oci.Linux{
+					UIDMappings: []oci.LinuxIDMapping{
+						{
+							ContainerID: 0,
+							HostID:      1000,
+							Size:        999,
+						},
+					},
+					Namespaces: []oci.LinuxNamespace{
+						{Type: oci.UserNamespace},
+					},
+				},
+			},
+			edits: &cdi.ContainerEdits{
+				Mounts: []*cdi.Mount{
+					{
+						HostPath:      "/some/host/path1",
+						ContainerPath: "/dest/path/a",
+						Type:          "bind",
+					},
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					UIDMappings: []oci.LinuxIDMapping{
+						{
+							ContainerID: 0,
+							HostID:      1000,
+							Size:        999,
+						},
+					},
+					Namespaces: []oci.LinuxNamespace{
+						{Type: oci.UserNamespace},
+					},
+				},
+				Mounts: []oci.Mount{
+					{
+						Source:      "/some/host/path1",
+						Destination: "/dest/path/a",
+						Type:        "bind",
+						Options:     []string{"idmap"},
+					},
+				},
+			},
+		},
+		{
+			name: "mount added to container with Linux user namespace without uid/gid mappings",
+			spec: &oci.Spec{
+				Linux: &oci.Linux{
+					Namespaces: []oci.LinuxNamespace{
+						{Type: oci.UserNamespace},
+					},
+				},
+			},
+			edits: &cdi.ContainerEdits{
+				Mounts: []*cdi.Mount{
+					{
+						HostPath:      "/some/host/path1",
+						ContainerPath: "/dest/path/a",
+						Type:          "bind",
+					},
+					{
+						HostPath:      "/some/host/path2",
+						ContainerPath: "/dest/path/b",
+						Type:          "bind",
+						Options:       []string{"rbind"},
+					},
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					Namespaces: []oci.LinuxNamespace{
+						{Type: oci.UserNamespace},
+					},
+				},
+				Mounts: []oci.Mount{
+					{
+						Source:      "/some/host/path1",
+						Destination: "/dest/path/a",
+						Type:        "bind",
+					},
+					{
+						Source:      "/some/host/path2",
+						Destination: "/dest/path/b",
+						Type:        "bind",
+						Options:     []string{"rbind"},
+					},
+				},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			edits := ContainerEdits{tc.edits}
