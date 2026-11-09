@@ -1090,7 +1090,6 @@ func TestApplyContainerEdits(t *testing.T) {
 						Source:      "/some/host/path1",
 						Destination: "/dest/path/a",
 						Type:        "bind",
-						Options:     []string{"idmap"},
 					},
 				},
 			},

@@ -452,14 +452,15 @@ func (m orderedMounts) parts(i int) int {
 }
 
 // specHasIDMappingNamespace returns true if the OCI Spec has a Linux UserNamespace
-// together with UID or GID mappings. A user namespace without any mappings
-// (for instance one set up for a pod sharing its process namespace) can't be
-// used for idmapped mounts.
+// together with both UID and GID mappings. A user namespace lacking either
+// mapping (for instance one set up for a pod sharing its process namespace)
+// can't reliably be used for idmapped mounts: runc rejects idmapped mounts
+// unless both mappings are present.
 func specHasIDMappingNamespace(spec *oci.Spec) bool {
 	if spec == nil || spec.Linux == nil {
 		return false
 	}
-	if len(spec.Linux.UIDMappings) == 0 && len(spec.Linux.GIDMappings) == 0 {
+	if len(spec.Linux.UIDMappings) == 0 || len(spec.Linux.GIDMappings) == 0 {
 		return false
 	}
 	for _, ns := range spec.Linux.Namespaces {
