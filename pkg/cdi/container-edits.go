@@ -134,7 +134,7 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 
 			editor.RemoveMount(m.ContainerPath)
 
-			if !specHasUserNamespace(spec) {
+			if !specHasIDMappingNamespace(spec) {
 				editor.AddMount(mnt.toOCI())
 			} else {
 				editor.AddMount(mnt.toOCI(withIDMapForBindMount()))
@@ -451,9 +451,15 @@ func (m orderedMounts) parts(i int) int {
 	return strings.Count(filepath.Clean(m[i].Destination), string(os.PathSeparator))
 }
 
-// specHasUserNamespace returns true if the OCI Spec has a Linux UserNamespace.
-func specHasUserNamespace(spec *oci.Spec) bool {
+// specHasIDMappingNamespace returns true if the OCI Spec has a Linux UserNamespace
+// together with UID or GID mappings. A user namespace without any mappings
+// (for instance one set up for a pod sharing its process namespace) can't be
+// used for idmapped mounts.
+func specHasIDMappingNamespace(spec *oci.Spec) bool {
 	if spec == nil || spec.Linux == nil {
+		return false
+	}
+	if len(spec.Linux.UIDMappings) == 0 && len(spec.Linux.GIDMappings) == 0 {
 		return false
 	}
 	for _, ns := range spec.Linux.Namespaces {
