@@ -1335,3 +1335,42 @@ func TestAppend(t *testing.T) {
 		})
 	}
 }
+
+func TestDeepCopyDeviceNode(t *testing.T) {
+	var nilDeviceNode *DeviceNode
+	require.Nil(t, nilDeviceNode.DeepCopy())
+	nilWrappedDeviceNode := &DeviceNode{}
+	require.Equal(t, nilWrappedDeviceNode.DeepCopy(), &DeviceNode{})
+
+	mode := os.FileMode(0o660)
+	uid, gid := uint32(1000), uint32(1001)
+	orig := &DeviceNode{
+		&cdi.DeviceNode{
+			Path:     "/dev/x",
+			FileMode: &mode,
+			UID:      &uid,
+			GID:      &gid,
+		},
+	}
+
+	c := orig.DeepCopy()
+	require.Equal(t, orig,
+		&DeviceNode{
+			&cdi.DeviceNode{
+				Path:     c.Path,
+				FileMode: orig.FileMode,
+				UID:      orig.UID,
+				GID:      orig.GID,
+			},
+		},
+	)
+	require.Equal(t, *orig.FileMode, *c.FileMode)
+	require.Equal(t, *orig.UID, *c.UID)
+	require.Equal(t, *orig.GID, *c.GID)
+
+	// No pointer is shared: changing the copy leaves the original untouched.
+	*c.FileMode, *c.UID, *c.GID = 0o600, 0, 0
+	require.Equal(t, os.FileMode(0o660), *orig.FileMode)
+	require.Equal(t, uint32(1000), *orig.UID)
+	require.Equal(t, uint32(1001), *orig.GID)
+}
