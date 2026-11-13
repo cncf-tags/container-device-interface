@@ -22,7 +22,7 @@ import (
 )
 
 // CurrentVersion is the current version of the Spec.
-const CurrentVersion = "1.1.0"
+const CurrentVersion = "1.2.0"
 
 const (
 	// These represent the released versions of the CDI specification
@@ -36,6 +36,7 @@ const (
 	v080 version = "0.8.0"
 	v100 version = "1.0.0"
 	v110 version = "1.1.0"
+	v120 version = "1.2.0"
 
 	// vEarliest is the earliest supported version of the CDI specification
 	vEarliest version = v030
@@ -49,6 +50,7 @@ var validSpecVersions = []struct {
 	version    version
 	isRequired requiredFunc
 }{
+	{v120, requiresV120},
 	{v110, requiresV110},
 	{v100, requiresV100},
 	{v080, requiresV080},
@@ -126,6 +128,23 @@ func versionIndex(v version) int {
 		}
 	}
 	return -1
+}
+
+// requiresV120 returns true if the spec uses v1.2.0 features.
+func requiresV120(spec *Spec) bool {
+	// The v1.2.0 spec allows device cgroup rules to be specified at a spec level.
+	if len(spec.ContainerEdits.DeviceCgroupRules) > 0 {
+		return true
+	}
+
+	for _, d := range spec.Devices {
+		// The v1.2.0 spec allows device cgroup rules to be specified at a device level.
+		if len(d.ContainerEdits.DeviceCgroupRules) > 0 {
+			return true
+		}
+	}
+
+	return false
 }
 
 // requiresV110 returns true if the spec uses v1.1.0 features.

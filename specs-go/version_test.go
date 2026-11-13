@@ -119,6 +119,15 @@ func TestMinimumRequiredVersion(t *testing.T) {
 			want: "1.1.0",
 		},
 		{
+			doc: "v1.2.0 device cgroup rule",
+			spec: &specs.Spec{
+				ContainerEdits: specs.ContainerEdits{
+					DeviceCgroupRules: []*specs.DeviceCgroupRule{{Type: "c"}},
+				},
+			},
+			want: "1.2.0",
+		},
+		{
 			doc: "device-scoped feature",
 			spec: &specs.Spec{
 				Devices: []specs.Device{{
@@ -130,15 +139,27 @@ func TestMinimumRequiredVersion(t *testing.T) {
 			want: "0.7.0",
 		},
 		{
+			doc: "device-scoped device cgroup rule",
+			spec: &specs.Spec{
+				Devices: []specs.Device{{
+					ContainerEdits: specs.ContainerEdits{
+						DeviceCgroupRules: []*specs.DeviceCgroupRule{{Type: "c"}},
+					},
+				}},
+			},
+			want: "1.2.0",
+		},
+		{
 			doc: "newest feature wins",
 			spec: &specs.Spec{
 				Annotations: map[string]string{"example.com/key": "value"},
 				ContainerEdits: specs.ContainerEdits{
-					AdditionalGIDs: []uint32{1},
-					NetDevices:     []*specs.LinuxNetDevice{{}},
+					AdditionalGIDs:    []uint32{1},
+					NetDevices:        []*specs.LinuxNetDevice{{}},
+					DeviceCgroupRules: []*specs.DeviceCgroupRule{{Type: "c"}},
 				},
 			},
-			want: "1.1.0",
+			want: "1.2.0",
 		},
 	}
 
@@ -164,12 +185,12 @@ func TestValidateVersion(t *testing.T) {
 	}{
 		{
 			doc:     "current version",
-			version: "1.1.0",
+			version: "1.2.0",
 			spec:    &specs.Spec{},
 		},
 		{
 			doc:     "optional v prefix",
-			version: "v1.1.0",
+			version: "v1.2.0",
 			spec:    &specs.Spec{},
 		},
 		{
@@ -191,9 +212,9 @@ func TestValidateVersion(t *testing.T) {
 		},
 		{
 			doc:     "unknown version",
-			version: "1.2.0",
+			version: "1.3.0",
 			spec:    &specs.Spec{},
-			wantErr: `invalid version "1.2.0"`,
+			wantErr: `invalid version "1.3.0"`,
 		},
 		{
 			doc:     "malformed version",
@@ -228,6 +249,16 @@ func TestValidateVersion(t *testing.T) {
 					AdditionalGIDs: []uint32{1},
 				},
 			},
+		},
+		{
+			doc:     "version too old for device cgroup rule",
+			version: "1.1.0",
+			spec: &specs.Spec{
+				ContainerEdits: specs.ContainerEdits{
+					DeviceCgroupRules: []*specs.DeviceCgroupRule{{Type: "c"}},
+				},
+			},
+			wantErr: "the spec version must be at least v1.2.0",
 		},
 	}
 
