@@ -474,6 +474,10 @@ func (h *Hook) Validate() error {
 	if h.Path == "" {
 		return fmt.Errorf("invalid hook %q with empty path", h.HookName)
 	}
+	// The OCI runtime spec requires a timeout, if set, to be greater than zero.
+	if h.Timeout != nil && *h.Timeout <= 0 {
+		return fmt.Errorf("invalid hook %q with non-positive timeout %d", h.HookName, *h.Timeout)
+	}
 	if err := ValidateEnv(h.Env); err != nil {
 		return fmt.Errorf("invalid hook %q: %w", h.HookName, err)
 	}
