@@ -234,6 +234,25 @@ func TestUpdateAnnotations(t *testing.T) {
 			invalid: true,
 		},
 		{
+			// An empty value would make ParseAnnotations reject every
+			// CDI annotation of the container, not only this one.
+			name: "invalid, no devices",
+			injections: []*inject{
+				{
+					plugin: "vendor1.class",
+					devID:  "device",
+					devices: []string{
+						"vendor1.com/class=device1",
+					},
+				},
+				{
+					plugin: "vendor2.class",
+					devID:  "device",
+				},
+			},
+			invalid: true,
+		},
+		{
 			name: "invalid, malformed device reference",
 			injections: []*inject{
 				{
