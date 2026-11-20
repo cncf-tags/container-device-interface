@@ -32,6 +32,7 @@ func TestValidateContainerEdits(t *testing.T) {
 		edits   *cdi.ContainerEdits
 		invalid bool
 	}
+	positiveTimeout, zeroTimeout, negativeTimeout := 5, 0, -1
 	for _, tc := range []*testCase{
 		{
 			name:  "valid, empty edits",
@@ -343,6 +344,46 @@ func TestValidateContainerEdits(t *testing.T) {
 				Hooks: []*cdi.Hook{
 					{
 						HookName: "prestart",
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "valid hook, positive timeout",
+			edits: &cdi.ContainerEdits{
+				Hooks: []*cdi.Hook{
+					{
+						HookName: "createContainer",
+						Path:     "/usr/local/bin/cc-vendor-hook",
+						Timeout:  &positiveTimeout,
+					},
+				},
+			},
+		},
+		{
+			// The OCI runtime spec requires a hook timeout, if set, to be
+			// greater than zero.
+			name: "invalid hook, zero timeout",
+			edits: &cdi.ContainerEdits{
+				Hooks: []*cdi.Hook{
+					{
+						HookName: "createContainer",
+						Path:     "/usr/local/bin/cc-vendor-hook",
+						Timeout:  &zeroTimeout,
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid hook, negative timeout",
+			edits: &cdi.ContainerEdits{
+				Hooks: []*cdi.Hook{
+					{
+						HookName: "createContainer",
+						Path:     "/usr/local/bin/cc-vendor-hook",
+						Timeout:  &negativeTimeout,
 					},
 				},
 			},
