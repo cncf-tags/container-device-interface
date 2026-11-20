@@ -127,7 +127,12 @@ func AnnotationKey(pluginName, deviceID string) (string, error) {
 }
 
 // AnnotationValue returns an annotation value for the given devices.
+// It returns an error for an empty list of devices, since ParseAnnotations
+// does not accept an empty value.
 func AnnotationValue(devices []string) (string, error) {
+	if len(devices) == 0 {
+		return "", errors.New("invalid devices, empty")
+	}
 	value, sep := "", ""
 	for _, d := range devices {
 		if _, _, _, err := parser.ParseQualifiedName(d); err != nil {
